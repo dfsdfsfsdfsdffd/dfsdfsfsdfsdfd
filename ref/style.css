@@ -1,0 +1,92 @@
+    @font-face {
+      font-family: 'Milkyway';
+      src: url('Milkyway.ttf') format('truetype');
+    }
+    
+    @font-face {
+      font-family: '999';
+      src: url('999.otf') format('opentype');
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: radial-gradient(circle at top left, #ffd3e0, #ffbcd4, #ffaac7);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+      user-select: none;
+    }
+
+    .center-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 40px 20px;
+    }
+
+    .container {
+      background: rgba(255, 182, 218, 0.12);
+      backdrop-filter: blur(22px);
+      padding: 60px 50px;
+      border-radius: 24px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 0 80px rgba(255, 175, 215, 0.3);
+      border: 1px solid rgba(255, 192, 222, 0.18);
+    }
+
+    h1 {
+      font-family: 'League Spartan', sans-serif;
+      font-size: 3rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 4px 12px rgba(255, 140, 190, 0);
+      margin-bottom: 8px;
+      letter-spacing: 3px;
+    }
+
+    .subtitle {
+      font-family: 'Milkyway', sans-serif;
+      font-size: 1rem;
+      color: #ffeef5;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    footer {
+      font-size: 0.85rem;
+      color: #ffeef5;
+      opacity: 0.9;
+      padding: 20px;
+      text-align: center;
+      width: 100%;
+    }
+
+    @media (max-width: 500px) {
+      h1 {
+        font-size: 2.4rem;
+      }
+
+      .container {
+        padding: 40px 24px;
+      }
+
+      .subtitle {
+        font-size: 0.9rem;
+      }
+    }
