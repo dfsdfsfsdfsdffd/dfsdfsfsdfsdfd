@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="ref/misc/butterflies.png">
+  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cyan 🩵</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+  <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool@latest'></script>
+  <script src="ref/js/ZOOOOOOOOM.js"></script>
+  <script src="ref/js/sexymouse.js"></script>
+</head>
+<body>
+      <div class="overlay" id="overlay">
+        <div class="proceed-button" onclick="removeOverlay(), playaudio()">Click to enter</div>
+    </div>
+
+<div class="container" id="tilt-container">
+  <img src="ref/img/your-banner.gif" alt="Banner" class="banner-img" />
+  <img src="ref/img/your-pfp.jpg" alt="PFP" class="pfp" />
+  <div class="content">
+    <h1>cyan</h1>
+    <div class="badges">
+      <span class="badge"><i class="fa-solid fa-star"></i> VIP</span>
+      <span class="badge"><i class="fa-solid fa-heart"></i> Cutie</span>
+      <span class="badge"><i class="fa-solid fa-heart"></i> Devy</span>
+    </div>
+    <p>Not emo, just like my music :)</p>
+
+      <div class="info-tags">
+  <span><i class="fa-solid fa-venus-mars"></i> she/they</span>
+  <span><i class="fa-solid fa-cake-candles"></i> Adult</span>
+  <span><i class="fa-solid fa-globe"></i> EST</span>
+</div>
+
+    <div class="links">
+      <a href="javascript:void(0);" onclick="copyUsername()"><i class="fab fa-discord"></i> Discord</a>
+      <span id="copyMsg" style="display:none; font-size:12px; color:#a6fff4; margin-top:5px;">Username copied to clipboard!</span>
+
+      <a href="https://x.com/cyanvrc"><i class="fab fa-x-twitter"></i> Twitter</a>
+      <a href="https://fansly.com/cyanvrc/posts"><i class="fas fa-user-circle"></i> Fansly</a>
+    </div>
+  </div>
+
+</div>
+    <script>
+        function playaudio() {
+            var audio = new Audio('ref/misc/Shoreline Mafia - Bottle Service (Lyrics).mp3');
+            audio.volume = 0.1;
+            audio.play();
+        }
+    </script>
+
+<script>
+    function removeOverlay() {
+        var overlay = document.getElementById('overlay');
+        overlay.style.display = 'none';
+    }
+</script>
+<script>
+  function copyUsername() {
+    const username = "cyan.aep";
+    navigator.clipboard.writeText(username).then(() => {
+      const msg = document.getElementById("copyMsg");
+      msg.style.display = "block";
+      setTimeout(() => { msg.style.display = "none"; }, 2000);
+    });
+  }
+</script>
+  <div style="position: fixed; bottom: 10px; width: 100%; text-align: center; font-size: 12px; color: #ffffff; font-family: 'Outfit', sans-serif; z-index: 999;">
+  add pink.aep on discord if you would like a page
+</div>
+</body>
+</html>
