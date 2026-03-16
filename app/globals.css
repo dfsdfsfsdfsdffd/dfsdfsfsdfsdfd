@@ -10,7 +10,7 @@
 }
 
 body {
-  user-select: none
+  user-select: none;
   min-height: 100vh;
   color: white;
   background: #050306;
