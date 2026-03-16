@@ -1,56 +1,52 @@
-import { ArrowRight } from 'lucide-react';
+import React from 'react';
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center p-6">
-      <div className="mesh-bg" />
+    <main className="relative min-h-screen bg-[#050306] text-white overflow-hidden selection:bg-pink-500/30">
+      {/* LIGHT BEAM BACKGROUND */}
+      <div className="fixed -top-[20%] -left-[20%] w-[140%] h-[140%] pointer-events-none z-0 opacity-70">
+        <div 
+          className="w-full h-full blur-[90px]"
+          style={{
+            background: 'linear-gradient(120deg, transparent 20%, rgba(255,80,160,0.35) 40%, rgba(255,120,200,0.25) 55%, transparent 70%)'
+          }}
+        />
+      </div>
 
-      {/* Navbar */}
-      <nav className="absolute top-0 w-full max-w-7xl flex items-center justify-between p-8">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold tracking-tighter italic">✶ frost.rip</span>
+      {/* NAVBAR */}
+      <nav className="relative z-10 flex justify-between items-center px-8 md:px-[70px] py-7">
+        <div className="text-[18px] font-semibold tracking-tight">
+          ♡ softcard.cc
         </div>
-        <div className="flex items-center gap-8">
-          <div className="hidden md:flex gap-6 text-sm font-medium text-zinc-500">
-            <span>Features</span>
-            <span>Community</span>
-          </div>
-          <button className="bg-blue-600 text-white text-xs font-bold px-5 py-2.5 rounded-full flex items-center gap-2 btn-glow">
-            Get Started <ArrowRight size={14} />
-          </button>
-        </div>
+        <button className="bg-gradient-to-br from-[#ff4fb3] to-[#ff86c6] px-[22px] py-[10px] rounded-[30px] text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8_25px_rgba(255,80,160,0.4)]">
+          Dashboard →
+        </button>
       </nav>
 
-      {/* Hero */}
-      <div className="text-center z-10 space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-1000">
-        
-        {/* Update Badge */}
-        <div className="inline-flex items-center gap-2 bg-blue-950/20 border border-blue-500/20 px-3 py-1 rounded-full backdrop-blur-md">
-          <span className="bg-blue-600 text-[10px] font-black px-1.5 py-0.5 rounded-sm">NEW</span>
-          <span className="text-[11px] font-medium text-blue-200/60">
-            V1.2.5b Fix up video background audio & playing issues.
+      {/* HERO SECTION */}
+      <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 h-[80vh] max-w-[850px] mx-auto">
+        <h1 className="text-[48px] md:text-[64px] font-bold leading-[1.1] tracking-[-1px]">
+          Welcome to <br />
+          <span className="bg-gradient-to-r from-[#ff6fb8] to-[#ffc3e8] bg-clip-text text-transparent">
+            Softcard Biolink
           </span>
-          <ArrowRight size={12} className="text-blue-500" />
-        </div>
-
-        <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9]">
-          Your corner of <br />
-          <span className="text-blue-500">the internet.</span>
         </h1>
 
-        <p className="text-zinc-500 text-lg md:text-xl max-w-lg mx-auto font-medium">
-          One link-in-bio page for everything you do. Socials, projects, content — all in one place, completely free.
+        <p className="mt-[22px] text-[18px] text-[#d9c9d3] max-w-[650px] leading-relaxed">
+          Create a single link for everything you share online — socials,
+          projects, and content — all organized in one beautiful profile.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-          <button className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-10 rounded-full flex items-center gap-2 btn-glow active:scale-95">
-            Create Your Page <ArrowRight size={18} />
+        {/* BUTTONS */}
+        <div className="mt-10 flex flex-wrap justify-center gap-4">
+          <button className="bg-gradient-to-br from-[#ff4fb3] to-[#ff86c6] px-8 py-[15px] rounded-[50px] text-[15px] font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(255,80,160,0.45)]">
+            Create Your Page →
           </button>
-          <button className="bg-white/5 hover:bg-white/10 text-zinc-300 font-bold py-4 px-10 rounded-full border border-white/5 backdrop-blur-md transition-all">
-            See how it works
+          <button className="bg-transparent border border-white/20 px-8 py-[15px] rounded-[50px] text-[15px] font-medium transition-all duration-300 hover:bg-white/5">
+            Learn More
           </button>
         </div>
-      </div>
+      </section>
     </main>
   );
 }
