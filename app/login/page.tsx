@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react"; // For tracking input
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"; // The Supabase tool
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"; // Added
 import { Space_Grotesk } from "next/font/google";
 
 const font = Space_Grotesk({
@@ -12,28 +12,49 @@ const font = Space_Grotesk({
 });
 
 export default function Login() {
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  
+  // State for form inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  const router = useRouter();
-  const supabase = createClientComponentClient(); // Initialize Supabase
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     setError(null);
 
-    // This is the part that checks Supabase
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message); // If password is wrong or user doesn't exist
+    if (mode === "signin") {
+      // SIGN IN LOGIC
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) setError(error.message);
+      else router.push("/dashboard");
     } else {
-      router.push("/dashboard"); // If it works, go to the "hi" page
+      // SIGN UP LOGIC
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: username, // Saving the username to metadata
+          },
+        },
+      });
+      if (error) setError(error.message);
+      else {
+        alert("Check your email for a confirmation link!");
+        setMode("signin");
+      }
     }
+    setLoading(false);
   };
 
   return (
@@ -43,37 +64,73 @@ export default function Login() {
       </nav>
 
       <div className="loginCard">
-        <h1>Login</h1>
-        <p className="subtitle">Access your Softcard dashboard</p>
+        <h1>{mode === "signin" ? "Sign In" : "Create Account"}</h1>
+
+        <p className="subtitle">
+          {mode === "signin"
+            ? "Login to your Softcard dashboard"
+            : "Create your Softcard profile"}
+        </p>
 
         <button className="discordBtn" type="button">
-          Login with Discord
+          Continue with Discord
         </button>
 
         <div className="divider">
           <span>or</span>
         </div>
 
-        <form className="loginForm" onSubmit={handleLogin}>
-          {error && <p style={{ color: '#ff5cad', fontSize: '12px' }}>{error}</p>}
+        <form className="loginForm" onSubmit={handleSubmit}>
+          {error && <p style={{ color: '#ff5cad', fontSize: '13px', marginBottom: '10px' }}>{error}</p>}
           
-          <input 
-            type="email" 
-            placeholder="Email" 
-            required 
-            onChange={(e) => setEmail(e.target.value)} 
+          {mode === "signup" && (
+            <input
+              type="text"
+              placeholder="Username"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          )}
+
+          <input
+            type="email"
+            placeholder="Email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            required 
-            onChange={(e) => setPassword(e.target.value)} 
+
+          <input
+            type="password"
+            placeholder="Password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
-          
-          <button type="submit" className="loginBtn">
-            Sign In
+
+          <button className="loginBtn" disabled={loading}>
+            {loading ? "Processing..." : (mode === "signin" ? "Sign In" : "Sign Up")}
           </button>
         </form>
+
+        <div className="switchMode">
+          {mode === "signin" ? (
+            <>
+              Don't have an account?{" "}
+              <button type="button" onClick={() => setMode("signup")}>
+                Sign up
+              </button>
+            </>
+          ) : (
+            <>
+              Already have an account?{" "}
+              <button type="button" onClick={() => setMode("signin")}>
+                Sign in
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </main>
   );
