@@ -20,14 +20,13 @@ export default async function PublicProfile({ params }: { params: { username: st
     }
   );
 
-  // 1. Fetch the profile by username (case-insensitive)
+  // Fetch the profile by username
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('username', params.username.toLowerCase())
     .single();
 
-  // 2. If no user exists with that name, 404
   if (!profile) {
     notFound();
   }
@@ -35,7 +34,7 @@ export default async function PublicProfile({ params }: { params: { username: st
   return (
     <main className={font.className} style={{ 
       minHeight: '100vh', 
-      backgroundColor: '#020617', // Matching your new Dashboard navy
+      backgroundColor: '#020617', 
       color: 'white',
       display: 'flex',
       flexDirection: 'column',
@@ -43,9 +42,9 @@ export default async function PublicProfile({ params }: { params: { username: st
       justifyContent: 'center',
       padding: '20px'
     }}>
-      <div className="profile-card" style={{ textAlign: 'center', width: '100%', maxWidth: '400px' }}>
+      <div style={{ textAlign: 'center', width: '100%', maxWidth: '400px' }}>
         
-        {/* Custom Avatar with Glow Effect */}
+        {/* Custom Avatar with Glow based on Accent Color */}
         <img 
           src={profile.avatar_url || "https://i.imgur.com/1X6g1YH.jpeg"} 
           alt={profile.display_name}
@@ -65,9 +64,9 @@ export default async function PublicProfile({ params }: { params: { username: st
         
         <p style={{ opacity: 0.6, fontSize: '14px', marginBottom: '24px' }}>
           @{profile.username}
-        </h1>
+        </p>
 
-        {/* The One Permanent Link */}
+        {/* The Single Permanent Link */}
         {profile.link_url && (
           <a 
             href={profile.link_url}
@@ -83,7 +82,6 @@ export default async function PublicProfile({ params }: { params: { username: st
               color: 'white',
               textDecoration: 'none',
               fontWeight: '500',
-              transition: '0.2s',
               textAlign: 'center'
             }}
           >
@@ -91,15 +89,13 @@ export default async function PublicProfile({ params }: { params: { username: st
           </a>
         )}
 
-        {/* Bio / Description */}
         {profile.bio && (
-          <p style={{ marginTop: '24px', opacity: 0.8, fontSize: '15px', lineHeight: '1.5' }}>
+          <p style={{ marginTop: '24px', opacity: 0.8, fontSize: '15px' }}>
             {profile.bio}
           </p>
         )}
       </div>
 
-      {/* Brand Footer */}
       <footer style={{ marginTop: '60px', opacity: 0.4, fontSize: '13px' }}>
         <a href="/" style={{ color: 'inherit', textDecoration: 'none' }}>♡ softcard.cc</a>
       </footer>
