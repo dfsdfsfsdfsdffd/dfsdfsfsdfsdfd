@@ -14,21 +14,18 @@ export default function SoftcardDashboard() {
   const [setupRequired, setSetupRequired] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  // State linked to DB
+  // DB Linked States
   const [avatar, setAvatar] = useState("https://i.imgur.com/1X6g1YH.jpeg")
   const [name, setName] = useState("")
-  const [username, setUsername] = useState("")
+  const [username, setUsername] = useState("") // Read-only
   const [bio, setBio] = useState("")
   const [accent, setAccent] = useState("#3b82f6")
   const [bgType, setBgType] = useState("gradient")
   const [bgValue, setBgValue] = useState("linear-gradient(135deg,#020617,#1e3a8a)")
   const [linkTitle, setLinkTitle] = useState("")
   const [linkUrl, setLinkUrl] = useState("")
-  
-  // New States: Socials & Music
   const [discord, setDiscord] = useState("")
   const [spotify, setSpotify] = useState("")
-  const [views, setViews] = useState(0)
 
   useEffect(() => {
     async function loadData() {
@@ -38,6 +35,7 @@ export default function SoftcardDashboard() {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       
       if (profile) {
+        // Hard check: If setup isn't done, kill the dashboard and show Setup
         if (!profile.setup_completed) {
           setSetupRequired(true)
         } else {
@@ -53,7 +51,6 @@ export default function SoftcardDashboard() {
           setLinkUrl(profile.link_url || "")
           setDiscord(profile.discord_user || "")
           setSpotify(profile.spotify_url || "")
-          setViews(profile.views || 0)
         }
       }
       setLoading(false)
@@ -84,6 +81,8 @@ export default function SoftcardDashboard() {
 
   if (loading) return <div style={{height: '100vh', background: '#020617'}} />
 
+  // If they need setup, show ONLY the setup component. 
+  // No dashboard code below this will execute.
   if (setupRequired) {
     return <UsernameSetup supabase={supabase} onComplete={() => window.location.reload()} />
   }
@@ -100,15 +99,14 @@ export default function SoftcardDashboard() {
         .scdb-avatar { width:80px; height:80px; border-radius:50%; display:block; margin:0 auto 15px auto; object-fit:cover; }
         .scdb-label { font-size:10px; opacity:.4; margin-top:15px; display:block; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
         .scdb-input { width:100%; padding:14px; border-radius:10px; background:#020617; border:1px solid rgba(255,255,255,0.05); color:white; margin-top:8px; outline: none; font-size: 14px; }
-        .scdb-username-display { font-size: 14px; color: ${accent}; font-weight: 600; margin-top: 8px; display: block; }
-        .scdb-save-btn { background: ${accent}; color: white; padding: 16px; border-radius: 12px; margin-top: auto; cursor: pointer; border: none; font-weight: 700; transition: 0.2s; }
-        .scdb-save-btn:hover { filter: brightness(1.2); }
+        .scdb-url-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; margin-top: 8px; border: 1px dashed rgba(255,255,255,0.1); }
+        .scdb-username-text { color: ${accent}; font-weight: 700; font-size: 14px; }
+        .scdb-save-btn { background: ${accent}; color: white; padding: 16px; border-radius: 12px; margin-top: auto; cursor: pointer; border: none; font-weight: 700; }
         .scdb-preview { position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
         .scdb-bg { position:absolute; width:100%; height:100%; z-index:0; }
         .scdb-profile { position:relative; z-index:2; text-align:center; padding: 40px; background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); width: 340px; }
         .scdb-pfp { width:110px; height:110px; border-radius:50%; object-fit:cover; box-shadow:0 0 40px ${accent}44; border: 3px solid ${accent}; }
-        .scdb-link-btn { margin-top:25px; padding:14px; border-radius:12px; border:1px solid ${accent}; background: ${accent}11; color: white; font-weight: 600; transition: 0.2s; }
-        .scdb-stats { display: flex; justify-content: center; gap: 20px; margin-top: 20px; opacity: 0.5; font-size: 12px; }
+        .scdb-link-btn { margin-top:25px; padding:14px; border-radius:12px; border:1px solid ${accent}; background: ${accent}11; color: white; font-weight: 600; }
       `}</style>
 
       <div className="scdb-sidebar">
@@ -119,37 +117,32 @@ export default function SoftcardDashboard() {
         </div>
 
         {tab==="profile" && (
-          <>
-            <div className="scdb-card">
-              <img src={avatar} className="scdb-avatar" alt="avatar"/>
-              <label className="scdb-label">Active Link</label>
-              <span className="scdb-username-display">softcard.cc/{username}</span>
-              <label className="scdb-label">Avatar URL</label>
-              <input className="scdb-input" value={avatar} onChange={e=>setAvatar(e.target.value)}/>
-              <label className="scdb-label">Display Name</label>
-              <input className="scdb-input" value={name} onChange={e=>setName(e.target.value)}/>
-              <label className="scdb-label">Bio</label>
-              <input className="scdb-input" value={bio} placeholder="Write something..." onChange={e=>setBio(e.target.value)}/>
+          <div className="scdb-card">
+            <img src={avatar} className="scdb-avatar" alt="avatar"/>
+            
+            <label className="scdb-label">Your Unique URL</label>
+            <div className="scdb-url-box">
+              <span className="scdb-username-text">softcard.cc/{username}</span>
             </div>
-            <div className="scdb-card">
-              <div style={{fontWeight: 700, fontSize: '14px'}}>Analytics</div>
-              <div className="scdb-stats">
-                <span>Total Views: <b>{views}</b></span>
-              </div>
-            </div>
-          </>
+
+            <label className="scdb-label">Avatar URL</label>
+            <input className="scdb-input" value={avatar} onChange={e=>setAvatar(e.target.value)}/>
+            <label className="scdb-label">Display Name</label>
+            <input className="scdb-input" value={name} onChange={e=>setName(e.target.value)}/>
+            <label className="scdb-label">Bio</label>
+            <input className="scdb-input" value={bio} placeholder="Write something..." onChange={e=>setBio(e.target.value)}/>
+          </div>
         )}
 
         {tab==="socials" && (
           <div className="scdb-card">
-            <div style={{fontWeight: 700, fontSize: '14px', marginBottom: '10px'}}>Integrations</div>
-            <label className="scdb-label">Discord Username</label>
+            <label className="scdb-label">Discord</label>
             <input className="scdb-input" placeholder="user#0000" value={discord} onChange={e=>setDiscord(e.target.value)}/>
-            <label className="scdb-label">Spotify Song/Playlist URL</label>
-            <input className="scdb-input" placeholder="https://open.spotify.com/..." value={spotify} onChange={e=>setSpotify(e.target.value)}/>
-            <label className="scdb-label">Primary Button Text</label>
+            <label className="scdb-label">Spotify URL</label>
+            <input className="scdb-input" placeholder="Paste Spotify link..." value={spotify} onChange={e=>setSpotify(e.target.value)}/>
+            <label className="scdb-label">Main Button Text</label>
             <input className="scdb-input" value={linkTitle} onChange={e=>setLinkTitle(e.target.value)}/>
-            <label className="scdb-label">Primary Button URL</label>
+            <label className="scdb-label">Main Button URL</label>
             <input className="scdb-input" value={linkUrl} onChange={e=>setLinkUrl(e.target.value)}/>
           </div>
         )}
@@ -162,7 +155,7 @@ export default function SoftcardDashboard() {
               <option value="video">Video</option>
               <option value="image">Image</option>
             </select>
-            <label className="scdb-label">Background Value</label>
+            <label className="scdb-label">Background Source</label>
             <input className="scdb-input" value={bgValue} onChange={e=>setBgValue(e.target.value)}/>
             <label className="scdb-label">Accent Color</label>
             <input type="color" className="scdb-input" style={{height: '45px', padding: '2px'}} value={accent} onChange={e=>setAccent(e.target.value)}/>
@@ -170,7 +163,7 @@ export default function SoftcardDashboard() {
         )}
         
         <button className="scdb-save-btn" onClick={saveChanges}>
-          {saving ? "Syncing..." : "Publish Changes"}
+          {saving ? "Publishing..." : "Save Changes"}
         </button>
       </div>
 
@@ -190,14 +183,9 @@ export default function SoftcardDashboard() {
             </div>
           )}
 
-          {/* New Social Preview Elements */}
-          <div style={{marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '15px'}}>
-            {discord && <span style={{fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '5px'}}>@ {discord}</span>}
-          </div>
-
-          {spotify && (
-            <div style={{marginTop: '20px', borderRadius: '12px', overflow: 'hidden'}}>
-               <iframe src={spotify.replace("spotify.com/", "spotify.com/embed/")} width="100%" height="80" frameBorder="0" allow="encrypted-media"></iframe>
+          {discord && (
+            <div style={{marginTop: '15px', fontSize: '12px', opacity: 0.7}}>
+              Discord: {discord}
             </div>
           )}
         </div>
