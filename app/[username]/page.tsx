@@ -46,7 +46,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
   if (!profile) return null
 
-  const socials = profile.links?.filter((l: any) => !l.title || l.title === "New Link") || []
+  const socials = profile.links?.filter((l: any) => !l.url.includes('title') && (!l.title || l.title === "New Link")) || []
   const buttons = profile.links?.filter((l: any) => l.title && l.title !== "New Link") || []
 
   return (
@@ -69,13 +69,14 @@ export default function PublicProfile({ params }: { params: { username: string }
         
         .profile-card {
           position: relative; z-index: 5; text-align: center;
-          /* Respect the Glass Toggle from Dashboard */
-          background: ${profile.show_glass_card ? 'rgba(0, 0, 0, 0.4)' : 'transparent'};
-          backdrop-filter: ${profile.show_glass_card ? 'blur(12px)' : 'none'};
-          border: ${profile.show_glass_card ? '1px solid rgba(255,255,255,0.1)' : 'none'};
+          /* Respect the Glass Toggle */
+          ${profile.show_glass_card ? `
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+          ` : 'background: transparent; border: none;'}
           padding: 35px; border-radius: 20px;
           width: 90%; max-width: 400px;
-          transition: all 0.3s ease;
         }
 
         .pfp {
@@ -83,23 +84,16 @@ export default function PublicProfile({ params }: { params: { username: string }
           margin-bottom: 15px; box-shadow: 0 0 30px ${profile.accent_color}88;
         }
 
-        .name-container { 
-          position: relative; 
-          display: inline-block; 
-          margin-bottom: 15px; 
+        /* FIXED USERNAME POSITIONING */
+        .name-wrapper {
+          display: flex;
+          align-items: baseline;
+          justify-content: center;
+          gap: 10px;
+          margin-bottom: 10px;
         }
-        .display-name { font-size: 26px; font-weight: 700; line-height: 1; }
-        
-        /* Adjusted Username Position */
-        .username { 
-          font-size: 12px; 
-          opacity: 0.5; 
-          position: absolute; 
-          left: -45px; /* Pulls it over to the side like your reference */
-          top: 50%;
-          transform: translateY(-50%);
-          white-space: nowrap;
-        }
+        .display-name { font-size: 26px; font-weight: 700; }
+        .username-label { font-size: 14px; opacity: 0.5; font-weight: 400; }
 
         .bio { font-size: 14px; opacity: 0.8; margin-bottom: 20px; }
 
@@ -114,17 +108,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         .social-icon { 
           width: 26px; height: 26px; 
           filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6)); 
-          transition: transform 0.2s;
         }
-        .social-icon:hover { transform: scale(1.1); }
-
-        .btn-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        .link-btn {
-          padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1); color: white; text-decoration: none;
-          transition: background 0.2s;
-        }
-        .link-btn:hover { background: rgba(255,255,255,0.1); }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
@@ -140,14 +124,14 @@ export default function PublicProfile({ params }: { params: { username: string }
       <div className="profile-card">
         <img src={profile.avatar_url} className="pfp" />
         
-        <div className="name-container">
-          <div className="username">@{profile.username}</div>
-          <div className="display-name">{profile.display_name}</div>
+        <div className="name-wrapper">
+          <span className="username-label">@{profile.username}</span>
+          <span className="display-name">{profile.display_name}</span>
         </div>
 
         <div className="badge-row">
           {profile.badges?.user && <div className="badge">User</div>}
-          {profile.badges?.dev && <div className="badge" style={{borderColor: profile.accent_color, color: profile.accent_color}}>Dev</div>}
+          {profile.badges?.dev && <div className="badge" style={{ borderColor: profile.accent_color, color: profile.accent_color }}>Dev</div>}
         </div>
 
         <div className="bio">{profile.bio}</div>
@@ -156,14 +140,6 @@ export default function PublicProfile({ params }: { params: { username: string }
           {socials.map((l: any) => (
             <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank">
               <img src={getIcon(l.url)} className="social-icon" />
-            </a>
-          ))}
-        </div>
-
-        <div className="btn-list">
-          {buttons.map((l: any) => (
-            <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} className="link-btn" target="_blank">
-              {l.title}
             </a>
           ))}
         </div>
