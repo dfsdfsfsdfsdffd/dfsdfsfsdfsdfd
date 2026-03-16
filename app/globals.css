@@ -3,30 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --blue-glow: rgba(37, 99, 235, 0.4);
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 5, 3, 6;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  background: #000;
-  overflow-x: hidden;
+  background: rgb(var(--background-start-rgb));
+  color: rgb(var(--foreground-rgb));
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Animated Mesh Background */
-.mesh-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 80% 20%, var(--blue-glow) 0%, transparent 40%),
-    radial-gradient(circle at 20% 80%, rgba(14, 165, 233, 0.2) 0%, transparent 40%);
-  filter: blur(100px);
-  z-index: -1;
-}
-
-.btn-glow {
-  @apply shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] transition-all;
+/* Optional: Add a smooth scroll if you add more content later */
+html {
+  scroll-behavior: smooth;
 }
