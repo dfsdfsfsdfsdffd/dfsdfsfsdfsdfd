@@ -29,7 +29,6 @@ function getIcon(url: string) {
   if (lowerUrl.includes("github")) return iconMap.github
   if (lowerUrl.includes("threads")) return iconMap.threads
   if (lowerUrl.includes("linkedin")) return iconMap.linkedin
-  // Fallback to a clean World icon for random sites
   return "https://cdn.simpleicons.org/pwa/ffffff"
 }
 
@@ -47,6 +46,7 @@ export default function SoftcardDashboard() {
 
   const [avatar, setAvatar] = useState("https://i.imgur.com/1X6g1YH.jpeg")
   const [name, setName] = useState("akuryō")
+  const [username, setUsername] = useState("") // Added Username State
   const [bio, setBio] = useState("")
   const [links, setLinks] = useState<any[]>([])
   const [badges, setBadges] = useState<any>({ user: true, dev: false })
@@ -59,7 +59,7 @@ export default function SoftcardDashboard() {
   const [bgVideo, setBgVideo] = useState("")
   const [bgImage, setBgImage] = useState("")
   const [bgAudio, setBgAudio] = useState("")
-  const [showGlass, setShowGlass] = useState(true) // New Toggle State
+  const [showGlass, setShowGlass] = useState(true)
 
   useEffect(() => {
     async function loadData() {
@@ -76,6 +76,7 @@ export default function SoftcardDashboard() {
       if (profile) {
         setAvatar(profile.avatar_url || avatar)
         setName(profile.display_name || name)
+        setUsername(profile.username || "") // Load Username
         setBio(profile.bio || "")
         setLinks(profile.links || [])
         setAccent(profile.accent_color || "#3b82f6")
@@ -148,6 +149,16 @@ export default function SoftcardDashboard() {
         .scdb-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
         .scdb-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
 
+        /* Username Positioning Fix */
+        .name-container { 
+          display: flex; 
+          align-items: baseline; 
+          justify-content: center; 
+          gap: 10px; 
+          margin-bottom: 5px;
+        }
+        .scdb-username { font-size: 14px; opacity: 0.5; font-weight: 400; }
+
         /* Clean Flush Badges */
         .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
         .badge { 
@@ -156,15 +167,14 @@ export default function SoftcardDashboard() {
           background: rgba(255, 255, 255, 0.06); 
           backdrop-filter: blur(4px);
           font-size: 11px; 
-          font-weight: 500;
+          font-weight: 800;
           color: rgba(255, 255, 255, 0.85); 
           border: 1px solid rgba(255, 255, 255, 0.1); 
           letter-spacing: 0.5px;
           text-transform: uppercase;
         }
-        .badge.dev { border-color: rgba(255, 255, 255, 0.2); }
 
-        /* Preview Glass Card */
+        /* Preview Glass Card Restored */
         .scdb-profile-card {
           ${showGlass ? `
             background: rgba(0, 0, 0, 0.3);
@@ -173,7 +183,7 @@ export default function SoftcardDashboard() {
             padding: 40px 30px;
             border-radius: 24px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-          ` : ''}
+          ` : 'background: transparent; border: none; padding: 40px 30px;'}
           width: 100%;
           max-width: 420px;
           text-align: center;
@@ -254,12 +264,17 @@ export default function SoftcardDashboard() {
         
         <div className="scdb-profile-card">
           <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
-          <div className="scdb-name">{name}</div>
+          
+          <div className="name-container">
+            <div className="scdb-username">@{username}</div>
+            <div className="scdb-name">{name}</div>
+          </div>
+
           <div className="scdb-bio">{bio}</div>
           
           <div className="scdb-badges">
             {badges.user && <div className="badge">User</div>}
-            {badges.dev && <div className="badge dev" style={{ boxShadow: `0 0 10px ${accent}44` }}>Dev</div>}
+            {badges.dev && <div className="badge dev" style={{ borderColor: accent, color: accent }}>Dev</div>}
           </div>
 
           <div className="scdb-links-row">
