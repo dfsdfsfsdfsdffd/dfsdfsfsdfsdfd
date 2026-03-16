@@ -1,38 +1,29 @@
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 
-export default async function PublicProfile({ params }: { params: { username: string } }) {
-  // 1. Fetch data from Supabase
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('username', params.username.toLowerCase())
-    .single()
+export const dynamic = 'force-dynamic';
 
-  // 2. If the user doesn't exist, show 404
+export default async function PublicProfile({ params }: { params: { username: string } }) {
+  const { data: profile } = await supabase.from('profiles').select('*').eq('username', params.username.toLowerCase()).single()
   if (!profile) return notFound()
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center pt-20 px-6">
-      <div className="w-20 h-20 bg-zinc-800 rounded-full mb-4 flex items-center justify-center text-2xl font-bold">
+    <div className="min-h-screen flex flex-col items-center pt-24 px-6 text-center" style={{ backgroundColor: profile.theme_color }}>
+      <div className="w-24 h-24 rounded-[36px] bg-white/10 border border-white/20 backdrop-blur-md mb-6 flex items-center justify-center text-4xl font-black italic shadow-2xl">
         {profile.username[0].toUpperCase()}
       </div>
-      
-      <h1 className="text-xl font-bold">@{profile.username}</h1>
-      <p className="text-zinc-400 mt-2">{profile.bio}</p>
+      <h1 className="text-4xl font-black italic tracking-tighter text-white">@{profile.username}</h1>
+      <p className="text-white/60 mt-4 max-w-xs font-medium">{profile.bio}</p>
 
-      <div className="w-full max-w-md mt-10 space-y-4">
-        {profile.links?.map((link: any, i: number) => (
-          <a 
-            key={i}
-            href={link.url.startsWith('http') ? link.url : `https://${link.url}`}
-            target="_blank"
-            className="block w-full p-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-center hover:bg-zinc-800 transition"
-          >
-            {link.label}
+      <div className="w-full max-w-[400px] mt-12 space-y-4">
+        {profile.links?.map((l: any, i: number) => (
+          <a key={i} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank"
+             className="block w-full p-5 bg-white/5 border border-white/10 rounded-[28px] font-bold text-white backdrop-blur-xl hover:bg-white hover:text-black transition-all duration-500 hover:scale-[1.05] shadow-2xl">
+            {l.label}
           </a>
         ))}
       </div>
+      <p className="mt-auto pb-10 text-white/20 text-[10px] font-black tracking-[0.5em] uppercase italic">softcard.cc</p>
     </div>
   )
 }
