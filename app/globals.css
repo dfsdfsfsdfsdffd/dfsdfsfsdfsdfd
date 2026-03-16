@@ -3,23 +3,29 @@
 @tailwind utilities;
 
 :root {
-  --bg: #050505;
+  --bg: #000000;
+  --accent: #ffffff;
 }
 
 body {
-  background-color: var(--bg);
-  @apply text-white antialiased;
+  background: var(--bg);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* The Bubbly Input */
-.input-field {
+.bubbly-card {
+  @apply bg-zinc-900/40 border border-zinc-800/50 backdrop-blur-xl rounded-[32px] transition-all duration-300;
+}
+
+.input-bubbly {
   @apply w-full bg-zinc-900/50 border border-zinc-800/50 rounded-[22px] px-6 py-4 
-         outline-none transition-all duration-300 focus:border-zinc-500 
-         focus:bg-zinc-900 placeholder:text-zinc-700 text-sm;
+         outline-none transition-all duration-500 focus:border-white focus:bg-zinc-900 
+         placeholder:text-zinc-700 text-sm font-medium;
 }
 
-/* The Bubbly Button */
-.btn-main {
-  @apply w-full rounded-[22px] font-black px-8 py-4 transition-all duration-300 
-         active:scale-95 flex items-center justify-center gap-2 shadow-lg;
+.btn-bubbly {
+  @apply rounded-[22px] font-black px-8 py-4 transition-all duration-300 
+         active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50;
 }
