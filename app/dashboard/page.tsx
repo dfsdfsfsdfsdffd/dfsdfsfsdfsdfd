@@ -321,12 +321,11 @@ export default function SoftcardDashboard() {
         /* Username Positioning Fix */
         .name-container { 
           display: flex; 
-          align-items: baseline; 
+          align-items: center; 
           justify-content: center; 
           gap: 10px; 
           margin-bottom: 5px;
         }
-        .scdb-username { font-size: 14px; opacity: 0.5; font-weight: 400; }
 
         /* Clean Flush Badges */
         .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
@@ -442,8 +441,8 @@ export default function SoftcardDashboard() {
           <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
           
           <div className="name-container">
-            <div className="scdb-username">@{username}</div>
-            <div className="scdb-name" style={{ color: nameColor }}>{name}</div>
+            {/* REMOVED @USERNAME FROM HERE */}
+            <div className="scdb-name" style={{ color: nameColor, fontSize: '24px', fontWeight: '600' }}>{name}</div>
           </div>
 
           <div className="scdb-bio" style={{ color: bioColor }}>{bio}</div>
