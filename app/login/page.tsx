@@ -11,19 +11,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-black italic tracking-tighter text-white">SOFTCARD</h1>
-        </div>
-        <div className="bg-zinc-900/50 p-6 rounded-3xl border border-white/10">
-          <Auth
-            supabaseClient={supabase}
-            appearance={{ theme: ThemeSupa }}
-            theme="dark"
-            providers={[]}
-            redirectTo="https://softcard.cc/dashboard"
-          />
-        </div>
+      <div className="w-full max-w-sm bg-zinc-900 p-8 rounded-3xl border border-white/10">
+        <h1 className="text-2xl font-black italic text-white mb-6 text-center">SOFTCARD</h1>
+        <Auth
+          supabaseClient={supabase}
+          appearance={{ theme: ThemeSupa }}
+          theme="dark"
+          providers={[]}
+        />
       </div>
     </div>
   );
