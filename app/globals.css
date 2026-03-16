@@ -381,3 +381,164 @@ color:#ff6bbf;
 cursor:pointer;
 font-weight:500;
 }
+
+.dash{
+display:flex;
+height:100vh;
+background:#020617;
+color:white;
+}
+
+/* LEFT EDITOR */
+
+.editor{
+width:420px;
+background:#071122;
+padding:30px;
+border-right:1px solid rgba(255,255,255,0.05);
+overflow:auto;
+}
+
+.back{
+opacity:.6;
+margin-bottom:20px;
+}
+
+.tabs{
+display:flex;
+gap:10px;
+margin-bottom:25px;
+}
+
+.tabs button{
+flex:1;
+padding:12px;
+border-radius:10px;
+background:#0f1c33;
+border:none;
+color:white;
+cursor:pointer;
+}
+
+.tabs .active{
+background:#182d54;
+}
+
+.panel label{
+display:block;
+margin-top:18px;
+margin-bottom:6px;
+font-size:13px;
+opacity:.7;
+}
+
+.panel input,
+.panel textarea{
+width:100%;
+background:#020617;
+border:1px solid rgba(255,255,255,0.05);
+border-radius:8px;
+padding:10px;
+color:white;
+}
+
+.username{
+display:flex;
+}
+
+.username span{
+padding:10px;
+background:#020617;
+border:1px solid rgba(255,255,255,0.05);
+border-right:none;
+border-radius:8px 0 0 8px;
+}
+
+.username input{
+border-radius:0 8px 8px 0;
+}
+
+.avatarUpload{
+text-align:center;
+margin-bottom:20px;
+}
+
+.avatarUpload img{
+width:80px;
+height:80px;
+border-radius:50%;
+margin-bottom:8px;
+}
+
+/* COLORS */
+
+.colors{
+display:flex;
+gap:10px;
+margin-top:10px;
+}
+
+.colors button{
+width:32px;
+height:32px;
+border-radius:50%;
+border:none;
+cursor:pointer;
+}
+
+.selected{
+outline:2px solid white;
+}
+
+/* BUTTON STYLES */
+
+.buttonStyles{
+display:flex;
+gap:12px;
+margin-top:10px;
+}
+
+.style{
+padding:10px 16px;
+border-radius:8px;
+font-size:13px;
+}
+
+.filled{
+background:#4f8cff;
+}
+
+.outline{
+border:1px solid #4f8cff;
+}
+
+.glass{
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(8px);
+}
+
+
+/* PREVIEW SIDE */
+
+.preview{
+flex:1;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.profilePreview{
+text-align:center;
+}
+
+.profilePreview img{
+width:90px;
+height:90px;
+border-radius:50%;
+margin-bottom:10px;
+}
+
+.profilePreview h2{
+font-size:28px;
+margin-bottom:6px;
+}
