@@ -59,6 +59,7 @@ export default function SoftcardDashboard() {
   const [bgVideo, setBgVideo] = useState("")
   const [bgImage, setBgImage] = useState("")
   const [bgAudio, setBgAudio] = useState("")
+  const [showGlass, setShowGlass] = useState(true) // New Toggle State
 
   useEffect(() => {
     async function loadData() {
@@ -82,6 +83,7 @@ export default function SoftcardDashboard() {
         setBgType(profile.background_type || "gradient")
         setBadges(profile.badges || { user: true })
         setBgAudio(profile.audio_url || "")
+        setShowGlass(profile.show_glass_card ?? true)
 
         const bgVal = profile.background_value || "";
         if (profile.background_type === "gradient") setGradient(bgVal || gradient);
@@ -110,6 +112,7 @@ export default function SoftcardDashboard() {
       background_value: bgType === "gradient" ? gradient : (bgType === "video" ? bgVideo : bgImage),
       audio_url: bgAudio,
       badges: badges,
+      show_glass_card: showGlass,
       setup_completed: true
     }).eq('id', user.id)
 
@@ -160,6 +163,24 @@ export default function SoftcardDashboard() {
           text-transform: uppercase;
         }
         .badge.dev { border-color: rgba(255, 255, 255, 0.2); }
+
+        /* Preview Glass Card */
+        .scdb-profile-card {
+          ${showGlass ? `
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 40px 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          ` : ''}
+          width: 100%;
+          max-width: 420px;
+          text-align: center;
+          position: relative;
+          z-index: 5;
+          transition: all 0.3s ease;
+        }
       `}</style>
 
       <div className="scdb-sidebar">
@@ -192,6 +213,10 @@ export default function SoftcardDashboard() {
 
         {tab === "appearance" && (
           <div className="scdb-card">
+            <label className="scdb-label" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '15px' }}>
+               <input type="checkbox" checked={showGlass} onChange={e => setShowGlass(e.target.checked)} />
+               Show Transparent Card
+            </label>
             <label className="scdb-label">Background Type</label>
             <select className="scdb-input" value={bgType} onChange={e => setBgType(e.target.value)}>
               <option value="gradient">Gradient</option>
@@ -227,7 +252,7 @@ export default function SoftcardDashboard() {
         {bgType === "image" && bgImage && <img className="scdb-image" src={bgImage} />}
         {bgAudio && <audio src={bgAudio} autoPlay loop />}
         
-        <div className="scdb-profile">
+        <div className="scdb-profile-card">
           <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
           <div className="scdb-name">{name}</div>
           <div className="scdb-bio">{bio}</div>
