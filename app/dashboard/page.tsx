@@ -3,10 +3,13 @@ import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from '@supabase/ssr'
 
 export default function SoftcardDashboard() {
-  const supabase = useMemo(() => createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  ), [])
+  // 1. Initialize client with a safety check for env vars
+  const supabase = useMemo(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    return createBrowserClient(url, key);
+  }, []);
 
   const [tab, setTab] = useState("profile")
   const [loading, setLoading] = useState(true)
@@ -23,7 +26,6 @@ export default function SoftcardDashboard() {
   const [accent, setAccent] = useState("#3b82f6")
   const [nameColor, setNameColor] = useState("#ffffff")
   const [bioColor, setBioColor] = useState("#9ca3af")
-  const [buttonStyle, setButtonStyle] = useState("filled")
   const [font, setFont] = useState("Inter")
   const [bgType, setBgType] = useState("gradient")
   const [gradient, setGradient] = useState("linear-gradient(135deg,#020617,#1e3a8a)")
@@ -33,10 +35,20 @@ export default function SoftcardDashboard() {
 
   useEffect(() => {
     async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      // 2. CRITICAL: Stop if client isn't ready
+      if (!supabase) return;
 
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
       
       if (profile) {
         setAvatar(profile.avatar_url || "https://i.imgur.com/1X6g1YH.jpeg")
@@ -47,7 +59,13 @@ export default function SoftcardDashboard() {
         setAccent(profile.accent_color || "#3b82f6")
         setFont(profile.font_family || "Inter")
         setBgType(profile.background_type || "gradient")
-        setGradient(profile.background_value || "linear-gradient(135deg,#020617,#1e3a8a)")
+        
+        // Handle background value persistence
+        const bgVal = profile.background_value || "";
+        if (profile.background_type === "gradient") setGradient(bgVal || "linear-gradient(135deg,#020617,#1e3a8a)");
+        else if (profile.background_type === "video") setBgVideo(bgVal);
+        else if (profile.background_type === "image") setBgImage(bgVal);
+        
         setBgAudio(profile.audio_url || "")
       }
       setLoading(false)
@@ -56,8 +74,16 @@ export default function SoftcardDashboard() {
   }, [supabase])
 
   async function saveChanges() {
+    if (!supabase) return;
     setSaving(true)
+
     const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      alert("Session expired. Please log in again.");
+      setSaving(false);
+      return;
+    }
+
     const { error } = await supabase.from('profiles').update({
       display_name: name,
       avatar_url: avatar,
@@ -68,7 +94,7 @@ export default function SoftcardDashboard() {
       background_type: bgType,
       background_value: bgType === "gradient" ? gradient : (bgType === "video" ? bgVideo : bgImage),
       audio_url: bgAudio
-    }).eq('id', user?.id)
+    }).eq('id', user.id)
 
     if (error) alert("Error saving: " + error.message)
     else alert("Published! ♡")
@@ -142,7 +168,7 @@ export default function SoftcardDashboard() {
 
             <div className="scdb-card">
               <div>Colors & Font</div>
-              <label className="scdb-label">Accent</label>
+              <label className="scdb-label">Accent Color</label>
               <input type="color" className="scdb-input" style={{ height: '40px' }} value={accent} onChange={e => setAccent(e.target.value)} />
               <label className="scdb-label">Font Family</label>
               <select className="scdb-input" value={font} onChange={e => setFont(e.target.value)}>
@@ -162,7 +188,7 @@ export default function SoftcardDashboard() {
 
       <div className="scdb-preview">
         {bgType === "gradient" && <div className="scdb-bg" style={{ background: gradient }} />}
-        {bgType === "video" && bgVideo && <video className="scdb-video" src={bgVideo} autoPlay loop muted />}
+        {bgType === "video" && bgVideo && <video className="scdb-video" src={bgVideo} autoPlay loop muted playsInline /> }
         {bgType === "image" && bgImage && <img className="scdb-image" src={bgImage} />}
         {bgAudio && <audio src={bgAudio} autoPlay loop />}
 
