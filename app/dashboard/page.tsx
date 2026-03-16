@@ -231,12 +231,30 @@ export default function SoftcardDashboard() {
             {badges.dev && <div className="badge dev" style={{ border: `1px solid ${accent}` }}>Dev</div>}
           </div>
 
-          <div className="scdb-links">
-            {links.map(l => (
-              <div key={l.id} className="scdb-link" style={{ background: accent }}>
-                <img src={getIcon(l.url)} style={{ width: 16, height: 16 }} alt="" />
-                <span>{l.title}</span>
-              </div>
+<div className="scdb-links">
+
+{links.map(l => {
+
+const icon = getIcon(l.url)
+
+return(
+
+<a
+key={l.id}
+href={l.url || "#"}
+target="_blank"
+className="scdb-iconButton"
+>
+
+<img src={icon} />
+
+</a>
+
+)
+
+})}
+
+</div>
             ))}
           </div>
         </div>
