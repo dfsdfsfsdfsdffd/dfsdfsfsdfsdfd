@@ -53,7 +53,8 @@ export default function SoftcardDashboard() {
   const [username, setUsername] = useState("") 
   const [bio, setBio] = useState("")
   
-  // NEW TAG STATES
+  // PRESET & TAG STATES
+  const [preset, setPreset] = useState<"default" | "blossom">("default")
   const [age, setAge] = useState("")
   const [gender, setGender] = useState("")
   const [sexuality, setSexuality] = useState("")
@@ -69,11 +70,27 @@ export default function SoftcardDashboard() {
   const [bioColor, setBioColor] = useState("rgba(255,255,255,0.7)")
   const [font, setFont] = useState("Inter")
   const [bgType, setBgType] = useState("gradient")
-  const [gradient, setGradient] = useState("linear-gradient(135deg,#020617,#1e3a8a)")
+  
+  // GRADIENT SPLIT STATES
+  const [gradientStart, setGradientStart] = useState("#020617")
+  const [gradientEnd, setGradientEnd] = useState("#1e3a8a")
+
   const [bgVideo, setBgVideo] = useState("")
   const [bgImage, setBgImage] = useState("")
   const [bgAudio, setBgAudio] = useState("")
   const [showGlass, setShowGlass] = useState(true)
+
+  // BLOSSOM PRESET LOGIC
+  function applyBlossomPreset() {
+    setAccent("#ff6bbf")
+    setNameColor("#ffd6f0")
+    setBioColor("rgba(255,255,255,0.85)")
+    setFont("Inter")
+    setBgType("gradient")
+    setGradientStart("#1a0025")
+    setGradientEnd("#ff4fa0")
+    setShowGlass(true)
+  }
 
   useEffect(() => {
     async function loadData() {
@@ -92,14 +109,11 @@ export default function SoftcardDashboard() {
         setName(profile.display_name || name)
         setUsername(profile.username || "") 
         setBio(profile.bio || "")
-        
-        // Load Tags
         setAge(profile.age || "")
         setGender(profile.gender || "")
         setSexuality(profile.sexuality || "")
         setBirthday(profile.birthday || "")
         setTimezone(profile.timezone || "")
-
         setLinks(profile.links || [])
         setAccent(profile.accent_color || "#3b82f6")
         setNameColor(profile.name_color || "#ffffff")
@@ -110,10 +124,16 @@ export default function SoftcardDashboard() {
         setBgAudio(profile.audio_url || "")
         setShowGlass(profile.show_glass_card ?? true)
 
-        const bgVal = profile.background_value || "";
-        if (profile.background_type === "gradient") setGradient(bgVal || gradient);
-        else if (profile.background_type === "video") setBgVideo(bgVal);
-        else if (profile.background_type === "image") setBgImage(bgVal);
+        // LOAD SPLIT GRADIENT
+        if (profile.background_type === "gradient" && profile.background_value) {
+            const parts = profile.background_value.split("|")
+            setGradientStart(parts[0] || "#020617")
+            setGradientEnd(parts[1] || "#1e3a8a")
+        } else {
+            const bgVal = profile.background_value || "";
+            if (profile.background_type === "video") setBgVideo(bgVal);
+            else if (profile.background_type === "image") setBgImage(bgVal);
+        }
       }
       setLoading(false)
     }
@@ -141,7 +161,10 @@ export default function SoftcardDashboard() {
       bio_color: bioColor,
       font_family: font,
       background_type: bgType,
-      background_value: bgType === "gradient" ? gradient : (bgType === "video" ? bgVideo : bgImage),
+      // SAVE SPLIT GRADIENT
+      background_value: bgType === "gradient" 
+        ? `${gradientStart}|${gradientEnd}` 
+        : (bgType === "video" ? bgVideo : bgImage),
       audio_url: bgAudio,
       badges: badges,
       show_glass_card: showGlass,
@@ -178,7 +201,6 @@ export default function SoftcardDashboard() {
 
   if (loading) return <div style={{ height: '100vh', background: '#020617' }} />
 
-  // --- HUB VIEW RENDER ---
   if (view === "hub") {
     return (
       <div className="hub-view-root">
@@ -335,46 +357,8 @@ export default function SoftcardDashboard() {
         .scdb-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
         .scdb-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
 
-        .name-container { 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          gap: 10px; 
-          margin-bottom: 5px;
-        }
-
-        .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
-        .badge { 
-          padding: 3px 10px; 
-          border-radius: 6px; 
-          background: rgba(255, 255, 255, 0.06); 
-          backdrop-filter: blur(4px);
-          font-size: 11px; 
-          font-weight: 800;
-          color: rgba(255, 255, 255, 0.85); 
-          border: 1px solid rgba(255, 255, 255, 0.1); 
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-        }
-
-        /* Tags Styling */
-        .scdb-tags {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 8px;
-          margin-top: 15px;
-        }
-        .tag {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          background: rgba(255, 255, 255, 0.05);
-          padding: 4px 10px;
-          border-radius: 8px;
-          font-size: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-        }
+        .scdb-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 15px; }
+        .tag { display: flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 8px; font-size: 12px; border: 1px solid rgba(255, 255, 255, 0.08); }
 
         .scdb-profile-card {
           ${showGlass ? `
@@ -392,8 +376,6 @@ export default function SoftcardDashboard() {
           z-index: 5;
           transition: all 0.3s ease;
         }
-        .editor-back-link { cursor: pointer; margin-bottom: 20px; display: inline-block; opacity: 0.5; font-size: 13px; }
-        .editor-back-link:hover { opacity: 1; color: #ec4899; }
       `}</style>
 
       <div className="scdb-sidebar">
@@ -410,6 +392,28 @@ export default function SoftcardDashboard() {
 
         {tab === "profile" && (
           <div className="scdb-card">
+            {/* PRESET SELECTOR */}
+            <label className="scdb-label">Profile Preset</label>
+            <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+              <button
+                className="scdb-btn"
+                style={{ background: preset === "default" ? accent : "#111827" }}
+                onClick={() => setPreset("default")}
+              >
+                Default
+              </button>
+              <button
+                className="scdb-btn"
+                style={{ background: preset === "blossom" ? "#ff6bbf" : "#111827" }}
+                onClick={() => {
+                  setPreset("blossom")
+                  applyBlossomPreset()
+                }}
+              >
+                Blossom
+              </button>
+            </div>
+
             <label className="scdb-label">Avatar URL</label>
             <input className="scdb-input" value={avatar} onChange={e => setAvatar(e.target.value)} />
             <label className="scdb-label">Display Name</label>
@@ -419,16 +423,12 @@ export default function SoftcardDashboard() {
             
             <label className="scdb-label">Age</label>
             <input className="scdb-input" value={age} onChange={e => setAge(e.target.value)} />
-
             <label className="scdb-label">Gender</label>
             <input className="scdb-input" value={gender} onChange={e => setGender(e.target.value)} />
-
             <label className="scdb-label">Sexuality</label>
             <input className="scdb-input" value={sexuality} onChange={e => setSexuality(e.target.value)} />
-
             <label className="scdb-label">Birthday</label>
             <input className="scdb-input" value={birthday} onChange={e => setBirthday(e.target.value)} />
-
             <label className="scdb-label">Timezone</label>
             <input className="scdb-input" value={timezone} onChange={e => setTimezone(e.target.value)} />
 
@@ -453,9 +453,20 @@ export default function SoftcardDashboard() {
               <option value="video">Video</option>
               <option value="image">Image</option>
             </select>
-            {bgType === "gradient" && <input className="scdb-input" value={gradient} onChange={e => setGradient(e.target.value)} />}
+            
+            {/* GRADIENT COLOR PICKERS */}
+            {bgType === "gradient" && (
+              <>
+                <label className="scdb-label">Gradient Start</label>
+                <input type="color" className="scdb-input" value={gradientStart} onChange={(e) => setGradientStart(e.target.value)} />
+                <label className="scdb-label">Gradient End</label>
+                <input type="color" className="scdb-input" value={gradientEnd} onChange={(e) => setGradientEnd(e.target.value)} />
+              </>
+            )}
+
             {bgType === "video" && <input className="scdb-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" />}
             {bgType === "image" && <input className="scdb-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" />}
+            
             <label className="scdb-label" style={{ marginTop: '20px' }}>Audio URL (.mp3)</label>
             <input className="scdb-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} />
             <label className="scdb-label" style={{ marginTop: '20px' }}>Name Color</label>
@@ -481,13 +492,30 @@ export default function SoftcardDashboard() {
       </div>
 
       <div className="scdb-preview">
-        {bgType === "gradient" && <div className="scdb-bg" style={{ background: gradient }} />}
+        {/* UPDATED GRADIENT PREVIEW */}
+        {bgType === "gradient" && (
+            <div
+                className="scdb-bg"
+                style={{
+                background: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})`
+                }}
+            />
+        )}
         {bgType === "video" && bgVideo && <video className="scdb-video" src={bgVideo} autoPlay loop muted playsInline />}
         {bgType === "image" && bgImage && <img className="scdb-image" src={bgImage} />}
         {bgAudio && <audio src={bgAudio} autoPlay loop />}
         
         <div className="scdb-profile-card">
-          <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
+          {/* UPDATED BLOSSOM GLOW */}
+          <img 
+            src={avatar} 
+            className="scdb-pfp" 
+            style={{ 
+                boxShadow: preset === "blossom" 
+                    ? "0 0 60px rgba(255,100,200,0.7)" 
+                    : `0 0 40px ${accent}` 
+            }} 
+          />
           
           <div className="name-container">
             <div className="scdb-name" style={{ color: nameColor, fontSize: '24px', fontWeight: '600' }}>{name}</div>
@@ -496,40 +524,11 @@ export default function SoftcardDashboard() {
           <div className="scdb-bio" style={{ color: bioColor }}>{bio}</div>
 
           <div className="scdb-tags">
-            {age && (
-              <div className="tag">
-                <span>🎂</span>
-                {age}
-              </div>
-            )}
-
-            {gender && (
-              <div className="tag">
-                <span>⚥</span>
-                {gender}
-              </div>
-            )}
-
-            {sexuality && (
-              <div className="tag">
-                <span>❤</span>
-                {sexuality}
-              </div>
-            )}
-
-            {birthday && (
-              <div className="tag">
-                <span>🎉</span>
-                {birthday}
-              </div>
-            )}
-
-            {timezone && (
-              <div className="tag">
-                <span>🌍</span>
-                {timezone}
-              </div>
-            )}
+            {age && <div className="tag"><span>🎂</span>{age}</div>}
+            {gender && <div className="tag"><span>⚥</span>{gender}</div>}
+            {sexuality && <div className="tag"><span>❤</span>{sexuality}</div>}
+            {birthday && <div className="tag"><span>🎉</span>{birthday}</div>}
+            {timezone && <div className="tag"><span>🌍</span>{timezone}</div>}
           </div>
           
           <div className="scdb-badges">
