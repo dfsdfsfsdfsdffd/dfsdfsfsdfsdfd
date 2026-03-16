@@ -81,25 +81,17 @@ export default function PublicProfile({ params }: { params: { username: string }
           width: 110px; height: 110px; 
           object-fit: cover;
           margin-bottom: 10px;
-          /* Handle Dynamic Shape */
           border-radius: ${profile.avatar_shape === 'circle' ? '50%' : profile.avatar_shape === 'squircle' ? '25%' : '12px'};
-          /* Handle Dynamic Glow */
           box-shadow: ${profile.accent_glow ? `0 0 40px ${profile.accent_color}` : 'none'};
         }
 
-        /* FIXED SIDE-BY-SIDE NAME LAYOUT */
         .name-row {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           justify-content: center;
-          gap: 8px;
           margin-top: 10px;
         }
-        .username-text { 
-          font-size: 15px; 
-          opacity: 0.4; 
-          font-weight: 400; 
-        }
+        
         .display-name { 
           font-size: 32px; 
           font-weight: 600; 
@@ -156,7 +148,6 @@ export default function PublicProfile({ params }: { params: { username: string }
         <img src={profile.avatar_url} className="pfp" alt="profile" />
         
         <div className="name-row">
-          <span className="username-text">@{profile.username}</span>
           <span className="display-name">{profile.display_name}</span>
         </div>
 
