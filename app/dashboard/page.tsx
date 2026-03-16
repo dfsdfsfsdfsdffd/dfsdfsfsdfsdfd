@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation" // Added for redirection
 
 // Social Icon Mapping
 const iconMap: any = {
@@ -20,32 +20,41 @@ const iconMap: any = {
 
 function getIcon(url: string) {
   const lowerUrl = url.toLowerCase();
-  const found = Object.keys(iconMap).find(key => lowerUrl.includes(key));
-  return found ? iconMap[found] : "https://cdn.simpleicons.org/pwa/ffffff";
+  if (lowerUrl.includes("tiktok")) return iconMap.tiktok
+  if (lowerUrl.includes("instagram")) return iconMap.instagram
+  if (lowerUrl.includes("twitter") || lowerUrl.includes("x.com")) return iconMap.x
+  if (lowerUrl.includes("youtube")) return iconMap.youtube
+  if (lowerUrl.includes("twitch")) return iconMap.twitch
+  if (lowerUrl.includes("spotify")) return iconMap.spotify
+  if (lowerUrl.includes("discord")) return iconMap.discord
+  if (lowerUrl.includes("github")) return iconMap.github
+  if (lowerUrl.includes("threads")) return iconMap.threads
+  if (lowerUrl.includes("linkedin")) return iconMap.linkedin
+  return "https://cdn.simpleicons.org/pwa/ffffff"
 }
 
 export default function SoftcardDashboard() {
   const router = useRouter();
   
-  const supabase = useMemo(() => createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  ), []);
+  const supabase = useMemo(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    return createBrowserClient(url, key);
+  }, []);
 
   const [tab, setTab] = useState("profile")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // Profile State
   const [avatar, setAvatar] = useState("https://i.imgur.com/1X6g1YH.jpeg")
-  const [name, setName] = useState("")
+  const [name, setName] = useState("akuryō")
   const [username, setUsername] = useState("") 
   const [bio, setBio] = useState("")
   const [links, setLinks] = useState<any[]>([])
   const [badges, setBadges] = useState<any>({ user: true, dev: false })
   const [devPassword, setDevPassword] = useState("")
 
-  // Appearance State
   const [accent, setAccent] = useState("#3b82f6")
   const [font, setFont] = useState("Inter")
   const [bgType, setBgType] = useState("gradient")
@@ -57,21 +66,27 @@ export default function SoftcardDashboard() {
 
   useEffect(() => {
     async function loadData() {
+      if (!supabase) return;
+
+      // This checks if a session exists in cookies/localstorage automatically
       const { data: { session } } = await supabase.auth.getSession()
+      
       if (!session) {
-        router.push('/login');
+        router.push('/login'); // Not logged in? Boot them to login.
         return;
       }
+
+      const user = session.user;
 
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', session.user.id)
+        .eq('id', user.id)
         .single()
 
       if (profile) {
-        setAvatar(profile.avatar_url || "")
-        setName(profile.display_name || "")
+        setAvatar(profile.avatar_url || avatar)
+        setName(profile.display_name || name)
         setUsername(profile.username || "")
         setBio(profile.bio || "")
         setLinks(profile.links || [])
@@ -90,9 +105,10 @@ export default function SoftcardDashboard() {
       setLoading(false)
     }
     loadData()
-  }, [supabase, router]);
+  }, [supabase, router])
 
   async function saveChanges() {
+    if (!supabase) return;
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return;
@@ -117,20 +133,32 @@ export default function SoftcardDashboard() {
     setSaving(false)
   }
 
-  const handleSignOut = async () => {
+  // Added Sign Out Function
+  async function handleSignOut() {
+    if (!supabase) return;
     await supabase.auth.signOut();
     router.push('/login');
   }
 
-  const addLink = () => setLinks([...links, { id: Date.now(), title: "", url: "" }])
-  const removeLink = (id: number) => setLinks(links.filter(l => l.id !== id))
-  const updateLink = (i: number, val: string) => {
+  const addLink = () => setLinks([...links, { id: Date.now(), title: "New Link", url: "" }])
+  const removeLink = (id: number) => setLinks(links.filter(l => l.id !== id)) // Helpful addition
+
+  const updateLink = (i: number, key: string, val: string) => {
     const copy = [...links]
-    copy[i].url = val
+    copy[i][key] = val
     setLinks(copy)
   }
 
-  if (loading) return <div className="loading-screen" style={{ height: '100vh', background: '#020617' }} />
+  const unlockDev = () => {
+    if (devPassword === "12345") {
+      setBadges({ ...badges, dev: true })
+      alert("Dev badge unlocked")
+    } else {
+      alert("Wrong password")
+    }
+  }
+
+  if (loading) return <div style={{ height: '100vh', background: '#020617' }} />
 
   return (
     <div className="scdb-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
@@ -138,27 +166,48 @@ export default function SoftcardDashboard() {
         .scdb-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
         .scdb-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
         .scdb-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
+
         .name-container { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 5px; }
         .scdb-username { font-size: 14px; opacity: 0.5; font-weight: 400; }
+
         .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
-        .badge { padding: 3px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(4px); font-size: 11px; font-weight: 800; color: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); letter-spacing: 0.5px; text-transform: uppercase; }
-        .scdb-profile-card { ${showGlass ? 'background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1);' : 'background: transparent; border: none;'} padding: 40px 30px; border-radius: 24px; width: 100%; max-width: 420px; text-align: center; position: relative; z-index: 5; transition: all 0.3s ease; }
+        .badge { 
+          padding: 3px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); 
+          backdrop-filter: blur(4px); font-size: 11px; font-weight: 800;
+          color: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); 
+          letter-spacing: 0.5px; text-transform: uppercase;
+        }
+
+        .scdb-profile-card {
+          ${showGlass ? `
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 40px 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          ` : 'background: transparent; border: none; padding: 40px 30px;'}
+          width: 100%;
+          max-width: 420px;
+          text-align: center;
+          position: relative;
+          z-index: 5;
+          transition: all 0.3s ease;
+        }
       `}</style>
 
       <div className="scdb-sidebar">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <div className="scdb-back" onClick={saveChanges} style={{ cursor: 'pointer', fontWeight: 600 }}>
-                {saving ? "Saving..." : "← Save & Publish"}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="scdb-back" onClick={saveChanges} style={{ cursor: 'pointer' }}>
+            {saving ? "Saving..." : "← Save & Publish"}
             </div>
-            <button onClick={handleSignOut} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#aaa', padding: '5px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}>Sign Out</button>
+            <button onClick={handleSignOut} style={{ background: 'none', border: 'none', color: '#666', fontSize: '12px', cursor: 'pointer' }}>Sign Out</button>
         </div>
 
         <div className="scdb-tabs">
-          {["profile", "appearance", "badges"].map(t => (
-            <div key={t} className={`scdb-tab ${tab === t ? "scdb-tab-active" : ""}`} onClick={() => setTab(t)}>
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </div>
-          ))}
+          <div className={`scdb-tab ${tab === "profile" ? "scdb-tab-active" : ""}`} onClick={() => setTab("profile")}>Profile</div>
+          <div className={`scdb-tab ${tab === "appearance" ? "scdb-tab-active" : ""}`} onClick={() => setTab("appearance")}>Appearance</div>
+          <div className={`scdb-tab ${tab === "badges" ? "scdb-tab-active" : ""}`} onClick={() => setTab("badges")}>Badges</div>
         </div>
 
         {tab === "profile" && (
@@ -171,14 +220,14 @@ export default function SoftcardDashboard() {
             <input className="scdb-input" value={bio} onChange={e => setBio(e.target.value)} />
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
-                <label className="scdb-label">Social Links</label>
-                <button className="scdb-btn" onClick={addLink} style={{ margin: 0, padding: '4px 10px', fontSize: '11px' }}>+ Add</button>
+                <label className="scdb-label">Links</label>
+                <button className="scdb-btn" onClick={addLink} style={{ margin: 0, padding: '4px 10px', fontSize: '12px' }}>+ Add</button>
             </div>
             
             {links.map((l, i) => (
               <div key={l.id} style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
-                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, e.target.value)} placeholder="link (e.g. github.com/user)" />
-                <button onClick={() => removeLink(l.id)} style={{ background: 'rgba(255,0,0,0.15)', border: 'none', color: '#ff4f4f', borderRadius: '8px', padding: '0 12px', marginTop: '6px', cursor: 'pointer' }}>×</button>
+                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. instagram.com/user)" />
+                <button onClick={() => removeLink(l.id)} style={{ background: 'rgba(255,0,0,0.2)', border: 'none', color: 'white', borderRadius: '8px', padding: '0 10px', marginTop: '6px' }}>×</button>
               </div>
             ))}
           </div>
@@ -188,7 +237,7 @@ export default function SoftcardDashboard() {
           <div className="scdb-card">
             <label className="scdb-label" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '15px' }}>
                <input type="checkbox" checked={showGlass} onChange={e => setShowGlass(e.target.checked)} />
-               Enable Glassmorphism Card
+               Show Transparent Card
             </label>
             <label className="scdb-label">Background Type</label>
             <select className="scdb-input" value={bgType} onChange={e => setBgType(e.target.value)}>
@@ -197,27 +246,24 @@ export default function SoftcardDashboard() {
               <option value="image">Image</option>
             </select>
             {bgType === "gradient" && <input className="scdb-input" value={gradient} onChange={e => setGradient(e.target.value)} />}
-            {bgType === "video" && <input className="scdb-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Direct .mp4 link" />}
+            {bgType === "video" && <input className="scdb-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" />}
             {bgType === "image" && <input className="scdb-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" />}
             <label className="scdb-label" style={{ marginTop: '20px' }}>Audio URL (.mp3)</label>
             <input className="scdb-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} />
             <label className="scdb-label" style={{ marginTop: '20px' }}>Accent Color</label>
-            <input type="color" className="scdb-input" style={{ height: '40px', padding: '2px' }} value={accent} onChange={e => setAccent(e.target.value)} />
+            <input type="color" className="scdb-input" value={accent} onChange={e => setAccent(e.target.value)} />
           </div>
         )}
 
         {tab === "badges" && (
           <div className="scdb-card">
-            <label style={{ display: "flex", gap: 10, alignItems: 'center', cursor: 'pointer' }}>
+            <label style={{ display: "flex", gap: 10, alignItems: 'center' }}>
               <input type="checkbox" checked={badges.user} onChange={() => setBadges({ ...badges, user: !badges.user })} />
               User Badge
             </label>
-            <div style={{ marginTop: 25, fontSize: '13px', opacity: 0.8 }}>Unlock Developer Badge</div>
-            <input type="password" className="scdb-input" placeholder="Developer Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
-            <button className="scdb-btn" onClick={() => {
-              if (devPassword === "12345") { setBadges({ ...badges, dev: true }); alert("Dev badge unlocked! ♡"); }
-              else alert("Invalid password.");
-            }}>Unlock</button>
+            <div style={{ marginTop: 20 }}>Unlock Dev Badge</div>
+            <input className="scdb-input" placeholder="Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
+            <button className="scdb-btn" onClick={unlockDev}>Unlock</button>
           </div>
         )}
       </div>
@@ -225,27 +271,31 @@ export default function SoftcardDashboard() {
       <div className="scdb-preview">
         {bgType === "gradient" && <div className="scdb-bg" style={{ background: gradient }} />}
         {bgType === "video" && bgVideo && <video className="scdb-video" src={bgVideo} autoPlay loop muted playsInline />}
-        {bgType === "image" && bgImage && <img className="scdb-image" src={bgImage} alt="" />}
+        {bgType === "image" && bgImage && <img className="scdb-image" src={bgImage} />}
         {bgAudio && <audio src={bgAudio} autoPlay loop />}
         
         <div className="scdb-profile-card">
-          <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} alt="pfp" />
+          <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
+          
           <div className="name-container">
             <div className="scdb-username">@{username}</div>
             <div className="scdb-name">{name}</div>
           </div>
+
           <div className="scdb-bio">{bio}</div>
+          
           <div className="scdb-badges">
             {badges.user && <div className="badge">User</div>}
             {badges.dev && <div className="badge dev" style={{ borderColor: accent, color: accent }}>Dev</div>}
           </div>
+
           <div className="scdb-links-row">
             {links.map(l => {
               if (!l.url) return null;
               const icon = getIcon(l.url)
               return (
                 <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="scdb-icon-link">
-                  <img src={icon} alt="social" />
+                  <img src={icon} alt="" />
                 </a>
               )
             })}
