@@ -25,3 +25,76 @@ backdrop-filter:blur(6px);
 .tag span{
 opacity:.9;
 }
+
+.blossom-root{
+display:flex;
+align-items:center;
+justify-content:center;
+height:100%;
+}
+
+.blossom-card{
+width:380px;
+padding:40px 30px;
+border-radius:24px;
+background:linear-gradient(180deg,#6b1a7a,#ff4fa0);
+box-shadow:0 0 60px rgba(255,100,200,.4);
+backdrop-filter:blur(15px);
+text-align:center;
+}
+
+.blossom-avatar{
+width:90px;
+height:90px;
+border-radius:50%;
+margin:auto;
+display:block;
+box-shadow:0 0 30px rgba(255,255,255,.6);
+}
+
+.blossom-name{
+font-size:26px;
+margin-top:12px;
+}
+
+.blossom-bio{
+opacity:.8;
+margin-top:4px;
+}
+
+.blossom-tags{
+display:flex;
+flex-wrap:wrap;
+gap:6px;
+justify-content:center;
+margin-top:10px;
+}
+
+.blossom-tags span{
+background:rgba(255,255,255,.12);
+padding:4px 10px;
+border-radius:8px;
+font-size:12px;
+}
+
+.blossom-links{
+margin-top:25px;
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+
+.blossom-link{
+padding:14px;
+border-radius:14px;
+background:linear-gradient(135deg,#7c3aed,#ff4fa0);
+text-decoration:none;
+color:white;
+font-weight:600;
+transition:.2s;
+}
+
+.blossom-link:hover{
+transform:translateY(-2px);
+box-shadow:0 8px 20px rgba(0,0,0,.4);
+}
