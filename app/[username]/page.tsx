@@ -2,33 +2,22 @@
 import { useState, useEffect, useRef } from "react"
 import { createBrowserClient } from '@supabase/ssr'
 
-// Social Icon Mapping
 const iconMap: any = {
   tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
   instagram: "https://cdn.simpleicons.org/instagram/ffffff",
   x: "https://cdn.simpleicons.org/x/ffffff",
   youtube: "https://cdn.simpleicons.org/youtube/ffffff",
   twitch: "https://cdn.simpleicons.org/twitch/ffffff",
-  spotify: "https://cdn.simpleicons.org/spotify/ffffff",
   discord: "https://cdn.simpleicons.org/discord/ffffff",
   github: "https://cdn.simpleicons.org/github/ffffff",
-  threads: "https://cdn.simpleicons.org/threads/ffffff",
-  linkedin: "https://cdn.simpleicons.org/linkedin/ffffff"
+  spotify: "https://cdn.simpleicons.org/spotify/ffffff"
 }
 
 function getIcon(url: string) {
-  const lowerUrl = url.toLowerCase();
-  if (lowerUrl.includes("tiktok")) return iconMap.tiktok
-  if (lowerUrl.includes("instagram")) return iconMap.instagram
-  if (lowerUrl.includes("twitter") || lowerUrl.includes("x.com")) return iconMap.x
-  if (lowerUrl.includes("youtube")) return iconMap.youtube
-  if (lowerUrl.includes("twitch")) return iconMap.twitch
-  if (lowerUrl.includes("spotify")) return iconMap.spotify
-  if (lowerUrl.includes("discord")) return iconMap.discord
-  if (lowerUrl.includes("github")) return iconMap.github
-  if (lowerUrl.includes("threads")) return iconMap.threads
-  if (lowerUrl.includes("linkedin")) return iconMap.linkedin
-  return "https://cdn.simpleicons.org/pwa/ffffff" // World icon for random sites
+  const lower = url.toLowerCase();
+  const found = Object.keys(iconMap).find(key => lower.includes(key));
+  // Uses the white "World" icon for random sites as requested
+  return found ? iconMap[found] : "https://cdn.simpleicons.org/pwa/ffffff";
 }
 
 export default function PublicProfile({ params }: { params: { username: string } }) {
@@ -44,11 +33,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
   useEffect(() => {
     async function loadProfile() {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('username', params.username)
-        .single()
+      const { data } = await supabase.from('profiles').select('*').eq('username', params.username).single()
       setProfile(data)
     }
     loadProfile()
@@ -56,15 +41,15 @@ export default function PublicProfile({ params }: { params: { username: string }
 
   const handleEnter = () => {
     setHasEntered(true)
-    if (audioRef.current) audioRef.current.play()
-    if (videoRef.current) videoRef.current.play()
+    if (audioRef.current) audioRef.current.play().catch(() => {});
+    if (videoRef.current) videoRef.current.play().catch(() => {});
   }
 
   if (!profile) return null
 
-  // Split links into Social Icons (no title) and Buttons (has title)
-  const socialIcons = profile.links?.filter((l: any) => !l.title || l.title.trim() === "") || []
-  const regularButtons = profile.links?.filter((l: any) => l.title && l.title.trim() !== "") || []
+  // Socials (Icons only) vs Buttons (Links with text)
+  const socials = profile.links?.filter((l: any) => !l.title || l.title === "New Link") || []
+  const buttons = profile.links?.filter((l: any) => l.title && l.title !== "New Link") || []
 
   return (
     <div className="container">
@@ -73,10 +58,9 @@ export default function PublicProfile({ params }: { params: { username: string }
           height: 100vh; width: 100vw; background: #000;
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${profile.font_family || 'Inter'}, sans-serif;
-          overflow: hidden;
         }
         .overlay {
-          position: fixed; inset: 0; background: #020617; z-index: 100;
+          position: fixed; inset: 0; background: #000; z-index: 100;
           display: ${hasEntered ? 'none' : 'flex'};
           align-items: center; justify-content: center; cursor: pointer;
         }
@@ -85,113 +69,75 @@ export default function PublicProfile({ params }: { params: { username: string }
         
         .profile-card {
           position: relative; z-index: 5; text-align: center;
-          background: rgba(0, 0, 0, 0.3);
-          backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-          padding: 40px 30px; border-radius: 24px;
-          border: 1px solid rgba(255,255,255,0.1);
-          width: 90%; max-width: 420px;
+          background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px);
+          padding: 35px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+          width: 90%; max-width: 400px;
         }
         .pfp {
-          width: 110px; height: 110px; border-radius: 50%;
-          object-fit: cover; margin-bottom: 18px;
-          box-shadow: 0 0 35px ${profile.accent_color}66;
+          width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
+          margin-bottom: 15px; box-shadow: 0 0 30px ${profile.accent_color}88;
         }
-        .display-name { font-size: 30px; font-weight: 800; margin-bottom: 4px; }
-        .username-display { font-size: 14px; opacity: 0.5; margin-bottom: 15px; letter-spacing: 0.5px; }
-        .bio { font-size: 15px; opacity: 0.8; margin-bottom: 25px; line-height: 1.5; }
+        .display-name { font-size: 26px; font-weight: 700; }
+        .username { font-size: 13px; opacity: 0.5; margin-bottom: 15px; }
+        .bio { font-size: 14px; opacity: 0.8; margin-bottom: 20px; }
 
-        /* Side-by-Side Icon Row */
-        .scdb-links-row { 
-          display: flex; flex-direction: row; justify-content: center; 
-          align-items: center; gap: 18px; margin-bottom: 20px;
-        }
-        .scdb-icon-link img { 
-          width: 28px; height: 28px; 
-          filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5)); 
-          transition: transform 0.2s ease; 
-        }
-        .scdb-icon-link:hover img { transform: translateY(-2px); }
-
-        /* Badges Flush Look */
-        .scdb-badges { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
-        .badge { 
-          padding: 4px 12px; border-radius: 6px; 
-          background: rgba(255, 255, 255, 0.08); 
-          font-size: 11px; font-weight: 600; text-transform: uppercase;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          letter-spacing: 1px;
+        /* Flush Badges */
+        .badge-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+        .badge {
+          padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 800;
+          background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1);
+          text-transform: uppercase; letter-spacing: 1px;
         }
 
-        /* Buttons List */
-        .button-list { display: flex; flex-direction: column; gap: 12px; }
+        /* Side-by-side Socials */
+        .social-row { display: flex; justify-content: center; gap: 20px; align-items: center; }
+        .social-icon { 
+          width: 26px; height: 26px; 
+          filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6)); /* White Glow */
+          transition: transform 0.2s;
+        }
+        .social-icon:hover { transform: scale(1.1); }
+
+        .btn-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         .link-btn {
-          padding: 14px; border-radius: 12px;
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: white; text-decoration: none; font-size: 15px; font-weight: 500;
-          transition: all 0.2s ease;
+          padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1); color: white; text-decoration: none;
         }
-        .link-btn:hover { background: rgba(255, 255, 255, 0.12); transform: scale(1.02); }
       `}</style>
 
-      {/* Enter Screen */}
-      {!hasEntered && (
-        <div className="overlay" onClick={handleEnter}>
-          <p style={{letterSpacing: '5px', fontSize: '13px'}}>[ CLICK TO ENTER ]</p>
-        </div>
-      )}
+      {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
 
-      {/* Background Layer */}
       <div className="bg-wrapper">
-        {profile.background_type === "video" && (
-          <video ref={videoRef} src={profile.background_value} className="bg-content" loop muted playsInline />
-        )}
-        {profile.background_type === "image" && (
-          <img src={profile.background_value} className="bg-content" alt="" />
-        )}
-        {profile.background_type === "gradient" && (
-          <div className="bg-content" style={{background: profile.background_value}} />
-        )}
+        {profile.background_type === "video" && <video ref={videoRef} src={profile.background_value} className="bg-content" loop muted playsInline />}
+        {profile.background_type === "image" && <img src={profile.background_value} className="bg-content" />}
+        {profile.background_type === "gradient" && <div className="bg-content" style={{background: profile.background_value}} />}
       </div>
 
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className="profile-card">
-        <img src={profile.avatar_url} className="pfp" alt="" />
+        <img src={profile.avatar_url} className="pfp" />
         <div className="display-name">{profile.display_name}</div>
-        <div className="username-display">@{profile.username}</div>
+        <div className="username">@{profile.username}</div>
 
-        {/* Badges Row */}
-        {(profile.badges?.user || profile.badges?.dev) && (
-          <div className="scdb-badges">
-            {profile.badges?.user && <div className="badge">User</div>}
-            {profile.badges?.dev && <div className="badge" style={{ borderColor: profile.accent_color }}>Dev</div>}
-          </div>
-        )}
+        <div className="badge-row">
+          {profile.badges?.user && <div className="badge">User</div>}
+          {profile.badges?.dev && <div className="badge" style={{borderColor: profile.accent_color}}>Dev</div>}
+        </div>
 
         <div className="bio">{profile.bio}</div>
 
-        {/* Social Icons Row (Side-by-side) */}
-        {socialIcons.length > 0 && (
-          <div className="scdb-links-row">
-            {socialIcons.map((link: any) => (
-              <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="scdb-icon-link">
-                <img src={getIcon(link.url)} alt="" />
-              </a>
-            ))}
-          </div>
-        )}
+        <div className="social-row">
+          {socials.map((l: any) => (
+            <a key={l.id} href={l.url} target="_blank"><img src={getIcon(l.url)} className="social-icon" /></a>
+          ))}
+        </div>
 
-        {/* Regular Buttons List (Stacked) */}
-        {regularButtons.length > 0 && (
-          <div className="button-list">
-            {regularButtons.map((link: any) => (
-              <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="link-btn">
-                {link.title}
-              </a>
-            ))}
-          </div>
-        )}
+        <div className="btn-list">
+          {buttons.map((l: any) => (
+            <a key={l.id} href={l.url} className="link-btn" target="_blank">{l.title}</a>
+          ))}
+        </div>
       </div>
     </div>
   )
