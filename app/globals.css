@@ -11,3 +11,38 @@ body {
   color: white;
   margin: 0;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #050505;
+  --card: #0f0f0f;
+  --border: #1f1f1f;
+  --accent: #ffffff;
+}
+
+body {
+  background-color: var(--bg);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Bubbly Input Style */
+.input-bubbly {
+  @apply bg-zinc-900/50 border border-zinc-800/50 rounded-[24px] px-6 py-4 
+         outline-none transition-all duration-300 focus:border-zinc-500 
+         focus:bg-zinc-900 placeholder:text-zinc-600 w-full;
+}
+
+/* Bubbly Button Style */
+.btn-bubbly {
+  @apply rounded-[24px] font-bold px-8 py-4 transition-all duration-300 
+         active:scale-95 flex items-center justify-center gap-2 hover:brightness-90;
+}
+
+.btn-primary { @apply bg-white text-black btn-bubbly; }
+.btn-secondary { @apply bg-zinc-900 text-white border border-zinc-800 btn-bubbly; }
+.btn-discord { @apply bg-[#5865F2] text-white btn-bubbly; }
