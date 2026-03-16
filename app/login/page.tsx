@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Added for navigation
+import { useRouter } from "next/navigation";
 import { Space_Grotesk } from "next/font/google";
 
 const font = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["400","500","600","700"]
+  weight: ["400", "500", "600", "700"]
 });
 
 export default function Login() {
@@ -14,7 +14,7 @@ export default function Login() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // This sends them to the new dashboard route
+    // This sends them to the grey page
     router.push("/dashboard");
   };
 
@@ -28,6 +28,7 @@ export default function Login() {
         <h1>Login</h1>
         <p className="subtitle">Access your Softcard dashboard</p>
 
+        {/* Clicking Discord also sends them to the grey page for now */}
         <button className="discordBtn" onClick={() => router.push("/dashboard")}>
           Login with Discord
         </button>
