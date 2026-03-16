@@ -14,7 +14,6 @@
     "@supabase/supabase-js": "latest",
     "@supabase/ssr": "latest",
     "@supabase/auth-ui-react": "latest",
-    "@supabase/auth-ui-shared": "latest",
-    "lucide-react": "latest"
+    "@supabase/auth-ui-shared": "latest"
   }
 }
