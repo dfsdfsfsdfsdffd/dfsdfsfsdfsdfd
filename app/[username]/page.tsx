@@ -1,67 +1,52 @@
-import { createClient } from '@supabase/supabase-js';
-import { notFound } from 'next/navigation';
-
-export const dynamic = 'force-dynamic';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 export default async function PublicProfile({ params }: { params: { username: string } }) {
-  const supabase = createClient(
+  const cookieStore = cookies();
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get(name) { return cookieStore.get(name)?.value } } }
   );
 
-  // Fetch user data based on the URL parameter
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('username', params.username)
     .single();
 
-  if (!profile) return notFound();
+  if (!profile) return <div className="bg-black h-screen flex items-center justify-center text-white font-black italic uppercase">404 // Profile Not Found</div>;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Subtle Scanline Overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.01),rgba(0,255,0,0.01),rgba(0,0,255,0.01))] z-50 pointer-events-none bg-[length:100%_2px,3px_100%]" />
-      
-      {/* Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-zinc-800/10 blur-[120px] rounded-full" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-zinc-800/10 blur-[120px] rounded-full" />
+    <div className="relative min-h-screen bg-black flex items-center justify-center overflow-hidden">
+      {/* BACKGROUND IMAGE - Replace with profile.bg_url if you add that later */}
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853')] bg-cover bg-center opacity-40 scale-110 blur-xl" />
 
-      <div className="w-full max-w-[420px] z-10 space-y-6 animate-in fade-in zoom-in duration-700">
-        <div className="bg-zinc-900/30 border border-white/5 backdrop-blur-3xl p-10 rounded-[2.5rem] shadow-2xl text-center">
-          {/* Avatar Placeholder */}
-          <div className="w-24 h-24 bg-zinc-800 rounded-full mx-auto mb-6 border border-white/10 flex items-center justify-center text-3xl font-black italic">
-            {profile.username[0].toUpperCase()}
-          </div>
-
-          <h1 className="text-3xl font-black italic tracking-tighter uppercase leading-none">
-            {profile.display_name || `@${profile.username}`}
-          </h1>
-          <p className="text-zinc-500 text-sm mt-3 font-medium leading-relaxed">
-            {profile.bio || "No bio yet."}
-          </p>
-
-          {/* Dynamic Links */}
-          <div className="mt-10 space-y-3">
-            {profile.links?.map((link: any, i: number) => (
-              <a
-                key={i}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full py-4 px-6 bg-white/5 border border-white/5 rounded-2xl font-bold hover:bg-white hover:text-black transition-all duration-300 text-center group"
-              >
-                <span className="group-hover:tracking-widest transition-all">{link.label}</span>
-              </a>
-            ))}
-          </div>
+      <div className="relative z-10 w-full max-w-[400px] text-center space-y-6 p-4">
+        {/* AVATAR */}
+        <div className="w-24 h-24 rounded-full bg-white/10 border border-white/20 mx-auto overflow-hidden backdrop-blur-md">
+          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`} alt="avatar" />
         </div>
 
-        {/* Branding */}
-        <div className="text-center opacity-20 hover:opacity-100 transition-opacity">
-          <a href="/" className="text-[9px] font-black uppercase tracking-[0.4em]">
-            Softcard<span className="text-zinc-500">.cc</span>
-          </a>
+        <div className="space-y-1">
+          <h1 className="text-4xl font-black text-white/90 tracking-tighter drop-shadow-lg">{profile.username}</h1>
+          <p className="text-white/40 text-sm font-medium">~♡</p>
+        </div>
+
+        {/* SOCIAL ICONS */}
+        <div className="flex justify-center gap-6 pt-4">
+          {profile.instagram && (
+             <a href={`https://instagram.com/${profile.instagram}`} className="text-white/60 hover:text-white transition-all scale-125">
+               <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+             </a>
+          )}
+          {/* Add TikTok icon similarly */}
+        </div>
+
+        {/* VIEW COUNT (Mocked) */}
+        <div className="pt-10 flex items-center justify-center gap-2 text-white/20 text-xs font-bold uppercase tracking-widest">
+           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+           507
         </div>
       </div>
     </div>
