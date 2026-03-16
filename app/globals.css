@@ -358,3 +358,18 @@ transition:.25s;
 transform:translateY(-2px);
 box-shadow:0 10px 30px rgba(255,80,160,.45);
 }
+
+
+.switchMode{
+margin-top:20px;
+font-size:14px;
+color:#c8c0c8;
+}
+
+.switchMode button{
+background:none;
+border:none;
+color:#ff6bbf;
+cursor:pointer;
+font-weight:500;
+}
