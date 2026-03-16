@@ -1,28 +1,35 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 
-export default function Dashboard() {
-  const supabase = createClientComponentClient();
-  const [username, setUsername] = useState('');
-  const [links, setLinks] = useState([{ title: '', url: '' }]);
+// This forces the page to load fresh every time (essential for dashboards)
+export const dynamic = 'force-dynamic';
 
-  const handleSave = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from('profiles').upsert({
-      id: user?.id,
-      username: username.toLowerCase().trim(),
-      links: links
-    });
-    if (error) alert("Username taken or error!");
-    else alert("Saved! View at softcard.cc/" + username);
-  };
+export default async function Page() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  // Simple test fetch
+  const { data: profile } = await supabase.from('profiles').select('*').single();
 
   return (
-    <div className="p-10 bg-black text-white min-h-screen">
-      <h1 className="text-xl mb-4">Claim Username</h1>
-      <input className="bg-zinc-800 p-2 rounded w-full mb-4" value={username} onChange={e => setUsername(e.target.value)} placeholder="username" />
-      <button onClick={handleSave} className="bg-white text-black px-4 py-2 rounded font-bold">Save Profile</button>
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-sans">
+      <div className="max-w-md w-full space-y-8 text-center">
+        <h1 className="text-5xl font-black italic tracking-tighter uppercase leading-none">
+          Softcard<span className="text-zinc-500">.cc</span>
+        </h1>
+        
+        <div className="p-8 border border-white/10 bg-zinc-900/50 rounded-3xl backdrop-blur-xl">
+          <p className="text-zinc-400 mb-6">Welcome to your dashboard. If you see this, your deployment is live.</p>
+          
+          <div className="space-y-4">
+            <a href="/login" className="block w-full py-4 bg-white text-black font-bold uppercase rounded-2xl hover:scale-[1.02] transition-transform">
+              Go to Login
+            </a>
+            <p className="text-xs text-zinc-600 uppercase tracking-widest font-bold">Status: Connected to Vercel</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
