@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { useRouter } from "next/navigation" // Added for redirection
+import { useRouter } from "next/navigation"
+import { Pencil, BarChart3, Loader2, LogOut } from "lucide-react"
 
-// Social Icon Mapping
+// Social Icon Mapping for the Editor
 const iconMap: any = {
   tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
   instagram: "https://cdn.simpleicons.org/instagram/ffffff",
@@ -36,25 +37,22 @@ function getIcon(url: string) {
 export default function SoftcardDashboard() {
   const router = useRouter();
   
-  const supabase = useMemo(() => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return null;
-    return createBrowserClient(url, key);
-  }, []);
-
-  const [tab, setTab] = useState("profile")
+  // 1. STATE MANAGEMENT
+  const [view, setView] = useState<"hub" | "editor">("hub")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [tab, setTab] = useState("profile")
 
+  // Profile Data States
   const [avatar, setAvatar] = useState("https://i.imgur.com/1X6g1YH.jpeg")
-  const [name, setName] = useState("akuryō")
+  const [name, setName] = useState("")
   const [username, setUsername] = useState("") 
   const [bio, setBio] = useState("")
   const [links, setLinks] = useState<any[]>([])
   const [badges, setBadges] = useState<any>({ user: true, dev: false })
   const [devPassword, setDevPassword] = useState("")
 
+  // Appearance States
   const [accent, setAccent] = useState("#3b82f6")
   const [font, setFont] = useState("Inter")
   const [bgType, setBgType] = useState("gradient")
@@ -64,29 +62,33 @@ export default function SoftcardDashboard() {
   const [bgAudio, setBgAudio] = useState("")
   const [showGlass, setShowGlass] = useState(true)
 
+  const supabase = useMemo(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    return createBrowserClient(url, key);
+  }, []);
+
+  // 2. DATA LOADING
   useEffect(() => {
     async function loadData() {
       if (!supabase) return;
-
-      // This checks if a session exists in cookies/localstorage automatically
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session) {
-        router.push('/login'); // Not logged in? Boot them to login.
+        router.push('/login');
         return;
       }
-
-      const user = session.user;
 
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', session.user.id)
         .single()
 
       if (profile) {
         setAvatar(profile.avatar_url || avatar)
-        setName(profile.display_name || name)
+        setName(profile.display_name || "")
         setUsername(profile.username || "")
         setBio(profile.bio || "")
         setLinks(profile.links || [])
@@ -107,6 +109,7 @@ export default function SoftcardDashboard() {
     loadData()
   }, [supabase, router])
 
+  // 3. ACTIONS
   async function saveChanges() {
     if (!supabase) return;
     setSaving(true)
@@ -133,7 +136,6 @@ export default function SoftcardDashboard() {
     setSaving(false)
   }
 
-  // Added Sign Out Function
   async function handleSignOut() {
     if (!supabase) return;
     await supabase.auth.signOut();
@@ -141,35 +143,90 @@ export default function SoftcardDashboard() {
   }
 
   const addLink = () => setLinks([...links, { id: Date.now(), title: "New Link", url: "" }])
-  const removeLink = (id: number) => setLinks(links.filter(l => l.id !== id)) // Helpful addition
-
+  const removeLink = (id: number) => setLinks(links.filter(l => l.id !== id))
   const updateLink = (i: number, key: string, val: string) => {
-    const copy = [...links]
-    copy[i][key] = val
-    setLinks(copy)
+    const copy = [...links]; copy[i][key] = val; setLinks(copy);
   }
 
-  const unlockDev = () => {
-    if (devPassword === "12345") {
-      setBadges({ ...badges, dev: true })
-      alert("Dev badge unlocked")
-    } else {
-      alert("Wrong password")
-    }
+  if (loading) return (
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+      <Loader2 className="animate-spin text-pink-500" size={40} />
+    </div>
+  )
+
+  // 4. VIEW: THE HUB
+  if (view === "hub") {
+    return (
+      <div className="min-h-screen w-full bg-gradient-to-br from-pink-900 via-pink-800 to-black text-white flex items-center justify-center relative overflow-hidden">
+        <button 
+            onClick={handleSignOut}
+            className="absolute top-6 right-6 flex items-center gap-2 text-pink-200/60 hover:text-white transition text-sm"
+        >
+            <LogOut size={16} /> Sign Out
+        </button>
+
+        <div className="text-center space-y-10 z-10">
+          <div>
+            <p className="text-pink-200 tracking-widest text-xs uppercase opacity-70">Logged into softcard.cc</p>
+            <h1 className="text-4xl font-semibold mt-2">
+              Welcome back, <span className="text-pink-300">{username || "user"}</span>
+            </h1>
+          </div>
+
+          <div className="relative flex items-center justify-center">
+            {/* The Circle Card */}
+            <div className="w-[320px] h-[320px] md:w-[420px] md:h-[420px] rounded-full bg-pink-900/30 backdrop-blur-xl border border-pink-400/20 flex items-center justify-center shadow-2xl">
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-pink-400 shadow-xl">
+                <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
+              </div>
+            </div>
+
+            {/* Edit Button */}
+            <button 
+              onClick={() => setView("editor")}
+              className="absolute left-0 md:-left-8 top-1/2 -translate-y-1/2 group"
+            >
+              <div className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-pink-500 to-pink-400 border border-pink-200/40 shadow-xl hover:shadow-2xl hover:scale-105 transition">
+                <Pencil size={16} />
+                <span className="text-sm font-semibold">Edit</span>
+              </div>
+            </button>
+
+            {/* Stats Button */}
+            <button className="absolute right-0 md:-right-8 top-1/2 -translate-y-1/2 group">
+              <div className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-pink-500 to-pink-400 border border-pink-200/40 shadow-xl hover:shadow-2xl hover:scale-105 transition">
+                <BarChart3 size={16} />
+                <span className="text-sm font-semibold">Stats</span>
+              </div>
+            </button>
+          </div>
+
+          <div className="flex items-center justify-center gap-3 bg-pink-900/40 px-6 py-3 rounded-full border border-pink-400/30">
+            <span className="text-pink-200">softcard.cc/{username}</span>
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(`softcard.cc/${username}`);
+                alert("Link copied!");
+              }}
+              className="bg-pink-500 px-3 py-1 rounded-md text-sm font-semibold hover:bg-pink-400 transition"
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  if (loading) return <div style={{ height: '100vh', background: '#020617' }} />
-
+  // 5. VIEW: THE EDITOR (Your current Dashboard Code)
   return (
     <div className="scdb-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
       <style>{`
         .scdb-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
         .scdb-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
         .scdb-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
-
         .name-container { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 5px; }
         .scdb-username { font-size: 14px; opacity: 0.5; font-weight: 400; }
-
         .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
         .badge { 
           padding: 3px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); 
@@ -177,7 +234,6 @@ export default function SoftcardDashboard() {
           color: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); 
           letter-spacing: 0.5px; text-transform: uppercase;
         }
-
         .scdb-profile-card {
           ${showGlass ? `
             background: rgba(0, 0, 0, 0.3);
@@ -187,21 +243,18 @@ export default function SoftcardDashboard() {
             border-radius: 24px;
             border: 1px solid rgba(255, 255, 255, 0.1);
           ` : 'background: transparent; border: none; padding: 40px 30px;'}
-          width: 100%;
-          max-width: 420px;
-          text-align: center;
-          position: relative;
-          z-index: 5;
-          transition: all 0.3s ease;
+          width: 100%; max-width: 420px; text-align: center; position: relative; z-index: 5; transition: all 0.3s ease;
         }
       `}</style>
 
       <div className="scdb-sidebar">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div className="scdb-back" onClick={saveChanges} style={{ cursor: 'pointer' }}>
-            {saving ? "Saving..." : "← Save & Publish"}
+            <div className="scdb-back" onClick={() => setView("hub")} style={{ cursor: 'pointer', color: '#ff5cad' }}>
+               ← Back to Hub
             </div>
-            <button onClick={handleSignOut} style={{ background: 'none', border: 'none', color: '#666', fontSize: '12px', cursor: 'pointer' }}>Sign Out</button>
+            <button onClick={saveChanges} className="scdb-btn" style={{margin: 0, padding: '5px 15px'}}>
+                {saving ? "Saving..." : "Publish ♡"}
+            </button>
         </div>
 
         <div className="scdb-tabs">
@@ -255,16 +308,20 @@ export default function SoftcardDashboard() {
           </div>
         )}
 
+        {/* Badges Tab remains same */}
         {tab === "badges" && (
-          <div className="scdb-card">
-            <label style={{ display: "flex", gap: 10, alignItems: 'center' }}>
-              <input type="checkbox" checked={badges.user} onChange={() => setBadges({ ...badges, user: !badges.user })} />
-              User Badge
-            </label>
-            <div style={{ marginTop: 20 }}>Unlock Dev Badge</div>
-            <input className="scdb-input" placeholder="Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
-            <button className="scdb-btn" onClick={unlockDev}>Unlock</button>
-          </div>
+           <div className="scdb-card">
+             <label style={{ display: "flex", gap: 10, alignItems: 'center' }}>
+               <input type="checkbox" checked={badges.user} onChange={() => setBadges({ ...badges, user: !badges.user })} />
+               User Badge
+             </label>
+             <div style={{ marginTop: 20 }}>Unlock Dev Badge</div>
+             <input className="scdb-input" placeholder="Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
+             <button className="scdb-btn" onClick={() => {
+                if(devPassword === "12345") { setBadges({...badges, dev: true}); alert("Unlocked!"); }
+                else alert("Wrong pass");
+             }}>Unlock</button>
+           </div>
         )}
       </div>
 
@@ -276,29 +333,23 @@ export default function SoftcardDashboard() {
         
         <div className="scdb-profile-card">
           <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
-          
           <div className="name-container">
             <div className="scdb-username">@{username}</div>
             <div className="scdb-name">{name}</div>
           </div>
-
           <div className="scdb-bio">{bio}</div>
-          
           <div className="scdb-badges">
             {badges.user && <div className="badge">User</div>}
             {badges.dev && <div className="badge dev" style={{ borderColor: accent, color: accent }}>Dev</div>}
           </div>
-
           <div className="scdb-links-row">
-            {links.map(l => {
-              if (!l.url) return null;
-              const icon = getIcon(l.url)
-              return (
-                <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="scdb-icon-link">
-                  <img src={icon} alt="" />
+            {links.map(l => (
+              l.url && (
+                <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" className="scdb-icon-link">
+                  <img src={getIcon(l.url)} alt="" />
                 </a>
               )
-            })}
+            ))}
           </div>
         </div>
       </div>
