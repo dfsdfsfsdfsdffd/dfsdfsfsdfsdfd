@@ -825,48 +825,7 @@ background:rgba(255,255,255,.07);
 
 }
 
-.softcard-root {
-  min-height: 100vh;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg,#be185d,#9d174d,#000);
-  color: white;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
-}
-
-.softcard-container {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-}
-
-.softcard-header {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.softcard-status {
-  font-size: 12px;
-  letter-spacing: 3px;
-  color: #fbcfe8;
-}
-
-.softcard-title {
-  font-size: 38px;
-  font-weight: 600;
-}
-
-.softcard-brand {
-  color: #f9a8d4;
-}
-
-.softcard-hub-wrapper {
-  position: relative;
-  display: flex;
+/* ========================= CSS (softcard-dashboard.css) =========================
   align-items: center;
   justify-content: center;
 }
@@ -885,4 +844,80 @@ background:rgba(255,255,255,.07);
 
 .softcard-avatar {
   width: 110px;
+  height: 110px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 4px solid #f472b6;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
+
+.softcard-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.softcard-btn {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: linear-gradient(90deg,#ec4899,#f472b6);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.35);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.softcard-btn:hover {
+  transform: scale(1.07);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+}
+
+.softcard-btn-left {
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.softcard-btn-right {
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.softcard-profile-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 14px 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(244,114,182,0.4);
+  background: rgba(190,24,93,0.25);
+}
+
+.softcard-profile-url {
+  color: #fbcfe8;
+}
+
+.softcard-copy-btn {
+  background: #ec4899;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+.softcard-copy-btn:hover {
+  background: #f472b6;
+}
+
