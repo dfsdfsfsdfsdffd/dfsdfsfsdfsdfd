@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { Space_Grotesk } from "next/font/google";
 
+const font = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400","500","600","700"]
+});
 
 export default function Home() {
   return (
-  
-
-    <main className="main">
-      <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <main className={`main ${font.className}`}>
 
       <nav className="nav">
         <div className="logo">♡ softcard.cc</div>
@@ -17,7 +19,7 @@ export default function Home() {
           <button className="dashboard">Dashboard →</button>
         </Link>
       </nav>
-         
+
       <section className="hero">
 
         <h1>
