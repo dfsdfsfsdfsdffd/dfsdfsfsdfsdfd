@@ -627,3 +627,15 @@ padding:6px 14px;
 border-radius:8px;
 color:white;
 }
+
+.avatarPreview{
+margin-top:15px;
+}
+
+.avatarPreview img{
+width:70px;
+height:70px;
+border-radius:50%;
+object-fit:cover;
+box-shadow:0 0 25px #2f8cff;
+}
