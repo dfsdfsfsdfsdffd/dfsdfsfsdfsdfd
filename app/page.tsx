@@ -1,50 +1,12 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function Home() {
-
-  useEffect(() => {
-
-    function lockZoom() {
-      const viewport = document.querySelector("meta[name=viewport]");
-      if (viewport) {
-        viewport.setAttribute(
-          "content",
-          "width=device-width, initial-scale=1.0, user-scalable=no"
-        );
-      }
-    }
-
-    function disableZoom(event: KeyboardEvent) {
-      if (event.ctrlKey && (event.key === '+' || event.key === '-' || event.key === '0')) {
-        event.preventDefault();
-      }
-    }
-
-    function preventScrollZoom(event: WheelEvent) {
-      if (event.ctrlKey) {
-        event.preventDefault();
-      }
-    }
-
-    lockZoom();
-
-    document.addEventListener("wheel", preventScrollZoom, { passive: false });
-    document.addEventListener("keydown", disableZoom);
-
-    return () => {
-      document.removeEventListener("wheel", preventScrollZoom);
-      document.removeEventListener("keydown", disableZoom);
-    };
-
-  }, []);
-
   return (
-    <main className="main-container">
+    <main className="main">
 
-      <nav suppressHydrationWarning>
+      <nav className="nav">
         <div className="logo">♡ softcard.cc</div>
 
         <Link href="/login">
@@ -52,7 +14,7 @@ export default function Home() {
         </Link>
       </nav>
 
-      <div className="hero">
+      <section className="hero">
 
         <h1>
           Welcome to <br />
@@ -72,7 +34,8 @@ export default function Home() {
           <button className="secondary">Learn More</button>
         </div>
 
-      </div>
+      </section>
+
     </main>
   );
 }
