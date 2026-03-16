@@ -41,11 +41,19 @@ z-index:-1;
 
 /* NAVBAR */
 
-.nav{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:30px 70px;
+.nav {
+  position: absolute;
+  top: 30px;
+  left: 60px;
+  right: 60px; /* Add this to give it a boundary on the right */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Ensure the button doesn't have weird margins */
+.nav .dashboardBtn {
+  margin-left: auto; 
 }
 
 .logo{
