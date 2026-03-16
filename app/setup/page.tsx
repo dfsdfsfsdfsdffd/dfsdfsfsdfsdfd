@@ -1,76 +1,59 @@
 "use client"
-import { useState, Suspense } from 'react'
-import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
-import { Palette, User, Link2, Image as ImageIcon, Check } from 'lucide-react'
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
-function SetupWizard() {
+export default function SetupWizard() {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    username: '', bio: '', theme_color: '#3b82f6', links: [] as any[]
-  });
+  const [data, setData] = useState({ username: '', bio: '', theme: 'shader', color: '#3b82f6', socials: [] as any[] });
   const router = useRouter();
 
-  const handleComplete = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const next = () => setStep(s => s + 1);
+  const back = () => setStep(s => s - 1);
 
-    // Save everything at once
+  const handleFinish = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return router.push('/login');
+
     const { error } = await supabase.from('profiles').upsert({
       id: user.id,
-      username: formData.username.toLowerCase(),
-      bio: formData.bio,
-      theme_color: formData.theme_color,
-      links: formData.links,
-      is_published: true
+      username: data.username.toLowerCase(),
+      bio: data.bio,
+      theme_color: data.color,
+      is_published: true,
+      links: data.socials
     });
 
-    if (!error) router.push(`/${formData.username}`);
-    else alert(error.message);
-  }
+    if (!error) router.push('/dashboard');
+  };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6">
-      {/* Progress Bar */}
+    <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6">
+      {/* Progress Dots */}
       <div className="flex gap-2 mb-12">
         {[1, 2, 3, 4].map(i => (
-          <div key={i} className={`w-12 h-1.5 rounded-full transition-all ${step >= i ? 'bg-blue-500' : 'bg-zinc-800'}`} />
+          <div key={i} className={`w-2 h-2 rounded-full ${step === i ? 'bg-blue-500 w-4' : 'bg-zinc-800'} transition-all`} />
         ))}
       </div>
 
-      <div className="w-full max-w-md space-y-8 animate-in fade-in zoom-in-95 duration-500">
-        
+      <div className="w-full max-w-md text-center space-y-8">
         {step === 1 && (
-          <div className="space-y-6 text-center">
-            <User className="mx-auto text-blue-500" size={48} />
-            <h2 className="text-3xl font-black italic">Your profile</h2>
-            <div className="space-y-4 text-left">
-              <input 
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-[22px] px-6 py-4 outline-none focus:border-blue-500" 
-                placeholder="Display Name / Username" 
-                onChange={e => setFormData({...formData, username: e.target.value})}
-              />
-              <textarea 
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-[22px] px-6 py-4 outline-none min-h-[120px]" 
-                placeholder="Tell people about yourself..." 
-                onChange={e => setFormData({...formData, bio: e.target.value})}
-              />
-            </div>
+          <div className="space-y-6">
+            <h2 className="text-4xl font-bold">Your profile</h2>
+            <p className="text-zinc-500">Choose your unique handle and bio.</p>
+            <input className="input-frost" placeholder="Username" value={data.username} onChange={e => setData({...data, username: e.target.value})} />
+            <textarea className="input-frost min-h-[120px]" placeholder="Tell people about yourself..." onChange={e => setData({...data, bio: e.target.value})} />
           </div>
         )}
 
         {step === 2 && (
-          <div className="space-y-6 text-center">
-            <ImageIcon className="mx-auto text-purple-500" size={48} />
-            <h2 className="text-3xl font-black italic">Pick a background</h2>
+          <div className="space-y-6">
+            <h2 className="text-4xl font-bold">Pick a background</h2>
             <div className="grid grid-cols-2 gap-4">
-              {['#000', '#1a1a1a', '#2563eb', '#db2777'].map(color => (
-                <button 
-                  key={color} 
-                  onClick={() => setFormData({...formData, theme_color: color})}
-                  className={`h-24 rounded-[28px] border-4 ${formData.theme_color === color ? 'border-white' : 'border-transparent'}`}
-                  style={{ backgroundColor: color }}
-                />
+              {['Shader', 'Solid Color', 'Image', 'Video'].map(type => (
+                <button key={type} onClick={() => setData({...data, theme: type.toLowerCase()})} className={`p-8 card-frost hover:border-blue-500 transition-all ${data.theme === type.toLowerCase() ? 'border-blue-500 bg-blue-500/5' : ''}`}>
+                  <div className="text-sm font-bold">{type}</div>
+                </button>
               ))}
             </div>
           </div>
@@ -78,45 +61,35 @@ function SetupWizard() {
 
         {step === 3 && (
           <div className="space-y-6 text-center">
-            <Link2 className="mx-auto text-green-500" size={48} />
-            <h2 className="text-3xl font-black italic">Add your socials</h2>
-            <div className="space-y-3">
-              <button 
-                onClick={() => setFormData({...formData, links: [...formData.links, { label: 'Discord', url: '' }]})}
-                className="w-full bg-zinc-900 border border-zinc-800 p-4 rounded-[22px] font-bold text-zinc-400 hover:text-white"
-              >
-                + Add Custom Link
-              </button>
+            <h2 className="text-4xl font-bold">Choose a color</h2>
+            <div className="flex flex-wrap justify-center gap-3">
+              {['#3b82f6', '#06b6d4', '#10b981', '#8b5cf6', '#ec4899', '#ef4444'].map(c => (
+                <button key={c} onClick={() => setData({...data, color: c})} className={`w-10 h-10 rounded-full border-2 ${data.color === c ? 'border-white' : 'border-transparent'}`} style={{backgroundColor: c}} />
+              ))}
             </div>
           </div>
         )}
 
         {step === 4 && (
-          <div className="space-y-6 text-center">
-            <Check className="mx-auto text-blue-500" size={64} />
-            <h2 className="text-3xl font-black italic">Looks good?</h2>
-            <p className="text-zinc-500">Your corner of the internet is ready.</p>
+          <div className="space-y-6">
+            <h2 className="text-4xl font-bold">Add your socials</h2>
+            <div className="grid grid-cols-4 gap-4">
+              {['Discord', 'TikTok', 'Instagram', 'Twitter'].map(s => (
+                <button key={s} className="p-4 card-frost flex items-center justify-center hover:bg-white/5 transition-all">
+                  {s[0]}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
-        <div className="pt-8">
-          <button 
-            onClick={() => step < 4 ? setStep(step + 1) : handleComplete()}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-[24px] shadow-xl shadow-blue-500/20 transition-all active:scale-95"
-          >
-            {step === 4 ? 'LAUNCH SITE' : 'CONTINUE'}
+        <div className="flex gap-4 pt-8">
+          {step > 1 && <button onClick={back} className="flex-1 font-bold text-zinc-500">Back</button>}
+          <button onClick={step === 4 ? handleFinish : next} className="btn-blue flex-1">
+            {step === 4 ? 'Looks Good' : 'Continue'}
           </button>
-          {step > 1 && (
-            <button onClick={() => setStep(step - 1)} className="w-full mt-4 text-zinc-500 font-bold hover:text-white">
-              Back
-            </button>
-          )}
         </div>
       </div>
     </div>
-  )
-}
-
-export default function WizardPage() {
-  return <Suspense><SetupWizard /></Suspense>
+  );
 }
