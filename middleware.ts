@@ -49,12 +49,16 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
-export const config = {
-  matcher: ['/dashboard/:path*'],
-}
-
+// FIXED: Merged into one single export config
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public images (svg, png, jpg, etc)
+     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
