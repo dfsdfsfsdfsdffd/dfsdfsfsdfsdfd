@@ -1,115 +1,52 @@
 "use client"
-import { useState, Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, Suspense } from 'react'
 
-// 1. Create a separate component for the form logic
 function LoginForm() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [username, setUsername] = useState(searchParams.get('username') || '')
-  const [isSignUp, setIsSignUp] = useState(!!searchParams.get('username'))
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
-
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setMessage('')
-
-    if (isSignUp) {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { username } }
-      })
-
-      if (error) {
-        setMessage(error.message)
-      } else {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([{ id: data.user?.id, username: username.toLowerCase() }])
-        
-        if (profileError) setMessage("Username might be taken.")
-        else router.push('/dashboard')
-      }
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) setMessage(error.message)
-      else router.push('/dashboard')
-    }
-    setLoading(false)
+  
+  const handleDiscordLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'discord',
+      options: { redirectTo: `${window.location.origin}/dashboard` }
+    })
   }
 
   return (
-    <div className="w-full max-w-sm bg-zinc-900/50 border border-zinc-800 p-8 rounded-3xl backdrop-blur-md">
-      <h1 className="text-3xl font-bold mb-2 text-center">
-        {isSignUp ? 'Create Account' : 'Welcome Back'}
-      </h1>
-      <p className="text-zinc-500 text-center mb-8 text-sm">
-        {isSignUp ? `Securing softcard.cc/${username}` : 'Enter your details to login'}
-      </p>
+    <div className="w-full max-w-sm space-y-8 animate-in fade-in duration-700">
+      <div className="text-center space-y-2">
+        <h1 className="text-4xl font-black tracking-tight">softcard</h1>
+        <p className="text-zinc-500 font-medium">Claim your spot on the web.</p>
+      </div>
 
-      <form onSubmit={handleAuth} className="space-y-4">
-        {isSignUp && (
-          <input
-            type="text"
-            placeholder="Username"
-            className="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-white outline-none transition"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        )}
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-white outline-none transition"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-white outline-none transition"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-zinc-200 transition disabled:opacity-50"
-        >
-          {loading ? 'Processing...' : isSignUp ? 'Claim My Link' : 'Sign In'}
+      <div className="space-y-3">
+        <button onClick={handleDiscordLogin} className="w-full btn-discord">
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.069.069 0 0 0-.032.027C.533 9.048-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.062 14.062 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.419-2.157 2.419zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.419-2.157 2.419z"/></svg>
+          Continue with Discord
         </button>
-      </form>
 
-      {message && <p className="text-red-500 text-xs mt-4 text-center">{message}</p>}
+        <div className="relative py-4">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-800"></div></div>
+          <div className="relative flex justify-center text-xs uppercase"><span className="bg-black px-2 text-zinc-500">Or email</span></div>
+        </div>
 
-      <button
-        onClick={() => setIsSignUp(!isSignUp)}
-        className="w-full mt-6 text-zinc-500 text-sm hover:text-white transition"
-      >
-        {isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
-      </button>
+        <input 
+          type="email" 
+          placeholder="email@example.com" 
+          className="input-bubbly" 
+          value={email} 
+          onChange={(e) => setEmail(e.target.value)} 
+        />
+        <button className="w-full btn-secondary">Sign in with Email</button>
+      </div>
     </div>
   )
 }
 
-// 2. The main page component that wraps everything in Suspense
-export default function AuthPage() {
+export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
-      <Suspense fallback={<div className="text-white">Loading...</div>}>
-        <LoginForm />
-      </Suspense>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
+      <Suspense><LoginForm /></Suspense>
     </div>
   )
 }
