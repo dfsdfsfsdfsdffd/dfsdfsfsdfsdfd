@@ -105,6 +105,26 @@ export default function PublicProfile({ params }: { params: { username: string }
           color: ${profile.bio_color || 'rgba(255,255,255,0.7)'}; 
         }
 
+        /* NEW TAGS STYLING */
+        .tags-row {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 8px;
+          margin-bottom: 20px;
+        }
+        .tag {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 10px;
+          border-radius: 8px;
+          font-size: 12px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(4px);
+        }
+
         .badge-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
         .badge {
           padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
@@ -152,6 +172,15 @@ export default function PublicProfile({ params }: { params: { username: string }
         </div>
 
         <div className="bio">{profile.bio}</div>
+
+        {/* PROFILE TAGS SECTION */}
+        <div className="tags-row">
+          {profile.age && <div className="tag"><span>🎂</span>{profile.age}</div>}
+          {profile.gender && <div className="tag"><span>⚥</span>{profile.gender}</div>}
+          {profile.sexuality && <div className="tag"><span>❤</span>{profile.sexuality}</div>}
+          {profile.birthday && <div className="tag"><span>🎉</span>{profile.birthday}</div>}
+          {profile.timezone && <div className="tag"><span>🌍</span>{profile.timezone}</div>}
+        </div>
 
         <div className="badge-row">
           {profile.badges?.user && <div className="badge">USER</div>}
