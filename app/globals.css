@@ -58,6 +58,13 @@ z-index:-1;
   margin-left: auto; 
 }
 
+/* Find the thing wrapping the dashboard link and fix it */
+.dashboard-wrapper {
+  /* Remove any background-color or height: 100% here */
+  display: flex;
+  align-items: center;
+}
+
 .logo{
 font-weight:500;
 font-size:15px;
