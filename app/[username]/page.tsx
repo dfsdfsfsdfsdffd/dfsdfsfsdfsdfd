@@ -1,65 +1,76 @@
-"use client"
-import { useState, useEffect, useMemo } from "react"
+"use client" // Switch to client component for audio handling
+import { useState, useEffect, useRef } from "react"
 import { createBrowserClient } from '@supabase/ssr'
 
-export default function SoftcardDashboard() {
-  // 1. Hard check for ENV variables to prevent the 'auth' crash
-  const supabase = useMemo(() => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return null; 
-    return createBrowserClient(url, key);
-  }, []);
+export default function PublicProfile({ params }: { params: { username: string } }) {
+  const [profile, setProfile] = useState<any>(null)
+  const [hasEntered, setHasEntered] = useState(false)
+  const audioRef = useRef<HTMLAudioElement>(null)
 
-  const [loading, setLoading] = useState(true)
-  const [username, setUsername] = useState("")
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   useEffect(() => {
-    async function initDashboard() {
-      // If supabase is null, stop immediately to prevent "reading auth" error
-      if (!supabase) return;
-
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        window.location.href = "/login"; // Force redirect if no session
-        return;
-      }
-
-      // Fetch the profile - focusing on the username "file/record"
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('username, setup_completed')
-        .eq('id', user.id)
-        .single()
-
-      if (error || !profile?.username) {
-        // If no username record exists, they must stay on the "Claim" screen
-        console.log("No username found for this account.");
-      } else {
-        setUsername(profile.username);
-      }
-      setLoading(false)
+    async function load() {
+      const { data } = await supabase.from('profiles').select('*').eq('username', params.username).single()
+      setProfile(data)
     }
-    initDashboard()
-  }, [supabase])
+    load()
+  }, [params.username])
 
-  if (!supabase) return <div style={{color: 'white'}}>Error: Supabase Keys Missing in Vercel</div>
-  if (loading) return <div style={{height: '100vh', background: '#020617'}} />
+  const handleEnter = () => {
+    setHasEntered(true)
+    if (audioRef.current) {
+      audioRef.current.play().catch(e => console.log("Audio play blocked", e))
+    }
+  }
+
+  if (!profile) return null
 
   return (
-    <div className="scdb-dashboard">
-      {/* If username exists, show dashboard. If not, show the Claim UI */}
-      {!username ? (
-        <div className="claim-container">
-           <h1>Claim your URL</h1>
-           {/* Your username claim input goes here */}
-        </div>
-      ) : (
-        <div className="dashboard-main">
-           <h1>Welcome, {username}</h1>
-           {/* Your actual editor goes here */}
+    <div className="public-profile">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .enter-overlay {
+          position: fixed; inset: 0; background: #020617; z-index: 100;
+          display: ${hasEntered ? 'none' : 'flex'};
+          align-items: center; justify-content: center; cursor: pointer;
+        }
+        .profile-content { 
+          opacity: ${hasEntered ? 1 : 0}; 
+          transition: opacity 1s ease;
+        }
+        /* ... existing CSS from previous turn ... */
+      `}} />
+
+      {/* CLICK TO ENTER (Enables Audio) */}
+      {!hasEntered && (
+        <div className="enter-overlay" onClick={handleEnter}>
+          <div style={{textAlign: 'center'}}>
+            <p style={{letterSpacing: '2px', opacity: 0.6}}>[ CLICK TO ENTER ]</p>
+          </div>
         </div>
       )}
+
+      {profile.audio_url && (
+        <audio ref={audioRef} src={profile.audio_url} loop />
+      )}
+
+      <div className="profile-content">
+         {/* Render your background and profile info here exactly like the dashboard preview */}
+         <div className="bg-layer">
+            {profile.background_type === "video" && <video src={profile.background_value} autoPlay loop muted playsInline />}
+            {/* ... other bg types */}
+         </div>
+         
+         <div className="profile-card">
+            <img src={profile.avatar_url} className="pfp" style={{boxShadow: `0 0 40px ${profile.accent_color}`}} />
+            <h1 className="name">{profile.display_name}</h1>
+            <p className="bio">{profile.bio}</p>
+            {/* links mapping... */}
+         </div>
+      </div>
     </div>
   )
 }
