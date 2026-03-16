@@ -1,104 +1,67 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { notFound } from 'next/navigation';
-import { Space_Grotesk } from "next/font/google";
+"use client"
+import { useState, useEffect } from "react"
 
-const font = Space_Grotesk({ subsets: ["latin"], weight: ["400", "700"] });
+export default function UsernameSetup({ supabase, onComplete }: any) {
+  const [username, setUsername] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
-export default async function PublicProfile({ params }: { params: { username: string } }) {
-  const cookieStore = cookies();
-  
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-      },
+  useEffect(() => {
+    supabase.auth.getUser().then(({data}: any) => setUserId(data.user?.id))
+  }, [supabase])
+
+  async function claim() {
+    if (username.length < 3) return
+    setLoading(true)
+    
+    // Check if username is already taken
+    const { data } = await supabase.from('profiles').select('username').eq('username', username.toLowerCase()).single()
+    
+    if (data) {
+      alert("This username is already taken! ♡")
+      setLoading(false)
+      return
     }
-  );
 
-  // Fetch the profile by username
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('username', params.username.toLowerCase())
-    .single();
+    // Update existing profile row (don't insert, update the trigger-created row)
+    const { error } = await supabase.from('profiles').update({
+      username: username.toLowerCase(),
+      setup_completed: true,
+      display_name: username
+    }).eq('id', userId)
 
-  if (!profile) {
-    notFound();
+    if (error) {
+      alert("Error claiming username. Try alphanumeric characters only.")
+    } else {
+      onComplete()
+    }
+    setLoading(false)
   }
 
   return (
-    <main className={font.className} style={{ 
-      minHeight: '100vh', 
-      backgroundColor: '#020617', 
-      color: 'white',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }}>
-      <div style={{ textAlign: 'center', width: '100%', maxWidth: '400px' }}>
+    <div style={{height:'100vh', background:'#020617', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontFamily:'Inter, sans-serif'}}>
+      <div style={{width:'400px', textAlign:'center', padding: '40px', background: '#071321', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)'}}>
+        <h1 style={{fontSize: '32px', marginBottom: '10px', fontWeight: '700'}}>Claim your link</h1>
+        <p style={{opacity:0.5, marginBottom: '30px', fontSize: '15px'}}>This will be your permanent Softcard URL</p>
         
-        {/* Custom Avatar with Glow based on Accent Color */}
-        <img 
-          src={profile.avatar_url || "https://i.imgur.com/1X6g1YH.jpeg"} 
-          alt={profile.display_name}
-          style={{ 
-            width: '120px', 
-            height: '120px', 
-            borderRadius: '50%', 
-            objectFit: 'cover',
-            boxShadow: `0 0 35px ${profile.accent_color || '#3b82f6'}`,
-            marginBottom: '20px'
-          }}
-        />
+        <div style={{position: 'relative'}}>
+            <span style={{position: 'absolute', left: '15px', top: '14px', opacity: 0.3, fontSize: '14px'}}>softcard.cc/</span>
+            <input 
+              style={{width:'100%', padding:'14px 14px 14px 95px', background:'#020617', border:'1px solid rgba(255,255,255,0.1)', color:'white', borderRadius:'12px', fontSize: '14px', outline: 'none'}}
+              placeholder="username"
+              value={username}
+              onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+            />
+        </div>
 
-        <h1 style={{ fontSize: '32px', marginBottom: '4px' }}>
-          {profile.display_name || profile.username}
-        </h1>
-        
-        <p style={{ opacity: 0.6, fontSize: '14px', marginBottom: '24px' }}>
-          @{profile.username}
-        </p>
-
-        {/* The Single Permanent Link */}
-        {profile.link_url && (
-          <a 
-            href={profile.link_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ 
-              display: 'block',
-              width: '100%',
-              padding: '16px',
-              borderRadius: '12px',
-              background: '#0b1726',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: 'white',
-              textDecoration: 'none',
-              fontWeight: '500',
-              textAlign: 'center'
-            }}
-          >
-            {profile.link_title || "Visit Link"}
-          </a>
-        )}
-
-        {profile.bio && (
-          <p style={{ marginTop: '24px', opacity: 0.8, fontSize: '15px' }}>
-            {profile.bio}
-          </p>
-        )}
+        <button 
+          onClick={claim} 
+          disabled={loading || username.length < 3}
+          style={{width:'100%', marginTop:'25px', padding:'14px', background:'#3b82f6', border:'none', borderRadius:'12px', color:'white', fontWeight:'600', cursor:'pointer', opacity: (loading || username.length < 3) ? 0.5 : 1}}
+        >
+          {loading ? "Saving..." : "Claim My URL →"}
+        </button>
       </div>
-
-      <footer style={{ marginTop: '60px', opacity: 0.4, fontSize: '13px' }}>
-        <a href="/" style={{ color: 'inherit', textDecoration: 'none' }}>♡ softcard.cc</a>
-      </footer>
-    </main>
-  );
+    </div>
+  )
 }
