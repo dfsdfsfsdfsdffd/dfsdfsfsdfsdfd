@@ -545,95 +545,85 @@ margin-bottom:6px;
 
 .dashboard{
 height:100vh;
-background: radial-gradient(circle at 20% 20%, #0f1c2a, #02050c);
+background: radial-gradient(circle at 20% 0%, #0e1d2c, #02060e);
 color:white;
-font-family: "DM Sans", sans-serif;
+font-family:DM Sans,sans-serif;
 }
 
 .dashboardLayout{
 display:grid;
-grid-template-columns:200px 1fr 500px;
+grid-template-columns:420px 1fr;
 height:100%;
 }
 
-.sidebar{
+.editor{
 padding:30px;
 border-right:1px solid rgba(255,255,255,0.05);
 }
 
+.tabs{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
 .tab{
-display:block;
-width:100%;
+flex:1;
 padding:12px;
-margin-bottom:10px;
-background:transparent;
+background:#08121d;
 border-radius:10px;
-border:1px solid transparent;
-color:#9ba6b2;
+border:1px solid rgba(255,255,255,0.08);
+color:#9da9b8;
 cursor:pointer;
 }
 
 .tab.active{
-background:rgba(255,255,255,0.05);
-color:white;
-}
-
-.editor{
-padding:40px;
-overflow:auto;
-}
-
-.panel{
-max-width:500px;
-}
-
-.panel input,
-.panel textarea{
-width:100%;
-padding:12px;
-margin-top:10px;
-background:#020611;
-border:1px solid rgba(255,255,255,0.06);
-border-radius:10px;
+border:1px solid #4f8cff;
 color:white;
 }
 
 .preview{
+position:relative;
 display:flex;
+flex-direction:column;
 align-items:center;
 justify-content:center;
-background: radial-gradient(circle,#0d2235,#02050c);
 }
 
-.phone{
-width:320px;
-height:580px;
-border-radius:28px;
-padding:40px;
+.previewCenter{
 text-align:center;
-
-background:rgba(255,255,255,0.05);
-backdrop-filter:blur(20px);
-
-box-shadow:
-0 20px 80px rgba(0,0,0,0.6),
-inset 0 0 0 1px rgba(255,255,255,0.05);
 }
 
 .avatar{
-width:80px;
-height:80px;
+width:70px;
+height:70px;
 border-radius:50%;
-margin-bottom:10px;
+box-shadow:0 0 30px #2d7fff;
 }
 
-.linkBtn{
-width:100%;
-padding:12px;
-margin-top:10px;
+.previewTop{
+position:absolute;
+top:30px;
+background:#081a2b;
+padding:10px 20px;
 border-radius:14px;
-background:linear-gradient(90deg,#4f8cff,#7c5cff);
+}
+
+.previewBottom{
+position:absolute;
+bottom:30px;
+display:flex;
+gap:20px;
+align-items:center;
+background:#081a2b;
+padding:10px 20px;
+border-radius:14px;
+}
+
+.enable{
+background:#4f8cff;
 border:none;
+padding:6px 14px;
+border-radius:8px;
 color:white;
-cursor:pointer;
 }
