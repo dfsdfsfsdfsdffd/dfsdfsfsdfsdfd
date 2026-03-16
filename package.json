@@ -8,12 +8,13 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "14.2.3",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "next": "15.0.0",
+    "react": "19.0.0-rc-66a32d78-20241107",
+    "react-dom": "19.0.0-rc-66a32d78-20241107",
     "@supabase/supabase-js": "latest",
     "@supabase/ssr": "latest",
     "@supabase/auth-ui-react": "latest",
-    "@supabase/auth-ui-shared": "latest"
+    "@supabase/auth-ui-shared": "latest",
+    "lucide-react": "latest"
   }
 }
