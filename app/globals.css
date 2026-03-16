@@ -71,7 +71,7 @@ box-shadow:0 10px 25px rgba(255,70,150,.45);
 /* HERO */
 
 .hero{
-height:85vh;
+min-height:80vh;
 display:flex;
 flex-direction:column;
 align-items:center;
@@ -79,29 +79,40 @@ justify-content:center;
 text-align:center;
 max-width:900px;
 margin:auto;
+padding:40px 20px;
 }
 
 .hero h1{
 font-size:64px;
-line-height:1.1;
 font-weight:700;
 letter-spacing:-1px;
-}
+line-height:1.1;
 
-.hero span{
-background:linear-gradient(90deg,#ff6bbf,#ff9ed8);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
+opacity:0;
+animation:fadeUp 1s ease forwards;
 }
 
 .hero p{
 margin-top:20px;
-color:#cfc7cf;
+color:#d6ccd3;
 font-size:17px;
 max-width:650px;
 line-height:1.6;
+
+opacity:0;
+animation:fadeUp 1s ease forwards;
+animation-delay:.2s;
 }
 
+.buttons{
+margin-top:35px;
+display:flex;
+gap:16px;
+
+opacity:0;
+animation:fadeUp 1s ease forwards;
+animation-delay:.4s;
+}
 /* BUTTONS */
 
 /* BUTTON CONTAINER */
@@ -171,4 +182,16 @@ background:rgba(255,255,255,.08);
 border-color:rgba(255,255,255,.35);
 transform:translateY(-2px);
 box-shadow:0 8px 25px rgba(0,0,0,.35);
+}
+
+@keyframes fadeUp{
+0%{
+opacity:0;
+transform:translateY(25px);
+}
+
+100%{
+opacity:1;
+transform:translateY(0);
+}
 }
