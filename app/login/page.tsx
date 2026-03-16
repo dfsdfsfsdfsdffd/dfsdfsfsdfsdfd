@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"; // Added
+import { createBrowserClient } from '@supabase/ssr';
 import { Space_Grotesk } from "next/font/google";
 
 const font = Space_Grotesk({
