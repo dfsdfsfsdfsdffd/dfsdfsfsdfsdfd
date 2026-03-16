@@ -3,11 +3,10 @@ import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from '@supabase/ssr'
 
 export default function SoftcardDashboard() {
-  // Initialize client with a safety check for env vars
   const supabase = useMemo(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return null;
+    if (!url || !key) return null; // Returns null if env vars are missing
     return createBrowserClient(url, key);
   }, []);
 
@@ -35,8 +34,12 @@ export default function SoftcardDashboard() {
 
   useEffect(() => {
     async function loadData() {
-      // CRITICAL: Stop if client isn't ready to avoid "reading auth" error
-      if (!supabase) return;
+      // FIX FOR CRASH: Hard exit if supabase is null
+      if (!supabase) {
+        console.error("Supabase client failed to initialize. Check ENV variables.");
+        setLoading(false);
+        return;
+      }
 
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -51,18 +54,17 @@ export default function SoftcardDashboard() {
         .single()
       
       if (profile) {
-        setAvatar(profile.avatar_url || "https://i.imgur.com/1X6g1YH.jpeg")
-        setName(profile.display_name || "akuryō")
-        setUsername(profile.username || "akuryo")
+        setAvatar(profile.avatar_url || avatar)
+        setName(profile.display_name || name)
+        setUsername(profile.username || username)
         setBio(profile.bio || "")
-        // Ensure links is treated as an array even if the DB returns null
         setLinks(profile.links || [])
         setAccent(profile.accent_color || "#3b82f6")
         setFont(profile.font_family || "Inter")
         setBgType(profile.background_type || "gradient")
         
         const bgVal = profile.background_value || "";
-        if (profile.background_type === "gradient") setGradient(bgVal || "linear-gradient(135deg,#020617,#1e3a8a)");
+        if (profile.background_type === "gradient") setGradient(bgVal || gradient);
         else if (profile.background_type === "video") setBgVideo(bgVal);
         else if (profile.background_type === "image") setBgImage(bgVal);
         
@@ -79,12 +81,12 @@ export default function SoftcardDashboard() {
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      alert("Session expired. Please log in again.");
+      alert("Session expired.");
       setSaving(false);
       return;
     }
 
-    // This update includes 'links' and 'setup_completed' to fix the schema cache error
+    // Includes 'links' column to resolve schema cache error
     const { error } = await supabase.from('profiles').update({
       display_name: name,
       avatar_url: avatar,
@@ -98,11 +100,8 @@ export default function SoftcardDashboard() {
       setup_completed: true 
     }).eq('id', user.id)
 
-    if (error) {
-        alert("Error saving: " + error.message) //
-    } else {
-        alert("Published! ♡")
-    }
+    if (error) alert("Error saving: " + error.message)
+    else alert("Published! ♡")
     setSaving(false)
   }
 
@@ -116,6 +115,8 @@ export default function SoftcardDashboard() {
     setLinks(copy)
   }
 
+  // Prevents the UI from rendering if Supabase isn't ready
+  if (!supabase) return <div style={{color: 'white', padding: '20px'}}>Configuration Error: Check ENV keys.</div>
   if (loading) return <div style={{ height: '100vh', background: '#020617' }} />
 
   return (
@@ -196,8 +197,6 @@ export default function SoftcardDashboard() {
         {bgType === "video" && bgVideo && <video className="scdb-video" src={bgVideo} autoPlay loop muted playsInline /> }
         {bgType === "image" && bgImage && <img className="scdb-image" src={bgImage} />}
         {bgAudio && <audio src={bgAudio} autoPlay loop />}
-
-        {links.length === 0 && <div className="scdb-empty">No links yet!</div>}
 
         <div className="scdb-profile">
           <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
