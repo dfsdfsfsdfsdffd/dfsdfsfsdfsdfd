@@ -31,7 +31,7 @@ export default function SoftcardDashboard() {
   const [gradient, setGradient] = useState("linear-gradient(135deg,#020617,#1e3a8a)")
   const [bgVideo, setBgVideo] = useState("")
   const [bgImage, setBgImage] = useState("")
-  const [bgAudio, setBgAudio] = useState("")
+  const [bgAudio, setBgAudio] = useState("") // Audio State
 
   // LOAD DATA FROM SUPABASE
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function SoftcardDashboard() {
       font_family: font,
       background_type: bgType,
       background_value: bgType === "gradient" ? gradient : (bgType === "video" ? bgVideo : bgImage),
-      audio_url: bgAudio,
+      audio_url: bgAudio, // Save Audio URL
       setup_completed: true
     }).eq('id', user.id)
 
@@ -150,7 +150,11 @@ export default function SoftcardDashboard() {
             {bgType === "video" && <input className="scdb-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" />}
             {bgType === "image" && <input className="scdb-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" />}
             
-            <label className="scdb-label">Accent Color</label>
+            {/* Audio Input Section */}
+            <label className="scdb-label" style={{marginTop: '20px'}}>Background Audio URL (.mp3)</label>
+            <input className="scdb-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} placeholder="https://..." />
+            
+            <label className="scdb-label" style={{marginTop: '20px'}}>Accent Color</label>
             <input type="color" className="scdb-input" value={accent} onChange={e => setAccent(e.target.value)} />
           </div>
         )}
@@ -160,6 +164,9 @@ export default function SoftcardDashboard() {
         {bgType === "gradient" && <div className="scdb-bg" style={{ background: gradient }} />}
         {bgType === "video" && bgVideo && <video className="scdb-video" src={bgVideo} autoPlay loop muted playsInline /> }
         {bgType === "image" && bgImage && <img className="scdb-image" src={bgImage} />}
+        
+        {/* Audio Preview Element */}
+        {bgAudio && <audio src={bgAudio} autoPlay loop />}
         
         <div className="scdb-profile">
           <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
