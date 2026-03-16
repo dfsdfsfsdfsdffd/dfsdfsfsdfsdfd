@@ -2,26 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { --bg: #000000; }
+:root {
+  --bg: #050505;
+  --accent: #3b82f6;
+}
 
 body {
-  background: var(--bg);
-  @apply text-white antialiased selection:bg-white selection:text-black;
+  background-color: var(--bg);
+  @apply text-white antialiased selection:bg-blue-500/30;
   font-family: 'Inter', sans-serif;
 }
 
-/* Bubbly UI Elements */
-.card-bubbly {
-  @apply bg-zinc-900/40 border border-zinc-800/50 backdrop-blur-2xl rounded-[32px] p-6;
+/* Frosty Glow Background */
+.bg-glow {
+  background: radial-gradient(circle at 50% -20%, #1e3a8a 0%, #050505 60%);
 }
 
-.input-bubbly {
-  @apply w-full bg-zinc-900/50 border border-zinc-800/50 rounded-[22px] px-6 py-4 
-         outline-none transition-all duration-300 focus:border-white focus:bg-zinc-900 
-         placeholder:text-zinc-700 text-sm font-medium;
+.card-frost {
+  @apply bg-[#0a0a0a] border border-zinc-800/50 rounded-[32px] backdrop-blur-xl;
 }
 
-.btn-bubbly {
-  @apply rounded-[22px] font-black px-8 py-4 transition-all duration-300 
-         active:scale-95 flex items-center justify-center gap-2;
+.input-frost {
+  @apply w-full bg-zinc-900/50 border border-zinc-800 rounded-[18px] px-5 py-4 
+         outline-none transition-all focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20;
+}
+
+.btn-blue {
+  @apply bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-8 rounded-full 
+         shadow-lg shadow-blue-600/20 transition-all active:scale-95;
 }
