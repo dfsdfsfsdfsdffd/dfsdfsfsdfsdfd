@@ -3,7 +3,8 @@ import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
 import { Pencil, BarChart3, LogOut, Copy, Check, ExternalLink } from "lucide-react"
 
-// Social Icon Mapping
+// --- 1. UTILS & ASSETS ---
+
 const iconMap: any = {
   tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
   instagram: "https://cdn.simpleicons.org/instagram/ffffff",
@@ -32,6 +33,83 @@ function getIcon(url: string) {
   return "https://cdn.simpleicons.org/pwa/ffffff"
 }
 
+// --- 2. THEME COMPONENTS ---
+
+function DefaultProfile({ profile }: { profile: any }) {
+  const { avatar, name, bio, links, age, gender, sexuality, birthday, timezone, nameColor, bioColor, accent, badges, showGlass } = profile;
+  return (
+    <div className="scdb-profile-card" style={!showGlass ? { background: 'transparent', border: 'none' } : {}}>
+      <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
+      <div className="name-container">
+        <div className="scdb-name" style={{ color: nameColor, fontSize: '24px', fontWeight: '600' }}>{name}</div>
+      </div>
+      <div className="scdb-bio" style={{ color: bioColor }}>{bio}</div>
+      <div className="scdb-tags">
+        {age && <div className="tag"><span>🎂</span>{age}</div>}
+        {gender && <div className="tag"><span>⚥</span>{gender}</div>}
+        {sexuality && <div className="tag"><span>❤</span>{sexuality}</div>}
+        {birthday && <div className="tag"><span>🎉</span>{birthday}</div>}
+        {timezone && <div className="tag"><span>🌍</span>{timezone}</div>}
+      </div>
+      <div className="scdb-badges">
+        {badges.user && <div className="badge">User</div>}
+        {badges.dev && <div className="badge dev" style={{ borderColor: accent, color: accent }}>Dev</div>}
+      </div>
+      <div className="scdb-links-row">
+        {links.map((l: any) => {
+          if (!l.url) return null;
+          return (
+            <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="scdb-icon-link">
+              <img src={getIcon(l.url)} alt="" />
+            </a>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function BlossomProfile({ profile }: { profile: any }) {
+  const { avatar, name, bio, links, age, gender, sexuality, birthday, timezone } = profile;
+  return (
+    <div className="blossom-root">
+      <div className="blossom-card">
+        <img src={avatar} className="blossom-avatar" alt="avatar"/>
+        <h2 className="blossom-name">{name}</h2>
+        <p className="blossom-bio">{bio}</p>
+        <div className="blossom-tags">
+          {age && <span>🎂 {age}</span>}
+          {gender && <span>⚥ {gender}</span>}
+          {sexuality && <span>❤ {sexuality}</span>}
+          {birthday && <span>🎉 {birthday}</span>}
+          {timezone && <span>🌍 {timezone}</span>}
+        </div>
+        <div className="blossom-links">
+          {links.map((l: any) => {
+            if (!l.url) return null
+            return (
+              <a key={l.id} href={l.url.startsWith("http") ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="blossom-button">
+                <img src={getIcon(l.url)} alt="" />
+                <span>{l.title || l.url}</span>
+                <div className="arrow">›</div>
+              </a>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// --- 3. THEME REGISTRY ---
+
+const THEMES: Record<string, React.ComponentType<{ profile: any }>> = {
+  default: DefaultProfile,
+  blossom: BlossomProfile
+}
+
+// --- 4. MAIN DASHBOARD ---
+
 export default function SoftcardDashboard() {
   const supabase = useMemo(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -41,29 +119,25 @@ export default function SoftcardDashboard() {
   }, []);
 
   const [view, setView] = useState<"hub" | "editor">("hub")
-  const [copied, setCopied] = useState(false)
   const [tab, setTab] = useState("profile")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // PRESET STATE
-  const [preset, setPreset] = useState<"default" | "blossom">("default")
-
+  // Data State
+  const [preset, setPreset] = useState<string>("default")
   const [avatar, setAvatar] = useState("https://i.imgur.com/1X6g1YH.jpeg")
   const [name, setName] = useState("akuryō")
   const [username, setUsername] = useState("") 
   const [bio, setBio] = useState("")
-  
   const [age, setAge] = useState("")
   const [gender, setGender] = useState("")
   const [sexuality, setSexuality] = useState("")
   const [birthday, setBirthday] = useState("")
   const [timezone, setTimezone] = useState("")
-
   const [links, setLinks] = useState<any[]>([])
   const [badges, setBadges] = useState<any>({ user: true, dev: false })
-  const [devPassword, setDevPassword] = useState("")
-
+  
+  // Appearance State
   const [accent, setAccent] = useState("#3b82f6")
   const [nameColor, setNameColor] = useState("#ffffff")
   const [bioColor, setBioColor] = useState("rgba(255,255,255,0.7)")
@@ -75,17 +149,19 @@ export default function SoftcardDashboard() {
   const [bgAudio, setBgAudio] = useState("")
   const [showGlass, setShowGlass] = useState(true)
 
+  // Package all state for themes
+  const currentProfileData = {
+    avatar, name, bio, links, age, gender, sexuality, birthday, timezone,
+    accent, nameColor, bioColor, badges, showGlass
+  }
+
   useEffect(() => {
     async function loadData() {
       if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
 
       if (profile) {
         setPreset(profile.preset || "default")
@@ -125,16 +201,10 @@ export default function SoftcardDashboard() {
     if (!user) return;
 
     const { error } = await supabase.from('profiles').update({
-      preset: preset,
+      preset,
       display_name: name,
       avatar_url: avatar,
-      bio: bio,
-      age: age,
-      gender: gender,
-      sexuality: sexuality,
-      birthday: birthday,
-      timezone: timezone,
-      links: links,
+      bio, age, gender, sexuality, birthday, timezone, links,
       accent_color: accent,
       name_color: nameColor,
       bio_color: bioColor,
@@ -142,7 +212,7 @@ export default function SoftcardDashboard() {
       background_type: bgType,
       background_value: bgType === "gradient" ? gradient : (bgType === "video" ? bgVideo : bgImage),
       audio_url: bgAudio,
-      badges: badges,
+      badges,
       show_glass_card: showGlass,
       setup_completed: true
     }).eq('id', user.id)
@@ -152,62 +222,9 @@ export default function SoftcardDashboard() {
     setSaving(false)
   }
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(`softcard.cc/${username}`)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   const addLink = () => setLinks([...links, { id: Date.now(), title: "New Link", url: "" }])
-
   const updateLink = (i: number, key: string, val: string) => {
-    const copy = [...links]
-    copy[i][key] = val
-    setLinks(copy)
-  }
-
-  const unlockDev = () => {
-    if (devPassword === "12345") {
-      setBadges({ ...badges, dev: true })
-      alert("Dev badge unlocked")
-    } else {
-      alert("Wrong password")
-    }
-  }
-
-  // PREVIEW COMPONENTS
-  function DefaultProfile() {
-    return (
-      <div className="scdb-profile-card">
-          <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
-          <div className="name-container">
-            <div className="scdb-name" style={{ color: nameColor, fontSize: '24px', fontWeight: '600' }}>{name}</div>
-          </div>
-          <div className="scdb-bio" style={{ color: bioColor }}>{bio}</div>
-          <div className="scdb-tags">
-            {age && <div className="tag"><span>🎂</span>{age}</div>}
-            {gender && <div className="tag"><span>⚥</span>{gender}</div>}
-            {sexuality && <div className="tag"><span>❤</span>{sexuality}</div>}
-            {birthday && <div className="tag"><span>🎉</span>{birthday}</div>}
-            {timezone && <div className="tag"><span>🌍</span>{timezone}</div>}
-          </div>
-          <div className="scdb-badges">
-            {badges.user && <div className="badge">User</div>}
-            {badges.dev && <div className="badge dev" style={{ borderColor: accent, color: accent }}>Dev</div>}
-          </div>
-          <div className="scdb-links-row">
-            {links.map(l => {
-              if (!l.url) return null;
-              const icon = getIcon(l.url)
-              return (
-                <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="scdb-icon-link">
-                  <img src={icon} alt="" />
-                </a>
-              )
-            })}
-          </div>
-        </div>
-    )
+    const copy = [...links]; copy[i][key] = val; setLinks(copy);
   }
 
   if (loading) return <div style={{ height: '100vh', background: '#020617' }} />
@@ -215,55 +232,27 @@ export default function SoftcardDashboard() {
   return (
     <div className="scdb-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
       <style>{`
-        /* ... keeping your existing dashboard styles ... */
+        /* DASHBOARD UI */
         .scdb-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
         .scdb-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
         .scdb-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
         .name-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px; }
         .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
-        .badge { 
-          padding: 3px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); 
-          backdrop-filter: blur(4px); font-size: 11px; font-weight: 800;
-          color: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); 
-          letter-spacing: 0.5px; text-transform: uppercase;
-        }
+        .badge { padding: 3px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(4px); font-size: 11px; font-weight: 800; color: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); letter-spacing: 0.5px; text-transform: uppercase; }
         .scdb-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 15px; }
-        .tag {
-          display: flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.05);
-          padding: 4px 10px; border-radius: 8px; font-size: 12px; border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .scdb-profile-card {
-          ${showGlass ? `
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            padding: 40px 30px;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-          ` : 'background: transparent; border: none; padding: 40px 30px;'}
-          width: 100%; max-width: 420px; text-align: center; position: relative; z-index: 5; transition: all 0.3s ease;
-        }
+        .tag { display: flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 8px; font-size: 12px; border: 1px solid rgba(255, 255, 255, 0.08); }
+        .scdb-profile-card { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(15px); padding: 40px 30px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 420px; text-align: center; position: relative; z-index: 5; transition: all 0.3s ease; }
 
-        /* Blossom Component CSS */
+        /* BLOSSOM THEME */
         .blossom-root { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        .blossom-card { 
-            background: rgba(255, 192, 203, 0.15); backdrop-filter: blur(12px);
-            border: 2px solid rgba(255, 255, 255, 0.3); padding: 40px; border-radius: 40px;
-            width: 100%; max-width: 380px; text-align: center; color: white;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
+        .blossom-card { background: rgba(255, 192, 203, 0.15); backdrop-filter: blur(12px); border: 2px solid rgba(255, 255, 255, 0.3); padding: 40px; border-radius: 40px; width: 100%; max-width: 380px; text-align: center; color: white; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
         .blossom-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; margin: 0 auto 20px auto; box-shadow: 0 0 30px rgba(255,105,180,0.5); }
         .blossom-name { font-size: 28px; font-weight: 800; margin-bottom: 10px; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
         .blossom-bio { font-size: 14px; opacity: 0.9; margin-bottom: 20px; line-height: 1.5; }
         .blossom-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 25px; }
         .blossom-tags span { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 12px; }
-        
         .blossom-links { display: flex; flex-direction: column; gap: 10px; }
-        .blossom-button { 
-            background: #fff; color: #ff69b4; padding: 12px 20px; border-radius: 15px; 
-            text-decoration: none; font-weight: 700; font-size: 14px; transition: 0.3s;
-            display: flex; align-items: center; justify-content: space-between;
-        }
+        .blossom-button { background: #fff; color: #ff69b4; padding: 12px 20px; border-radius: 15px; text-decoration: none; font-weight: 700; font-size: 14px; transition: 0.3s; display: flex; align-items: center; justify-content: space-between; }
         .blossom-button:hover { transform: scale(1.03); background: #ffe4e1; }
         .blossom-button img { width: 20px; height: 20px; filter: invert(53%) sepia(88%) saturate(1914%) hue-rotate(307deg) brightness(101%) contrast(101%); }
         .blossom-button .arrow { opacity: 0.5; font-size: 18px; }
@@ -276,29 +265,25 @@ export default function SoftcardDashboard() {
         </div>
 
         <div className="scdb-tabs">
-          <div className={`scdb-tab ${tab === "profile" ? "scdb-tab-active" : ""}`} onClick={() => setTab("profile")}>Profile</div>
-          <div className={`scdb-tab ${tab === "appearance" ? "scdb-tab-active" : ""}`} onClick={() => setTab("appearance")}>Appearance</div>
-          <div className={`scdb-tab ${tab === "badges" ? "scdb-tab-active" : ""}`} onClick={() => setTab("badges")}>Badges</div>
+          {["profile", "appearance", "badges"].map(t => (
+            <div key={t} className={`scdb-tab ${tab === t ? "scdb-tab-active" : ""}`} onClick={() => setTab(t)} style={{textTransform:'capitalize'}}>{t}</div>
+          ))}
         </div>
 
         {tab === "profile" && (
           <div className="scdb-card">
-            <label className="scdb-label">Profile Preset</label>
+            <label className="scdb-label">Profile Theme</label>
             <div style={{display:"flex", gap:"10px", marginBottom:"25px"}}>
-              <button
-                className="scdb-btn"
-                onClick={() => setPreset("default")}
-                style={{background: preset === "default" ? "#2563eb" : "#111827", flex: 1}}
-              >
-                Default
-              </button>
-              <button
-                className="scdb-btn"
-                onClick={() => setPreset("blossom")}
-                style={{background: preset === "blossom" ? "#ff4fa0" : "#111827", flex: 1}}
-              >
-                Blossom
-              </button>
+              {Object.keys(THEMES).map(tName => (
+                <button
+                  key={tName}
+                  className="scdb-btn"
+                  onClick={() => setPreset(tName)}
+                  style={{background: preset === tName ? (tName === 'blossom' ? '#ff4fa0' : '#2563eb') : "#111827", flex: 1, textTransform: 'capitalize'}}
+                >
+                  {tName}
+                </button>
+              ))}
             </div>
 
             <label className="scdb-label">Avatar URL</label>
@@ -308,39 +293,20 @@ export default function SoftcardDashboard() {
             <label className="scdb-label">Bio</label>
             <input className="scdb-input" value={bio} onChange={e => setBio(e.target.value)} />
             
-            <label className="scdb-label">Age</label>
-            <input className="scdb-input" value={age} onChange={e => setAge(e.target.value)} />
-            <label className="scdb-label">Gender</label>
-            <input className="scdb-input" value={gender} onChange={e => setGender(e.target.value)} />
-            <label className="scdb-label">Sexuality</label>
-            <input className="scdb-input" value={sexuality} onChange={e => setSexuality(e.target.value)} />
-            <label className="scdb-label">Birthday</label>
-            <input className="scdb-input" value={birthday} onChange={e => setBirthday(e.target.value)} />
-            <label className="scdb-label">Timezone</label>
-            <input className="scdb-input" value={timezone} onChange={e => setTimezone(e.target.value)} />
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px'}}>
+              <div><label className="scdb-label">Age</label><input className="scdb-input" value={age} onChange={e => setAge(e.target.value)} /></div>
+              <div><label className="scdb-label">Gender</label><input className="scdb-input" value={gender} onChange={e => setGender(e.target.value)} /></div>
+            </div>
 
             <button className="scdb-btn" onClick={addLink} style={{marginTop: '15px'}}>+ Add Link</button>
             {links.map((l, i) => (
-              <div key={l.id} style={{ marginTop: '10px' }}>
-                <input 
-                  className="scdb-input" 
-                  value={l.title} 
-                  onChange={e => updateLink(i, "title", e.target.value)} 
-                  placeholder="Link Title (e.g. Instagram)"
-                  style={{marginBottom: '5px'}}
-                />
-                <input 
-                  className="scdb-input" 
-                  value={l.url} 
-                  onChange={e => updateLink(i, "url", e.target.value)} 
-                  placeholder="URL (e.g. instagram.com/user)" 
-                />
+              <div key={l.id} style={{ marginTop: '10px', background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '8px' }}>
+                <input className="scdb-input" value={l.title} onChange={e => updateLink(i, "title", e.target.value)} placeholder="Title" style={{marginBottom: '5px'}} />
+                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL" />
               </div>
             ))}
           </div>
         )}
-
-        {/* ... Tab content for Appearance and Badges remains same as your original ... */}
       </div>
 
       <div className="scdb-preview">
@@ -349,60 +315,10 @@ export default function SoftcardDashboard() {
         {bgType === "image" && bgImage && <img className="scdb-image" src={bgImage} />}
         {bgAudio && <audio src={bgAudio} autoPlay loop />}
         
-        {preset === "default" ? (
-            <DefaultProfile />
-        ) : (
-            <BlossomProfile 
-                avatar={avatar} 
-                name={name} 
-                bio={bio} 
-                links={links} 
-                age={age} 
-                gender={gender} 
-                sexuality={sexuality} 
-                birthday={birthday} 
-                timezone={timezone} 
-            />
-        )}
-      </div>
-    </div>
-  )
-}
-
-function BlossomProfile({ avatar, name, bio, links, age, gender, sexuality, birthday, timezone }: any) {
-  return (
-    <div className="blossom-root">
-      <div className="blossom-card">
-        <img src={avatar} className="blossom-avatar" alt="avatar"/>
-        <h2 className="blossom-name">{name}</h2>
-        <p className="blossom-bio">{bio}</p>
-
-        <div className="blossom-tags">
-          {age && <span>🎂 {age}</span>}
-          {gender && <span>⚥ {gender}</span>}
-          {sexuality && <span>❤ {sexuality}</span>}
-          {birthday && <span>🎉 {birthday}</span>}
-          {timezone && <span>🌍 {timezone}</span>}
-        </div>
-
-        <div className="blossom-links">
-          {links.map((l: any) => {
-            if (!l.url) return null
-            return (
-              <a
-                key={l.id}
-                href={l.url.startsWith("http") ? l.url : `https://${l.url}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="blossom-button"
-              >
-                <img src={getIcon(l.url)} alt="" />
-                <span>{l.title || l.url}</span>
-                <div className="arrow">›</div>
-              </a>
-            )
-          })}
-        </div>
+        {(() => {
+          const SelectedTheme = THEMES[preset] || THEMES.default;
+          return <SelectedTheme profile={currentProfileData} />;
+        })()}
       </div>
     </div>
   )
