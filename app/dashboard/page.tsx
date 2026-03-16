@@ -29,7 +29,8 @@ function getIcon(url: string) {
   if (lowerUrl.includes("github")) return iconMap.github
   if (lowerUrl.includes("threads")) return iconMap.threads
   if (lowerUrl.includes("linkedin")) return iconMap.linkedin
-  return "https://cdn.simpleicons.org/link/ffffff"
+  // Fallback to a clean World icon for random sites
+  return "https://cdn.simpleicons.org/pwa/ffffff"
 }
 
 export default function SoftcardDashboard() {
@@ -139,11 +140,26 @@ export default function SoftcardDashboard() {
   return (
     <div className="scdb-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
       <style>{`
-        .scdb-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; }
-        .scdb-icon-link img { width: 32px; height: 32px; filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5)); transition: transform 0.2s; }
-        .scdb-icon-link:hover img { transform: scale(1.1); filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8)); }
-        .scdb-badges { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
-        .badge { padding: 4px 10px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); font-size: 12px; color: white; border: 1px solid rgba(255, 255, 255, 0.2); }
+        /* Side-by-side Icons */
+        .scdb-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
+        .scdb-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
+        .scdb-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
+
+        /* Clean Flush Badges */
+        .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+        .badge { 
+          padding: 3px 10px; 
+          border-radius: 6px; 
+          background: rgba(255, 255, 255, 0.06); 
+          backdrop-filter: blur(4px);
+          font-size: 11px; 
+          font-weight: 500;
+          color: rgba(255, 255, 255, 0.85); 
+          border: 1px solid rgba(255, 255, 255, 0.1); 
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+        }
+        .badge.dev { border-color: rgba(255, 255, 255, 0.2); }
       `}</style>
 
       <div className="scdb-sidebar">
@@ -168,7 +184,7 @@ export default function SoftcardDashboard() {
             <button className="scdb-btn" onClick={addLink} style={{marginTop: '15px'}}>+ Add Link</button>
             {links.map((l, i) => (
               <div key={l.id} style={{ marginTop: '10px' }}>
-                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.target.youtube.com/...)" />
+                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. google.com)" />
               </div>
             ))}
           </div>
@@ -198,7 +214,7 @@ export default function SoftcardDashboard() {
               <input type="checkbox" checked={badges.user} onChange={() => setBadges({ ...badges, user: !badges.user })} />
               User Badge
             </label>
-            <div style={{ marginTop: 20 }}>Unlock Dev</div>
+            <div style={{ marginTop: 20 }}>Unlock Dev Badge</div>
             <input className="scdb-input" placeholder="Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
             <button className="scdb-btn" onClick={unlockDev}>Unlock</button>
           </div>
@@ -218,7 +234,7 @@ export default function SoftcardDashboard() {
           
           <div className="scdb-badges">
             {badges.user && <div className="badge">User</div>}
-            {badges.dev && <div className="badge dev" style={{ borderColor: accent }}>Dev</div>}
+            {badges.dev && <div className="badge dev" style={{ boxShadow: `0 0 10px ${accent}44` }}>Dev</div>}
           </div>
 
           <div className="scdb-links-row">
@@ -226,7 +242,7 @@ export default function SoftcardDashboard() {
               if (!l.url) return null;
               const icon = getIcon(l.url)
               return (
-                <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer" className="scdb-icon-link">
+                <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="scdb-icon-link">
                   <img src={icon} alt="" />
                 </a>
               )
