@@ -4,6 +4,8 @@ import Link from "next/link";
 
 export default function Home() {
   return (
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <main className="main">
 
       <nav className="nav">
@@ -13,10 +15,7 @@ export default function Home() {
           <button className="dashboard">Dashboard →</button>
         </Link>
       </nav>
-
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-      
+         
       <section className="hero">
 
         <h1>
