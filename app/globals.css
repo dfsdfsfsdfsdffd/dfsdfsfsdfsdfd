@@ -86,11 +86,8 @@ padding:40px 20px;
 .hero h1{
 font-size:64px;
 font-weight:700;
-letter-spacing:-1px;
+letter-spacing:-1.5px;
 line-height:1.1;
-
-opacity:0;
-animation:fadeUp 1s ease forwards;
 }
 
 .hero p{
@@ -103,6 +100,13 @@ line-height:1.6;
 opacity:0;
 animation:fadeUp 1s ease forwards;
 animation-delay:.2s;
+}
+
+.hero span{
+background:linear-gradient(135deg,#ff6bbf,#ff3d9a);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+text-shadow:0 0 25px rgba(255,80,160,.35);
 }
 
 .buttons{
