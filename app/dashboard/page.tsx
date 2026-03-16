@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { Pencil, BarChart3, LogOut, Copy, Check } from "lucide-react"
+import { Pencil, BarChart3, LogOut, Copy, Check, ExternalLink } from "lucide-react"
 
 // Social Icon Mapping
 const iconMap: any = {
@@ -41,7 +41,6 @@ export default function SoftcardDashboard() {
     return createBrowserClient(url, key);
   }, []);
 
-  // NEW VIEW STATE
   const [view, setView] = useState<"hub" | "editor">("hub")
   const [copied, setCopied] = useState(false)
 
@@ -58,6 +57,8 @@ export default function SoftcardDashboard() {
   const [devPassword, setDevPassword] = useState("")
 
   const [accent, setAccent] = useState("#3b82f6")
+  const [nameColor, setNameColor] = useState("#ffffff")
+  const [bioColor, setBioColor] = useState("rgba(255,255,255,0.7)")
   const [font, setFont] = useState("Inter")
   const [bgType, setBgType] = useState("gradient")
   const [gradient, setGradient] = useState("linear-gradient(135deg,#020617,#1e3a8a)")
@@ -85,6 +86,8 @@ export default function SoftcardDashboard() {
         setBio(profile.bio || "")
         setLinks(profile.links || [])
         setAccent(profile.accent_color || "#3b82f6")
+        setNameColor(profile.name_color || "#ffffff")
+        setBioColor(profile.bio_color || "rgba(255,255,255,0.7)")
         setFont(profile.font_family || "Inter")
         setBgType(profile.background_type || "gradient")
         setBadges(profile.badges || { user: true })
@@ -113,6 +116,8 @@ export default function SoftcardDashboard() {
       bio: bio,
       links: links,
       accent_color: accent,
+      name_color: nameColor,
+      bio_color: bioColor,
       font_family: font,
       background_type: bgType,
       background_value: bgType === "gradient" ? gradient : (bgType === "video" ? bgVideo : bgImage),
@@ -224,6 +229,13 @@ export default function SoftcardDashboard() {
             border: 1px solid rgba(255, 255, 255, 0.1);
             gap: 20px;
           }
+
+          /* Container for the side-by-side buttons */
+          .hub-btns-group {
+            display: flex;
+            gap: 8px;
+          }
+
           .hub-copy-btn {
             background: #ec4899;
             border: none;
@@ -233,7 +245,13 @@ export default function SoftcardDashboard() {
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.2s;
           }
+          .hub-copy-btn:hover { opacity: 0.9; }
+
           .hub-logout-icon { position: fixed; top: 30px; right: 30px; opacity: 0.3; cursor: pointer; }
           .hub-logout-icon:hover { opacity: 1; color: #f472b6; }
         `}</style>
@@ -269,9 +287,21 @@ export default function SoftcardDashboard() {
           <div>
             <div className="hub-url-bar">
               <span style={{ opacity: 0.6 }}>softcard.cc/{username}</span>
-              <button className="hub-copy-btn" onClick={handleCopy}>
-                {copied ? "Copied!" : "Copy"}
-              </button>
+              <div className="hub-btns-group">
+                <button className="hub-copy-btn" onClick={handleCopy}>
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+                {/* NEW VIEW BUTTON */}
+                <a 
+                  href={`/${username}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hub-copy-btn"
+                  style={{ background: 'rgba(255,255,255,0.1)' }}
+                >
+                  View
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -366,8 +396,8 @@ export default function SoftcardDashboard() {
         {tab === "appearance" && (
           <div className="scdb-card">
             <label className="scdb-label" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '15px' }}>
-               <input type="checkbox" checked={showGlass} onChange={e => setShowGlass(e.target.checked)} />
-               Show Transparent Card
+                <input type="checkbox" checked={showGlass} onChange={e => setShowGlass(e.target.checked)} />
+                Show Transparent Card
             </label>
             <label className="scdb-label">Background Type</label>
             <select className="scdb-input" value={bgType} onChange={e => setBgType(e.target.value)}>
@@ -380,7 +410,11 @@ export default function SoftcardDashboard() {
             {bgType === "image" && <input className="scdb-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" />}
             <label className="scdb-label" style={{ marginTop: '20px' }}>Audio URL (.mp3)</label>
             <input className="scdb-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} />
-            <label className="scdb-label" style={{ marginTop: '20px' }}>Accent Color</label>
+            <label className="scdb-label" style={{ marginTop: '20px' }}>Name Color</label>
+            <input type="color" className="scdb-input" value={nameColor} onChange={e => setNameColor(e.target.value)} />
+            <label className="scdb-label" style={{ marginTop: '10px' }}>Bio Color</label>
+            <input type="color" className="scdb-input" value={bioColor} onChange={e => setBioColor(e.target.value)} />
+            <label className="scdb-label" style={{ marginTop: '10px' }}>Accent Color</label>
             <input type="color" className="scdb-input" value={accent} onChange={e => setAccent(e.target.value)} />
           </div>
         )}
@@ -409,10 +443,10 @@ export default function SoftcardDashboard() {
           
           <div className="name-container">
             <div className="scdb-username">@{username}</div>
-            <div className="scdb-name">{name}</div>
+            <div className="scdb-name" style={{ color: nameColor }}>{name}</div>
           </div>
 
-          <div className="scdb-bio">{bio}</div>
+          <div className="scdb-bio" style={{ color: bioColor }}>{bio}</div>
           
           <div className="scdb-badges">
             {badges.user && <div className="badge">User</div>}
