@@ -20,14 +20,14 @@ export default async function PublicProfile({ params }: { params: { username: st
     }
   );
 
-  // Look up the user by the username in the URL
+  // 1. Fetch the profile by username (case-insensitive)
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('username', params.username.toLowerCase())
     .single();
 
-  // If the username isn't in our database, show 404
+  // 2. If no user exists with that name, 404
   if (!profile) {
     notFound();
   }
@@ -35,44 +35,73 @@ export default async function PublicProfile({ params }: { params: { username: st
   return (
     <main className={font.className} style={{ 
       minHeight: '100vh', 
-      backgroundColor: '#0a0a0a', 
+      backgroundColor: '#020617', // Matching your new Dashboard navy
       color: 'white',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      paddingTop: '100px'
+      justifyContent: 'center',
+      padding: '20px'
     }}>
-      <div className="profileCard" style={{ textAlign: 'center' }}>
-        {/* Profile Image */}
-        <div style={{ 
-          width: '120px', 
-          height: '120px', 
-          borderRadius: '50%', 
-          background: profile.accent_color,
-          margin: '0 auto 20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '40px'
-        }}>
-          {profile.display_name?.charAt(0).toUpperCase() || "♡"}
-        </div>
+      <div className="profile-card" style={{ textAlign: 'center', width: '100%', maxWidth: '400px' }}>
+        
+        {/* Custom Avatar with Glow Effect */}
+        <img 
+          src={profile.avatar_url || "https://i.imgur.com/1X6g1YH.jpeg"} 
+          alt={profile.display_name}
+          style={{ 
+            width: '120px', 
+            height: '120px', 
+            borderRadius: '50%', 
+            objectFit: 'cover',
+            boxShadow: `0 0 35px ${profile.accent_color || '#3b82f6'}`,
+            marginBottom: '20px'
+          }}
+        />
 
-        <h1 style={{ color: profile.accent_color, fontSize: '32px' }}>
-          {profile.display_name}
+        <h1 style={{ fontSize: '32px', marginBottom: '4px' }}>
+          {profile.display_name || profile.username}
         </h1>
         
-        <p style={{ opacity: 0.8, marginTop: '10px', maxWidth: '400px' }}>
-          {profile.bio}
-        </p>
+        <p style={{ opacity: 0.6, fontSize: '14px', marginBottom: '24px' }}>
+          @{profile.username}
+        </h1>
 
-        <div className="links" style={{ marginTop: '40px' }}>
-            {/* We'll add your links/socials here next */}
-        </div>
+        {/* The One Permanent Link */}
+        {profile.link_url && (
+          <a 
+            href={profile.link_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ 
+              display: 'block',
+              width: '100%',
+              padding: '16px',
+              borderRadius: '12px',
+              background: '#0b1726',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'white',
+              textDecoration: 'none',
+              fontWeight: '500',
+              transition: '0.2s',
+              textAlign: 'center'
+            }}
+          >
+            {profile.link_title || "Visit Link"}
+          </a>
+        )}
+
+        {/* Bio / Description */}
+        {profile.bio && (
+          <p style={{ marginTop: '24px', opacity: 0.8, fontSize: '15px', lineHeight: '1.5' }}>
+            {profile.bio}
+          </p>
+        )}
       </div>
 
-      <footer style={{ marginTop: 'auto', paddingBottom: '40px', opacity: 0.5 }}>
-        <a href="/" style={{ textDecoration: 'none', color: 'inherit' }}>♡ softcard.cc</a>
+      {/* Brand Footer */}
+      <footer style={{ marginTop: '60px', opacity: 0.4, fontSize: '13px' }}>
+        <a href="/" style={{ color: 'inherit', textDecoration: 'none' }}>♡ softcard.cc</a>
       </footer>
     </main>
   );
