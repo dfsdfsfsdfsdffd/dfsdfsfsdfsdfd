@@ -1,61 +1,59 @@
-import { Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react'
 
-export default function HomePage() {
+export default function Home() {
   return (
-    <div className="bg-glow flex flex-col items-center justify-center text-center p-6 relative">
-      
-      {/* Navbar */}
-      <nav className="absolute top-0 w-full p-8 flex justify-between items-center max-w-7xl mx-auto">
+    <main className="relative min-h-screen w-full flex flex-col items-center justify-center text-white overflow-hidden bg-black">
+      {/* Animated Background */}
+      <div className="mesh-bg" />
+
+      {/* Navigation */}
+      <nav className="absolute top-0 w-full max-w-7xl flex items-center justify-between p-8">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-white rounded-sm rotate-45 flex items-center justify-center">
-            <div className="w-3 h-3 bg-black rounded-sm" />
-          </div>
-          <span className="font-black text-xl italic tracking-tighter">softcard.cc</span>
+          <span className="text-2xl font-bold tracking-tighter">✶ frost.rip</span>
         </div>
-        <div className="hidden md:flex gap-8 text-sm font-medium text-zinc-500">
-          <span className="hover:text-white cursor-pointer transition-colors">Features</span>
-          <span className="hover:text-white cursor-pointer transition-colors">Community</span>
-          <span className="text-white bg-blue-600/10 border border-blue-500/20 px-5 py-2 rounded-full">
-            Coming Soon
-          </span>
+        <div className="flex items-center gap-8">
+          <div className="hidden md:flex gap-6 text-sm font-medium text-zinc-400">
+            <a href="#" className="hover:text-white transition-colors">Features</a>
+            <a href="#" className="hover:text-white transition-colors">Community</a>
+          </div>
+          <button className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-5 py-2.5 rounded-full flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]">
+            Get Started <ArrowRight size={14} />
+          </button>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <div className="relative z-10 space-y-8 max-w-4xl animate-in fade-in slide-in-from-bottom-10 duration-1000">
-        
-        {/* Version Badge */}
-        <div className="inline-flex items-center gap-2 bg-zinc-900/50 border border-zinc-800 px-4 py-2 rounded-full">
-          <span className="bg-blue-500 w-1.5 h-1.5 rounded-full animate-pulse" />
-          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em]">
-            Under Construction
+      {/* Hero Content */}
+      <div className="flex flex-col items-center text-center px-6 z-10 max-w-3xl">
+        {/* The "NEW" Badge */}
+        <div className="mb-8 group cursor-pointer bg-blue-950/30 border border-blue-500/20 px-3 py-1 rounded-full flex items-center gap-2 backdrop-blur-md">
+          <span className="bg-blue-600 text-[10px] font-black px-1.5 py-0.5 rounded-sm">NEW</span>
+          <span className="text-[11px] font-medium text-blue-200/80">
+            V1.2.5b Fix up video background audio & playing issues.
           </span>
+          <ArrowRight size={12} className="text-blue-400" />
         </div>
 
-        {/* Headline */}
-        <h1 className="text-6xl md:text-9xl font-bold tracking-tighter leading-[0.85]">
-          Your corner of <br /> 
-          <span className="text-blue-500 drop-shadow-[0_0_35px_rgba(59,130,246,0.4)]">the internet.</span>
+        <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-6">
+          Your corner of <br />
+          <span className="text-blue-500 text-transparent bg-clip-text bg-gradient-to-b from-blue-400 to-blue-600">
+            the internet.
+          </span>
         </h1>
 
-        {/* Description */}
-        <p className="text-zinc-400 text-lg md:text-2xl max-w-2xl mx-auto font-medium leading-relaxed">
-          The next generation of bio-links. Beautiful, fast, and completely customizable. 
+        <p className="text-zinc-400 text-lg md:text-xl font-medium max-w-lg mb-10 leading-relaxed">
+          One link-in-bio page for everything you do. Socials, projects, content — all in one place, completely free.
         </p>
 
-        {/* Buttons */}
-        <div className="flex flex-col md:flex-row gap-4 justify-center pt-6">
-          <button className="btn-primary">
-            Claim Your Handle <Sparkles size={18} />
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <button className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-10 rounded-full flex items-center gap-2 transition-all shadow-xl shadow-blue-600/20 active:scale-95">
+            Create Your Page <ArrowRight size={18} />
           </button>
-          <button className="btn-secondary">
-            View Showreel
+          <button className="bg-white/5 hover:bg-white/10 text-zinc-300 font-bold py-4 px-10 rounded-full border border-white/5 transition-all backdrop-blur-md">
+            See how it works
           </button>
         </div>
       </div>
-
-      {/* Subtle Bottom Vignette */}
-      <div className="absolute bottom-0 w-full h-64 bg-gradient-to-t from-black to-transparent pointer-events-none" />
-    </div>
-  );
+    </main>
+  )
 }
