@@ -42,13 +42,15 @@ z-index:-1;
 /* NAVBAR */
 
 .nav {
-  position: absolute;
-  top: 30px;
-  left: 60px;
-  right: 60px; /* Add this to give it a boundary on the right */
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between; /* This pushes items to opposite ends */
+  padding: 20px 60px; /* Adjust spacing from edges */
+  width: 100%;
+  position: absolute; /* Keeps it on top of the background */
+  top: 0;
+  left: 0;
+  z-index: 10;
 }
 
 /* Ensure the button doesn't have weird margins */
