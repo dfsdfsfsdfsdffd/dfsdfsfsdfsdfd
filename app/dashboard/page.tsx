@@ -33,7 +33,6 @@ function getIcon(url: string) {
 }
 
 export default function SoftcardDashboard() {
-  // Initialize Supabase
   const supabase = useMemo(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -45,16 +44,13 @@ export default function SoftcardDashboard() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // Profile States
   const [avatar, setAvatar] = useState("https://i.imgur.com/1X6g1YH.jpeg")
   const [name, setName] = useState("akuryō")
-  const [username, setUsername] = useState("")
   const [bio, setBio] = useState("")
   const [links, setLinks] = useState<any[]>([])
   const [badges, setBadges] = useState<any>({ user: true, dev: false })
   const [devPassword, setDevPassword] = useState("")
 
-  // Appearance States
   const [accent, setAccent] = useState("#3b82f6")
   const [font, setFont] = useState("Inter")
   const [bgType, setBgType] = useState("gradient")
@@ -63,7 +59,6 @@ export default function SoftcardDashboard() {
   const [bgImage, setBgImage] = useState("")
   const [bgAudio, setBgAudio] = useState("")
 
-  // Load Data
   useEffect(() => {
     async function loadData() {
       if (!supabase) return;
@@ -77,7 +72,6 @@ export default function SoftcardDashboard() {
         .single()
 
       if (profile) {
-        setUsername(profile.username || "")
         setAvatar(profile.avatar_url || avatar)
         setName(profile.display_name || name)
         setBio(profile.bio || "")
@@ -98,7 +92,6 @@ export default function SoftcardDashboard() {
     loadData()
   }, [supabase])
 
-  // Save Data
   async function saveChanges() {
     if (!supabase) return;
     setSaving(true)
@@ -145,6 +138,14 @@ export default function SoftcardDashboard() {
 
   return (
     <div className="scdb-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
+      <style>{`
+        .scdb-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; }
+        .scdb-icon-link img { width: 32px; height: 32px; filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5)); transition: transform 0.2s; }
+        .scdb-icon-link:hover img { transform: scale(1.1); filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8)); }
+        .scdb-badges { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+        .badge { padding: 4px 10px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); font-size: 12px; color: white; border: 1px solid rgba(255, 255, 255, 0.2); }
+      `}</style>
+
       <div className="scdb-sidebar">
         <div className="scdb-back" onClick={saveChanges} style={{ cursor: 'pointer' }}>
           {saving ? "Saving..." : "← Save & Publish"}
@@ -164,13 +165,10 @@ export default function SoftcardDashboard() {
             <input className="scdb-input" value={name} onChange={e => setName(e.target.value)} />
             <label className="scdb-label">Bio</label>
             <input className="scdb-input" value={bio} onChange={e => setBio(e.target.value)} />
-            
-            <div style={{ marginTop: '20px', fontWeight: 'bold' }}>Links</div>
-            <button className="scdb-btn" onClick={addLink}>+ Add Link</button>
+            <button className="scdb-btn" onClick={addLink} style={{marginTop: '15px'}}>+ Add Link</button>
             {links.map((l, i) => (
               <div key={l.id} style={{ marginTop: '10px' }}>
-                <input className="scdb-input" value={l.title} onChange={e => updateLink(i, "title", e.target.value)} placeholder="Title" />
-                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL" />
+                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.target.youtube.com/...)" />
               </div>
             ))}
           </div>
@@ -187,10 +185,8 @@ export default function SoftcardDashboard() {
             {bgType === "gradient" && <input className="scdb-input" value={gradient} onChange={e => setGradient(e.target.value)} />}
             {bgType === "video" && <input className="scdb-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" />}
             {bgType === "image" && <input className="scdb-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" />}
-            
-            <label className="scdb-label" style={{ marginTop: '20px' }}>Background Audio URL (.mp3)</label>
-            <input className="scdb-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} placeholder="https://..." />
-            
+            <label className="scdb-label" style={{ marginTop: '20px' }}>Audio URL (.mp3)</label>
+            <input className="scdb-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} />
             <label className="scdb-label" style={{ marginTop: '20px' }}>Accent Color</label>
             <input type="color" className="scdb-input" value={accent} onChange={e => setAccent(e.target.value)} />
           </div>
@@ -202,15 +198,9 @@ export default function SoftcardDashboard() {
               <input type="checkbox" checked={badges.user} onChange={() => setBadges({ ...badges, user: !badges.user })} />
               User Badge
             </label>
-            <div style={{ marginTop: 20 }}>Unlock Dev Badge</div>
+            <div style={{ marginTop: 20 }}>Unlock Dev</div>
             <input className="scdb-input" placeholder="Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
-            <button className="scdb-btn" onClick={unlockDev}>Unlock Dev</button>
-            {badges.dev && (
-              <label style={{ display: "flex", gap: 10, marginTop: 10, alignItems: 'center' }}>
-                <input type="checkbox" checked={badges.dev} onChange={() => setBadges({ ...badges, dev: !badges.dev })} />
-                Dev Badge Enabled
-              </label>
-            )}
+            <button className="scdb-btn" onClick={unlockDev}>Unlock</button>
           </div>
         )}
       </div>
@@ -228,21 +218,16 @@ export default function SoftcardDashboard() {
           
           <div className="scdb-badges">
             {badges.user && <div className="badge">User</div>}
-            {badges.dev && <div className="badge dev" style={{ border: `1px solid ${accent}` }}>Dev</div>}
+            {badges.dev && <div className="badge dev" style={{ borderColor: accent }}>Dev</div>}
           </div>
 
-          <div className="scdb-links">
+          <div className="scdb-links-row">
             {links.map(l => {
+              if (!l.url) return null;
               const icon = getIcon(l.url)
               return (
-                <a
-                  key={l.id}
-                  href={l.url || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="scdb-iconButton"
-                >
-                  <img src={icon} alt={l.title} />
+                <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer" className="scdb-icon-link">
+                  <img src={icon} alt="" />
                 </a>
               )
             })}
