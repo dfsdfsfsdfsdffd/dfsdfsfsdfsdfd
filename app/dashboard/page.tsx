@@ -1,65 +1,70 @@
 "use client"
-import { useState, useEffect, Suspense } from 'react'
-import { supabase } from '@/lib/supabase'
-import { Trash2, Plus, Save, Palette } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
-function DashboardContent() {
-  const [links, setLinks] = useState([{ label: '', url: '' }]); 
-  const [bio, setBio] = useState('');
-  const [theme, setTheme] = useState('#000000');
+export default function Dashboard() {
+  const [profile, setProfile] = useState<any>(null);
   const [saving, setSaving] = useState(false);
 
-  // Load existing data
   useEffect(() => {
-    const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-        if (data) { setBio(data.bio || ''); setLinks(data.links || []); setTheme(data.theme_color || '#000000'); }
-      }
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data } = await supabase.from('profiles').select('*').eq('id', user?.id).single();
+      setProfile(data);
     }
-    load()
-  }, [])
+    load();
+  }, []);
 
-  const save = async () => {
-    setSaving(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('profiles').update({ bio, links, theme_color: theme }).eq('id', user?.id)
-    setSaving(false); alert("Published! ✨")
-  }
+  const handleUpdate = async () => {
+    setSaving(true);
+    await supabase.from('profiles').update(profile).eq('id', profile.id);
+    setSaving(false);
+  };
+
+  if (!profile) return null;
 
   return (
-    <div className="min-h-screen p-6 max-w-xl mx-auto space-y-8">
-      <header className="flex justify-between items-center">
-        <h2 className="text-2xl font-black italic">EDITOR</h2>
-        <button onClick={save} className="btn-bubbly bg-white text-black py-2 px-6">{saving ? '...' : 'PUBLISH'}</button>
-      </header>
-
-      <div className="card-bubbly space-y-6">
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Bio</label>
-          <textarea className="input-bubbly min-h-[100px]" value={bio} onChange={e => setBio(e.target.value)} />
+    <div className="min-h-screen bg-[#050505] flex flex-col md:flex-row p-4 gap-4">
+      {/* LEFT: Editor */}
+      <div className="w-full md:w-1/3 space-y-6 overflow-y-auto pr-2">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-12 h-12 rounded-full bg-blue-600"></div>
+          <h2 className="font-bold">Editor / {profile.username}</h2>
         </div>
 
-        <div className="space-y-4">
-          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Links</label>
-          {links.map((link, i) => (
-            <div key={i} className="flex gap-2 items-center bg-black/20 p-3 rounded-[22px] border border-zinc-800">
-              <input className="bg-transparent outline-none flex-1 text-sm font-bold" placeholder="Title" value={link.label} onChange={e => { const n = [...links]; n[i].label = e.target.value; setLinks(n); }} />
-              <input className="bg-transparent outline-none flex-1 text-xs text-zinc-500" placeholder="URL" value={link.url} onChange={e => { const n = [...links]; n[i].url = e.target.value; setLinks(n); }} />
-              <button onClick={() => setLinks(links.filter((_, idx) => idx !== i))}><Trash2 size={16} className="text-zinc-600 hover:text-red-500"/></button>
-            </div>
-          ))}
-          <button onClick={() => setLinks([...links, { label: '', url: '' }])} className="text-xs font-bold text-zinc-500 hover:text-white">+ ADD LINK</button>
+        <div className="card-frost p-6 space-y-4">
+          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Bio</label>
+          <textarea 
+            className="input-frost min-h-[100px]" 
+            value={profile.bio} 
+            onChange={e => setProfile({...profile, bio: e.target.value})}
+          />
+          <button onClick={handleUpdate} className="btn-blue w-full py-3">
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+
+      {/* RIGHT: Live Preview */}
+      <div className="hidden md:flex flex-1 card-frost bg-[#080808] relative overflow-hidden items-center justify-center border-zinc-800">
+        {/* Mock Shader Background */}
+        <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-blue-900 to-black pointer-events-none" />
+        
+        <div className="relative text-center space-y-4 animate-in fade-in zoom-in duration-500">
+          <div className="w-24 h-24 rounded-full bg-zinc-800 mx-auto border-4 border-blue-500 shadow-2xl shadow-blue-500/20" />
+          <h1 className="text-3xl font-black italic">@{profile.username}</h1>
+          <p className="text-zinc-400 max-w-xs">{profile.bio}</p>
+          <div className="flex gap-2 justify-center">
+             {/* Mock Links */}
+             <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10" />
+             <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10" />
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2"><Palette size={12}/> Background Color</label>
-          <input type="color" className="w-full h-12 rounded-xl bg-zinc-900 border-none cursor-pointer" value={theme} onChange={e => setTheme(e.target.value)} />
+        <div className="absolute bottom-6 right-6">
+          <span className="text-[10px] font-bold text-zinc-600 uppercase">Live Preview</span>
         </div>
       </div>
     </div>
-  )
+  );
 }
-
-export default function Dashboard() { return <Suspense><DashboardContent/></Suspense> }
