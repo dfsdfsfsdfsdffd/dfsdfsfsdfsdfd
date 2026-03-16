@@ -1,37 +1,31 @@
 "use client"
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
-  const [username, setUsername] = useState('');
-  const router = useRouter();
-
-  const handleClaim = () => {
-    if (username) {
-      // Redirect to signup and pass the desired username
-      router.push(`/signup?username=${username}`);
-    }
-  };
+  const [name, setName] = useState('')
+  const router = useRouter()
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
-      <h1 className="text-5xl font-bold mb-4 tracking-tighter">softcard.cc/</h1>
-      <div className="flex bg-zinc-900 p-2 rounded-2xl border border-zinc-800 w-full max-w-md">
-        <input 
-          type="text" 
-          placeholder="yourname"
-          className="bg-transparent flex-1 p-3 outline-none text-xl"
-          value={username}
-          onChange={(e) => setUsername(e.target.value.toLowerCase())}
-        />
-        <button 
-          onClick={handleClaim}
-          className="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-zinc-200 transition"
-        >
-          Claim
-        </button>
+    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
+      <div className="text-center space-y-6">
+        <h1 className="text-6xl font-black tracking-tighter">softcard.cc/</h1>
+        
+        <div className="flex bg-zinc-900 border border-zinc-800 p-2 rounded-2xl w-full max-w-md mx-auto">
+          <input 
+            className="bg-transparent flex-1 p-4 outline-none text-xl"
+            placeholder="username"
+            value={name}
+            onChange={(e) => setName(e.target.value.toLowerCase())}
+          />
+          <button 
+            onClick={() => router.push(`/login?username=${name}`)}
+            className="bg-white text-black px-8 py-4 rounded-xl font-bold hover:scale-105 transition"
+          >
+            Claim
+          </button>
+        </div>
       </div>
-      <p className="mt-4 text-zinc-500">Secure your unique profile link today.</p>
-    </div>
-  );
+    </main>
+  )
 }
