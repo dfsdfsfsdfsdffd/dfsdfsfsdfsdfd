@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react"; // For tracking input
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"; // The Supabase tool
 import { Space_Grotesk } from "next/font/google";
 
 const font = Space_Grotesk({
@@ -10,12 +12,28 @@ const font = Space_Grotesk({
 });
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  
   const router = useRouter();
+  const supabase = createClientComponentClient(); // Initialize Supabase
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // This sends them to the grey page
-    router.push("/dashboard");
+    setError(null);
+
+    // This is the part that checks Supabase
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setError(error.message); // If password is wrong or user doesn't exist
+    } else {
+      router.push("/dashboard"); // If it works, go to the "hi" page
+    }
   };
 
   return (
@@ -28,8 +46,7 @@ export default function Login() {
         <h1>Login</h1>
         <p className="subtitle">Access your Softcard dashboard</p>
 
-        {/* Clicking Discord also sends them to the grey page for now */}
-        <button className="discordBtn" onClick={() => router.push("/dashboard")}>
+        <button className="discordBtn" type="button">
           Login with Discord
         </button>
 
@@ -38,8 +55,21 @@ export default function Login() {
         </div>
 
         <form className="loginForm" onSubmit={handleLogin}>
-          <input type="email" placeholder="Email" required />
-          <input type="password" placeholder="Password" required />
+          {error && <p style={{ color: '#ff5cad', fontSize: '12px' }}>{error}</p>}
+          
+          <input 
+            type="email" 
+            placeholder="Email" 
+            required 
+            onChange={(e) => setEmail(e.target.value)} 
+          />
+          <input 
+            type="password" 
+            placeholder="Password" 
+            required 
+            onChange={(e) => setPassword(e.target.value)} 
+          />
+          
           <button type="submit" className="loginBtn">
             Sign In
           </button>
