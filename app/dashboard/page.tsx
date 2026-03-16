@@ -3,14 +3,21 @@ export default function Dashboard() {
     <main style={{
       height: '100vh',
       width: '100%',
-      backgroundColor: '#1a1a1a', // The grey color
+      backgroundColor: '#1a1a1a', // The grey background
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      color: 'white',
-      fontFamily: 'sans-serif'
+      color: '#ffffff',
+      margin: 0,
+      padding: 0
     }}>
-      <h1 style={{ fontSize: '3rem', fontWeight: 'bold' }}>hi</h1>
+      <h1 style={{ 
+        fontSize: '4rem', 
+        fontWeight: 'bold', 
+        fontFamily: 'sans-serif' 
+      }}>
+        hi
+      </h1>
     </main>
   );
 }
