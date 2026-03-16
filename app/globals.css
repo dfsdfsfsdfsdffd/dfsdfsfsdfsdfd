@@ -104,40 +104,71 @@ line-height:1.6;
 
 /* BUTTONS */
 
+/* BUTTON CONTAINER */
+
 .buttons{
-margin-top:35px;
+margin-top:40px;
 display:flex;
-gap:16px;
+gap:18px;
 }
 
+/* PRIMARY BUTTON */
+
 .primary{
-background:linear-gradient(135deg,#ff4fa0,#ff78c6);
+position:relative;
+background:linear-gradient(135deg,#ff4fa0,#ff7ac8);
 border:none;
+padding:14px 30px;
+border-radius:999px;
+color:white;
+font-size:15px;
+font-weight:500;
+cursor:pointer;
+transition:all .3s ease;
+overflow:hidden;
+}
+
+/* glow */
+
+.primary::before{
+content:"";
+position:absolute;
+inset:0;
+border-radius:999px;
+background:linear-gradient(135deg,#ff4fa0,#ff9ed8);
+filter:blur(15px);
+opacity:.6;
+z-index:-1;
+}
+
+/* hover */
+
+.primary:hover{
+transform:translateY(-3px) scale(1.02);
+box-shadow:
+0 10px 30px rgba(255,70,160,.35),
+0 0 25px rgba(255,120,200,.35);
+}
+
+/* SECONDARY BUTTON */
+
+.secondary{
+background:rgba(255,255,255,.05);
+border:1px solid rgba(255,255,255,.15);
 padding:14px 28px;
 border-radius:999px;
 color:white;
 font-size:15px;
 cursor:pointer;
-transition:.25s;
+transition:all .25s ease;
+backdrop-filter:blur(10px);
 }
 
-.primary:hover{
-transform:translateY(-3px);
-box-shadow:0 15px 35px rgba(255,80,160,.45);
-}
-
-.secondary{
-background:transparent;
-border:1px solid rgba(255,255,255,.15);
-padding:14px 26px;
-border-radius:999px;
-color:white;
-font-size:15px;
-cursor:pointer;
-transition:.25s;
-}
+/* hover */
 
 .secondary:hover{
-background:rgba(255,255,255,.05);
+background:rgba(255,255,255,.08);
 border-color:rgba(255,255,255,.35);
+transform:translateY(-2px);
+box-shadow:0 8px 25px rgba(0,0,0,.35);
 }
