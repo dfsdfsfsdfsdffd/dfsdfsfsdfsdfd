@@ -1,5 +1,6 @@
 'use client';
-import { useEffect } from 'react';
+
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { Auth } from '@supabase/auth-ui-react';
@@ -7,13 +8,14 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createBrowserClient(
+
+  // Create the client once and keep it in memory
+  const supabase = useMemo(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  ), []);
 
   useEffect(() => {
-    // This is the "Force Move" logic
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         router.push('/dashboard');
@@ -23,6 +25,18 @@ export default function LoginPage() {
 
     return () => subscription.unsubscribe();
   }, [router, supabase]);
+
+  // This helper ensures we redirect to the correct domain (Local, Vercel, or Softcard.cc)
+  const getURL = () => {
+    let url =
+      process?.env?.NEXT_PUBLIC_SITE_URL ?? 
+      process?.env?.NEXT_PUBLIC_VERCEL_URL ?? 
+      window.location.origin;
+    
+    // Trim the trailing slash and add the callback path
+    url = url.replace(/\/$/, '');
+    return `${url}/auth/callback`;
+  };
 
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
@@ -34,12 +48,21 @@ export default function LoginPage() {
           supabaseClient={supabase}
           appearance={{ 
             theme: ThemeSupa,
-            variables: { default: { colors: { brand: '#ffffff', brandButtonText: '#000000' } } }
+            variables: { 
+              default: { 
+                colors: { 
+                  brand: '#ffffff', 
+                  brandButtonText: '#000000',
+                  inputBackground: 'transparent',
+                  inputText: 'white',
+                  inputBorder: '#27272a',
+                } 
+              } 
+            }
           }}
           theme="dark"
           providers={[]}
-          // Make sure this matches your Supabase Dashboard EXACTLY
-          redirectTo="https://dfsdfsfsdfsdfd-ten.vercel.app/dashboard"
+          redirectTo={getURL()}
         />
       </div>
     </div>
