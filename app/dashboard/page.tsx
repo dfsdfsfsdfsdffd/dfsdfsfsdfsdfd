@@ -154,71 +154,136 @@ export default function SoftcardDashboard() {
     </div>
   )
 
-  // 4. VIEW: THE HUB
+  // 4. VIEW: UPDATED HUB
   if (view === "hub") {
     return (
-      <div className="min-h-screen w-full bg-gradient-to-br from-pink-900 via-pink-800 to-black text-white flex items-center justify-center relative overflow-hidden">
-        <button 
-            onClick={handleSignOut}
-            className="absolute top-6 right-6 flex items-center gap-2 text-pink-200/60 hover:text-white transition text-sm"
-        >
-            <LogOut size={16} /> Sign Out
-        </button>
+      <div className="softcard-root">
+        <style>{`
+          .softcard-root {
+            min-height: 100vh;
+            width: 100%;
+            background: radial-gradient(circle at center, #1a0b1a 0%, #050106 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+          }
+          .softcard-container { text-align: center; width: 100%; max-width: 600px; padding: 20px; }
+          .softcard-status { font-size: 10px; letter-spacing: 2px; opacity: 0.5; margin-bottom: 8px; }
+          .softcard-title { font-size: 32px; font-weight: 600; margin-bottom: 50px; }
+          .softcard-brand { color: #ff5cad; }
+          
+          .softcard-hub-wrapper { position: relative; display: inline-block; margin-bottom: 50px; }
+          .softcard-hub {
+            width: 320px; height: 320px;
+            background: rgba(255, 92, 173, 0.05);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 92, 173, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+          }
+          .softcard-avatar {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #ff5cad;
+            box-shadow: 0 0 30px rgba(255, 92, 173, 0.3);
+          }
+          .softcard-avatar img { width: 100%; height: 100%; object-fit: cover; }
+          
+          .softcard-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff5cad;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(255, 92, 173, 0.3);
+          }
+          .softcard-btn:hover { transform: translateY(-50%) scale(1.05); background: #ff7bc0; }
+          .softcard-btn-left { left: -60px; }
+          .softcard-btn-right { right: -60px; }
+          
+          .softcard-profile-bar {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 8px 8px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 15px;
+          }
+          .softcard-profile-url { opacity: 0.7; font-size: 14px; }
+          .softcard-copy-btn {
+            background: #ff5cad;
+            border: none;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+          }
+          .hub-signout {
+             position: absolute; top: 30px; right: 30px; opacity: 0.4; cursor: pointer; transition: 0.2s;
+          }
+          .hub-signout:hover { opacity: 1; color: #ff5cad; }
+        `}</style>
+        
+        <div className="hub-signout" onClick={handleSignOut}>
+            <LogOut size={18} />
+        </div>
 
-        <div className="text-center space-y-10 z-10">
-          <div>
-            <p className="text-pink-200 tracking-widest text-xs uppercase opacity-70">Logged into softcard.cc</p>
-            <h1 className="text-4xl font-semibold mt-2">
-              Welcome back, <span className="text-pink-300">{username || "user"}</span>
+        <div className="softcard-container">
+          <div className="softcard-header">
+            <p className="softcard-status">LOGGED INTO SOFTCARD.CC</p>
+            <h1 className="softcard-title">
+              Welcome back, <span className="softcard-brand">{username || "User"}</span>
             </h1>
           </div>
 
-          <div className="relative flex items-center justify-center">
-            {/* The Circle Card */}
-            <div className="w-[320px] h-[320px] md:w-[420px] md:h-[420px] rounded-full bg-pink-900/30 backdrop-blur-xl border border-pink-400/20 flex items-center justify-center shadow-2xl">
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-pink-400 shadow-xl">
-                <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
+          <div className="softcard-hub-wrapper">
+            <div className="softcard-hub">
+              <div className="softcard-avatar">
+                <img src={avatar} alt="avatar" />
               </div>
             </div>
 
-            {/* Edit Button */}
-            <button 
-              onClick={() => setView("editor")}
-              className="absolute left-0 md:-left-8 top-1/2 -translate-y-1/2 group"
-            >
-              <div className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-pink-500 to-pink-400 border border-pink-200/40 shadow-xl hover:shadow-2xl hover:scale-105 transition">
-                <Pencil size={16} />
-                <span className="text-sm font-semibold">Edit</span>
-              </div>
+            <button className="softcard-btn softcard-btn-left" onClick={() => setView("editor")}>
+              <Pencil size={16} />
+              <span>Edit</span>
             </button>
 
-            {/* Stats Button */}
-            <button className="absolute right-0 md:-right-8 top-1/2 -translate-y-1/2 group">
-              <div className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-pink-500 to-pink-400 border border-pink-200/40 shadow-xl hover:shadow-2xl hover:scale-105 transition">
-                <BarChart3 size={16} />
-                <span className="text-sm font-semibold">Stats</span>
-              </div>
+            <button className="softcard-btn softcard-btn-right">
+              <BarChart3 size={16} />
+              <span>Stats</span>
             </button>
           </div>
 
-          <div className="flex items-center justify-center gap-3 bg-pink-900/40 px-6 py-3 rounded-full border border-pink-400/30">
-            <span className="text-pink-200">softcard.cc/{username}</span>
-            <button 
-              onClick={() => {
+          <div className="softcard-profile-bar">
+            <span className="softcard-profile-url">softcard.cc/{username}</span>
+            <button className="softcard-copy-btn" onClick={() => {
                 navigator.clipboard.writeText(`softcard.cc/${username}`);
                 alert("Link copied!");
-              }}
-              className="bg-pink-500 px-3 py-1 rounded-md text-sm font-semibold hover:bg-pink-400 transition"
-            >
-              Copy
-            </button>
+            }}>Copy</button>
           </div>
         </div>
       </div>
     )
   }
 
-  // 5. VIEW: THE EDITOR (Your current Dashboard Code)
+  // 5. VIEW: THE EDITOR
   return (
     <div className="scdb-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
       <style>{`
@@ -308,7 +373,6 @@ export default function SoftcardDashboard() {
           </div>
         )}
 
-        {/* Badges Tab remains same */}
         {tab === "badges" && (
            <div className="scdb-card">
              <label style={{ display: "flex", gap: 10, alignItems: 'center' }}>
