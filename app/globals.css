@@ -6,6 +6,7 @@ box-sizing:border-box;
 
 body{
 font-family:Inter,system-ui;
+user-select: none;
 font-family:'Space Grotesk', sans-serif;
 background:#050106;
 color:white;
