@@ -2,436 +2,497 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { Pencil, BarChart3, LogOut, Copy, Check } from "lucide-react"
+import { Pencil, BarChart3, LogOut } from "lucide-react"
 
-// Social Icon Mapping
-const iconMap: any = {
-  tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
-  instagram: "https://cdn.simpleicons.org/instagram/ffffff",
-  x: "https://cdn.simpleicons.org/x/ffffff",
-  youtube: "https://cdn.simpleicons.org/youtube/ffffff",
-  twitch: "https://cdn.simpleicons.org/twitch/ffffff",
-  spotify: "https://cdn.simpleicons.org/spotify/ffffff",
-  discord: "https://cdn.simpleicons.org/discord/ffffff",
-  github: "https://cdn.simpleicons.org/github/ffffff",
-  threads: "https://cdn.simpleicons.org/threads/ffffff",
-  linkedin: "https://cdn.simpleicons.org/linkedin/ffffff"
+/* SOCIAL ICON MAP */
+
+const iconMap:any={
+tiktok:"https://cdn.simpleicons.org/tiktok/ffffff",
+instagram:"https://cdn.simpleicons.org/instagram/ffffff",
+x:"https://cdn.simpleicons.org/x/ffffff",
+youtube:"https://cdn.simpleicons.org/youtube/ffffff",
+twitch:"https://cdn.simpleicons.org/twitch/ffffff",
+spotify:"https://cdn.simpleicons.org/spotify/ffffff",
+discord:"https://cdn.simpleicons.org/discord/ffffff",
+github:"https://cdn.simpleicons.org/github/ffffff"
 }
 
-function getIcon(url: string) {
-  const lowerUrl = url.toLowerCase();
-  if (lowerUrl.includes("tiktok")) return iconMap.tiktok
-  if (lowerUrl.includes("instagram")) return iconMap.instagram
-  if (lowerUrl.includes("twitter") || lowerUrl.includes("x.com")) return iconMap.x
-  if (lowerUrl.includes("youtube")) return iconMap.youtube
-  if (lowerUrl.includes("twitch")) return iconMap.twitch
-  if (lowerUrl.includes("spotify")) return iconMap.spotify
-  if (lowerUrl.includes("discord")) return iconMap.discord
-  if (lowerUrl.includes("github")) return iconMap.github
-  if (lowerUrl.includes("threads")) return iconMap.threads
-  if (lowerUrl.includes("linkedin")) return iconMap.linkedin
-  return "https://cdn.simpleicons.org/pwa/ffffff"
+function getIcon(url:string){
+const u=url.toLowerCase()
+if(u.includes("tiktok"))return iconMap.tiktok
+if(u.includes("instagram"))return iconMap.instagram
+if(u.includes("twitter")||u.includes("x.com"))return iconMap.x
+if(u.includes("youtube"))return iconMap.youtube
+if(u.includes("twitch"))return iconMap.twitch
+if(u.includes("spotify"))return iconMap.spotify
+if(u.includes("discord"))return iconMap.discord
+if(u.includes("github"))return iconMap.github
+return "https://cdn.simpleicons.org/pwa/ffffff"
 }
 
-export default function SoftcardDashboard() {
-  const supabase = useMemo(() => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return null;
-    return createBrowserClient(url, key);
-  }, []);
+export default function SoftcardDashboard(){
 
-  // NEW VIEW STATE
-  const [view, setView] = useState<"hub" | "editor">("hub")
-  const [copied, setCopied] = useState(false)
+const supabase=useMemo(()=>{
+const url=process.env.NEXT_PUBLIC_SUPABASE_URL
+const key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+if(!url||!key)return null
+return createBrowserClient(url,key)
+},[])
 
-  const [tab, setTab] = useState("profile")
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+/* VIEW */
 
-  const [avatar, setAvatar] = useState("https://i.imgur.com/1X6g1YH.jpeg")
-  const [name, setName] = useState("akuryō")
-  const [username, setUsername] = useState("") 
-  const [bio, setBio] = useState("")
-  const [links, setLinks] = useState<any[]>([])
-  const [badges, setBadges] = useState<any>({ user: true, dev: false })
-  const [devPassword, setDevPassword] = useState("")
+const[view,setView]=useState<"hub"|"editor">("hub")
+const[tab,setTab]=useState("profile")
 
-  const [accent, setAccent] = useState("#3b82f6")
-  const [font, setFont] = useState("Inter")
-  const [bgType, setBgType] = useState("gradient")
-  const [gradient, setGradient] = useState("linear-gradient(135deg,#020617,#1e3a8a)")
-  const [bgVideo, setBgVideo] = useState("")
-  const [bgImage, setBgImage] = useState("")
-  const [bgAudio, setBgAudio] = useState("")
-  const [showGlass, setShowGlass] = useState(true)
+/* PROFILE */
 
-  useEffect(() => {
-    async function loadData() {
-      if (!supabase) return;
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return;
+const[avatar,setAvatar]=useState("")
+const[name,setName]=useState("")
+const[username,setUsername]=useState("")
+const[bio,setBio]=useState("")
+const[links,setLinks]=useState<any[]>([])
+const[badges,setBadges]=useState<any>({user:true})
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+/* APPEARANCE */
 
-      if (profile) {
-        setAvatar(profile.avatar_url || avatar)
-        setName(profile.display_name || name)
-        setUsername(profile.username || "") 
-        setBio(profile.bio || "")
-        setLinks(profile.links || [])
-        setAccent(profile.accent_color || "#3b82f6")
-        setFont(profile.font_family || "Inter")
-        setBgType(profile.background_type || "gradient")
-        setBadges(profile.badges || { user: true })
-        setBgAudio(profile.audio_url || "")
-        setShowGlass(profile.show_glass_card ?? true)
+const[accent,setAccent]=useState("#ec4899")
+const[nameColor,setNameColor]=useState("#ffffff")
+const[bioColor,setBioColor]=useState("#9ca3af")
 
-        const bgVal = profile.background_value || "";
-        if (profile.background_type === "gradient") setGradient(bgVal || gradient);
-        else if (profile.background_type === "video") setBgVideo(bgVal);
-        else if (profile.background_type === "image") setBgImage(bgVal);
-      }
-      setLoading(false)
-    }
-    loadData()
-  }, [supabase])
+const[font,setFont]=useState("Inter")
 
-  async function saveChanges() {
-    if (!supabase) return;
-    setSaving(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return;
+const[layout,setLayout]=useState("list")
+const[avatarShape,setAvatarShape]=useState("circle")
+const[buttonStyle,setButtonStyle]=useState("filled")
 
-    const { error } = await supabase.from('profiles').update({
-      display_name: name,
-      avatar_url: avatar,
-      bio: bio,
-      links: links,
-      accent_color: accent,
-      font_family: font,
-      background_type: bgType,
-      background_value: bgType === "gradient" ? gradient : (bgType === "video" ? bgVideo : bgImage),
-      audio_url: bgAudio,
-      badges: badges,
-      show_glass_card: showGlass,
-      setup_completed: true
-    }).eq('id', user.id)
+const[accentGlow,setAccentGlow]=useState(true)
 
-    if (error) alert("Error: " + error.message)
-    else alert("Published! ♡")
-    setSaving(false)
-  }
+const[bgType,setBgType]=useState("gradient")
+const[gradient,setGradient]=useState("linear-gradient(135deg,#020617,#1e293b)")
+const[bgVideo,setBgVideo]=useState("")
+const[bgImage,setBgImage]=useState("")
+const[bgAudio,setBgAudio]=useState("")
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(`softcard.cc/${username}`)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+const[loading,setLoading]=useState(true)
+const[saving,setSaving]=useState(false)
 
-  const addLink = () => setLinks([...links, { id: Date.now(), title: "New Link", url: "" }])
+/* LOAD PROFILE */
 
-  const updateLink = (i: number, key: string, val: string) => {
-    const copy = [...links]
-    copy[i][key] = val
-    setLinks(copy)
-  }
+useEffect(()=>{
+async function load(){
 
-  const unlockDev = () => {
-    if (devPassword === "12345") {
-      setBadges({ ...badges, dev: true })
-      alert("Dev badge unlocked")
-    } else {
-      alert("Wrong password")
-    }
-  }
+if(!supabase)return
 
-  if (loading) return <div style={{ height: '100vh', background: '#020617' }} />
+const{data:{user}}=await supabase.auth.getUser()
+if(!user)return
 
-  // --- HUB VIEW RENDER ---
-  if (view === "hub") {
-    return (
-      <div className="hub-view-root">
-        <style>{`
-          .hub-view-root {
-            min-height: 100vh;
-            width: 100%;
-            background: radial-gradient(circle at center, #1a0b1a 0%, #050106 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Inter', sans-serif;
-          }
-          .hub-container { text-align: center; width: 100%; max-width: 600px; padding: 20px; }
-          .hub-header { margin-bottom: 40px; }
-          .hub-status { font-size: 10px; letter-spacing: 2px; opacity: 0.5; margin-bottom: 8px; font-weight: 700; }
-          .hub-title { font-size: 32px; font-weight: 600; }
-          .hub-brand { color: #f472b6; }
-          
-          .hub-circle-wrapper { position: relative; display: inline-block; margin-bottom: 50px; width: 300px; height: 300px; }
-          .hub-circle {
-            width: 100%; height: 100%;
-            background: rgba(190, 24, 93, 0.1);
-            border-radius: 50%;
-            border: 1px solid rgba(244, 114, 182, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(10px);
-          }
-          .hub-avatar-img {
-            width: 130px; height: 130px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 3px solid #f472b6;
-            box-shadow: 0 0 40px rgba(244, 114, 182, 0.2);
-          }
-          .hub-avatar-img img { width: 100%; height: 100%; object-fit: cover; }
-          
-          .hub-action-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #ec4899;
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-          }
-          .hub-action-btn:hover { transform: translateY(-50%) scale(1.05); background: #f472b6; }
-          .btn-left { left: -70px; }
-          .btn-right { right: -70px; }
-          
-          .hub-url-bar {
-            display: inline-flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px 10px 10px 24px;
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            gap: 20px;
-          }
-          .hub-copy-btn {
-            background: #ec4899;
-            border: none;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-          }
-          .hub-logout-icon { position: fixed; top: 30px; right: 30px; opacity: 0.3; cursor: pointer; }
-          .hub-logout-icon:hover { opacity: 1; color: #f472b6; }
-        `}</style>
+const{data}=await supabase
+.from("profiles")
+.select("*")
+.eq("id",user.id)
+.single()
 
-        <div className="hub-logout-icon" onClick={() => supabase?.auth.signOut()}>
-          <LogOut size={20} />
-        </div>
+if(data){
 
-        <div className="hub-container">
-          <div className="hub-header">
-            <p className="hub-status">LOGGED INTO SOFTCARD.CC</p>
-            <h1 className="hub-title">Welcome back, <span className="hub-brand">{username || "User"}</span></h1>
-          </div>
+setAvatar(data.avatar_url||"")
+setName(data.display_name||"")
+setUsername(data.username||"")
+setBio(data.bio||"")
 
-          <div className="hub-circle-wrapper">
-            <div className="hub-circle">
-              <div className="hub-avatar-img">
-                <img src={avatar} alt="avatar" />
-              </div>
-            </div>
+setLinks(data.links||[])
+setAccent(data.accent_color||"#ec4899")
 
-            <button className="hub-action-btn btn-left" onClick={() => setView("editor")}>
-              <Pencil size={18} />
-              <span>Edit</span>
-            </button>
+setNameColor(data.name_color||"#fff")
+setBioColor(data.bio_color||"#9ca3af")
 
-            <button className="hub-action-btn btn-right">
-              <BarChart3 size={18} />
-              <span>Stats</span>
-            </button>
-          </div>
+setFont(data.font_family||"Inter")
 
-          <div>
-            <div className="hub-url-bar">
-              <span style={{ opacity: 0.6 }}>softcard.cc/{username}</span>
-              <button className="hub-copy-btn" onClick={handleCopy}>
-                {copied ? "Copied!" : "Copy"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+setLayout(data.layout||"list")
+setAvatarShape(data.avatar_shape||"circle")
 
-  // --- ORIGINAL EDITOR VIEW ---
-  return (
-    <div className="scdb-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
-      <style>{`
-        /* Side-by-side Icons */
-        .scdb-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
-        .scdb-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
-        .scdb-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
+setButtonStyle(data.button_style||"filled")
+setAccentGlow(data.accent_glow??true)
 
-        /* Username Positioning Fix */
-        .name-container { 
-          display: flex; 
-          align-items: baseline; 
-          justify-content: center; 
-          gap: 10px; 
-          margin-bottom: 5px;
-        }
-        .scdb-username { font-size: 14px; opacity: 0.5; font-weight: 400; }
+setBgType(data.background_type||"gradient")
 
-        /* Clean Flush Badges */
-        .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
-        .badge { 
-          padding: 3px 10px; 
-          border-radius: 6px; 
-          background: rgba(255, 255, 255, 0.06); 
-          backdrop-filter: blur(4px);
-          font-size: 11px; 
-          font-weight: 800;
-          color: rgba(255, 255, 255, 0.85); 
-          border: 1px solid rgba(255, 255, 255, 0.1); 
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-        }
+const val=data.background_value||""
 
-        /* Preview Glass Card Restored */
-        .scdb-profile-card {
-          ${showGlass ? `
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            padding: 40px 30px;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-          ` : 'background: transparent; border: none; padding: 40px 30px;'}
-          width: 100%;
-          max-width: 420px;
-          text-align: center;
-          position: relative;
-          z-index: 5;
-          transition: all 0.3s ease;
-        }
-        .editor-back-link { cursor: pointer; margin-bottom: 20px; display: inline-block; opacity: 0.5; font-size: 13px; }
-        .editor-back-link:hover { opacity: 1; color: #ec4899; }
-      `}</style>
+if(data.background_type==="gradient")setGradient(val)
+if(data.background_type==="video")setBgVideo(val)
+if(data.background_type==="image")setBgImage(val)
 
-      <div className="scdb-sidebar">
-        <div className="editor-back-link" onClick={() => setView("hub")}>← Back to Hub</div>
-        <div className="scdb-back" onClick={saveChanges} style={{ cursor: 'pointer' }}>
-          {saving ? "Saving..." : "← Save & Publish"}
-        </div>
+setBgAudio(data.audio_url||"")
+}
 
-        <div className="scdb-tabs">
-          <div className={`scdb-tab ${tab === "profile" ? "scdb-tab-active" : ""}`} onClick={() => setTab("profile")}>Profile</div>
-          <div className={`scdb-tab ${tab === "appearance" ? "scdb-tab-active" : ""}`} onClick={() => setTab("appearance")}>Appearance</div>
-          <div className={`scdb-tab ${tab === "badges" ? "scdb-tab-active" : ""}`} onClick={() => setTab("badges")}>Badges</div>
-        </div>
+setLoading(false)
+}
 
-        {tab === "profile" && (
-          <div className="scdb-card">
-            <label className="scdb-label">Avatar URL</label>
-            <input className="scdb-input" value={avatar} onChange={e => setAvatar(e.target.value)} />
-            <label className="scdb-label">Display Name</label>
-            <input className="scdb-input" value={name} onChange={e => setName(e.target.value)} />
-            <label className="scdb-label">Bio</label>
-            <input className="scdb-input" value={bio} onChange={e => setBio(e.target.value)} />
-            <button className="scdb-btn" onClick={addLink} style={{marginTop: '15px'}}>+ Add Link</button>
-            {links.map((l, i) => (
-              <div key={l.id} style={{ marginTop: '10px' }}>
-                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. google.com)" />
-              </div>
-            ))}
-          </div>
-        )}
+load()
+},[supabase])
 
-        {tab === "appearance" && (
-          <div className="scdb-card">
-            <label className="scdb-label" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '15px' }}>
-               <input type="checkbox" checked={showGlass} onChange={e => setShowGlass(e.target.checked)} />
-               Show Transparent Card
-            </label>
-            <label className="scdb-label">Background Type</label>
-            <select className="scdb-input" value={bgType} onChange={e => setBgType(e.target.value)}>
-              <option value="gradient">Gradient</option>
-              <option value="video">Video</option>
-              <option value="image">Image</option>
-            </select>
-            {bgType === "gradient" && <input className="scdb-input" value={gradient} onChange={e => setGradient(e.target.value)} />}
-            {bgType === "video" && <input className="scdb-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" />}
-            {bgType === "image" && <input className="scdb-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" />}
-            <label className="scdb-label" style={{ marginTop: '20px' }}>Audio URL (.mp3)</label>
-            <input className="scdb-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} />
-            <label className="scdb-label" style={{ marginTop: '20px' }}>Accent Color</label>
-            <input type="color" className="scdb-input" value={accent} onChange={e => setAccent(e.target.value)} />
-          </div>
-        )}
+/* SAVE */
 
-        {tab === "badges" && (
-          <div className="scdb-card">
-            <label style={{ display: "flex", gap: 10, alignItems: 'center' }}>
-              <input type="checkbox" checked={badges.user} onChange={() => setBadges({ ...badges, user: !badges.user })} />
-              User Badge
-            </label>
-            <div style={{ marginTop: 20 }}>Unlock Dev Badge</div>
-            <input className="scdb-input" placeholder="Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
-            <button className="scdb-btn" onClick={unlockDev}>Unlock</button>
-          </div>
-        )}
-      </div>
+async function saveChanges(){
 
-      <div className="scdb-preview">
-        {bgType === "gradient" && <div className="scdb-bg" style={{ background: gradient }} />}
-        {bgType === "video" && bgVideo && <video className="scdb-video" src={bgVideo} autoPlay loop muted playsInline />}
-        {bgType === "image" && bgImage && <img className="scdb-image" src={bgImage} />}
-        {bgAudio && <audio src={bgAudio} autoPlay loop />}
-        
-        <div className="scdb-profile-card">
-          <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
-          
-          <div className="name-container">
-            <div className="scdb-username">@{username}</div>
-            <div className="scdb-name">{name}</div>
-          </div>
+if(!supabase)return
 
-          <div className="scdb-bio">{bio}</div>
-          
-          <div className="scdb-badges">
-            {badges.user && <div className="badge">User</div>}
-            {badges.dev && <div className="badge dev" style={{ borderColor: accent, color: accent }}>Dev</div>}
-          </div>
+setSaving(true)
 
-          <div className="scdb-links-row">
-            {links.map(l => {
-              if (!l.url) return null;
-              const icon = getIcon(l.url)
-              return (
-                <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="scdb-icon-link">
-                  <img src={icon} alt="" />
-                </a>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+const{data:{user}}=await supabase.auth.getUser()
+if(!user)return
+
+await supabase
+.from("profiles")
+.update({
+
+display_name:name,
+avatar_url:avatar,
+bio:bio,
+links:links,
+
+accent_color:accent,
+name_color:nameColor,
+bio_color:bioColor,
+
+font_family:font,
+
+layout:layout,
+avatar_shape:avatarShape,
+
+button_style:buttonStyle,
+accent_glow:accentGlow,
+
+background_type:bgType,
+background_value:bgType==="gradient"?gradient:(bgType==="video"?bgVideo:bgImage),
+
+audio_url:bgAudio,
+
+setup_completed:true
+
+})
+.eq("id",user.id)
+
+setSaving(false)
+alert("Saved")
+}
+
+/* LINKS */
+
+function addLink(){
+setLinks([...links,{id:Date.now(),url:""}])
+}
+
+function updateLink(i:number,val:string){
+const copy=[...links]
+copy[i].url=val
+setLinks(copy)
+}
+
+/* LOADING */
+
+if(loading)return null
+
+/* HUB VIEW */
+
+if(view==="hub"){
+
+return(
+
+<div className="softcard-root">
+
+<div className="hub-logout" onClick={()=>supabase?.auth.signOut()}>
+<LogOut size={20}/>
+</div>
+
+<div className="softcard-container">
+
+<div className="softcard-header">
+<p className="softcard-status">LOGGED INTO SOFTCARD.CC</p>
+<h1 className="softcard-title">
+Welcome back <span className="softcard-brand">{username}</span>
+</h1>
+</div>
+
+<div className="softcard-hub-wrapper">
+
+<div className="softcard-hub">
+<div className="softcard-avatar">
+<img src={avatar}/>
+</div>
+</div>
+
+<button className="softcard-btn softcard-btn-left"
+onClick={()=>setView("editor")}>
+<Pencil size={16}/> Edit
+</button>
+
+<button className="softcard-btn softcard-btn-right">
+<BarChart3 size={16}/> Stats
+</button>
+
+</div>
+
+<div className="softcard-profile-bar">
+<span className="softcard-profile-url">
+softcard.cc/{username}
+</span>
+</div>
+
+</div>
+</div>
+
+)
+}
+
+/* EDITOR VIEW */
+
+return(
+
+<div className="scdb-dashboard">
+
+<div className="scdb-sidebar">
+
+<div className="editor-back-link"
+onClick={()=>setView("hub")}>
+← Back
+</div>
+
+<div className="scdb-back"
+onClick={saveChanges}>
+{saving?"Saving...":"Save & Publish"}
+</div>
+
+<div className="scdb-tabs">
+
+<div
+className={`scdb-tab ${tab==="profile"?"scdb-tab-active":""}`}
+onClick={()=>setTab("profile")}
+>
+Profile
+</div>
+
+<div
+className={`scdb-tab ${tab==="appearance"?"scdb-tab-active":""}`}
+onClick={()=>setTab("appearance")}
+>
+Appearance
+</div>
+
+</div>
+
+{/* PROFILE TAB */}
+
+{tab==="profile"&&(
+
+<div className="scdb-card">
+
+<label className="scdb-label">Avatar</label>
+<input
+className="scdb-input"
+value={avatar}
+onChange={e=>setAvatar(e.target.value)}
+/>
+
+<label className="scdb-label">Name</label>
+<input
+className="scdb-input"
+value={name}
+onChange={e=>setName(e.target.value)}
+/>
+
+<label className="scdb-label">Bio</label>
+<input
+className="scdb-input"
+value={bio}
+onChange={e=>setBio(e.target.value)}
+/>
+
+<button className="scdb-btn"
+onClick={addLink}>
+Add Link
+</button>
+
+{links.map((l,i)=>(
+
+<input
+key={l.id}
+className="scdb-input"
+placeholder="URL"
+value={l.url}
+onChange={e=>updateLink(i,e.target.value)}
+/>
+
+))}
+
+</div>
+
+)}
+
+{/* APPEARANCE TAB */}
+
+{tab==="appearance"&&(
+
+<div className="scdb-card">
+
+<label className="scdb-label">Accent</label>
+<input
+type="color"
+className="scdb-input"
+value={accent}
+onChange={e=>setAccent(e.target.value)}
+/>
+
+<label className="scdb-label">Name Color</label>
+<input
+type="color"
+className="scdb-input"
+value={nameColor}
+onChange={e=>setNameColor(e.target.value)}
+/>
+
+<label className="scdb-label">Bio Color</label>
+<input
+type="color"
+className="scdb-input"
+value={bioColor}
+onChange={e=>setBioColor(e.target.value)}
+/>
+
+<label className="scdb-label">Avatar Shape</label>
+
+<select
+className="scdb-input"
+value={avatarShape}
+onChange={e=>setAvatarShape(e.target.value)}
+>
+
+<option value="circle">Circle</option>
+<option value="rounded">Rounded</option>
+
+</select>
+
+<label className="scdb-label">Background</label>
+
+<select
+className="scdb-input"
+value={bgType}
+onChange={e=>setBgType(e.target.value)}
+>
+
+<option value="gradient">Gradient</option>
+<option value="video">Video</option>
+<option value="image">Image</option>
+
+</select>
+
+{bgType==="gradient"&&(
+<input
+className="scdb-input"
+value={gradient}
+onChange={e=>setGradient(e.target.value)}
+/>
+)}
+
+{bgType==="video"&&(
+<input
+className="scdb-input"
+value={bgVideo}
+onChange={e=>setBgVideo(e.target.value)}
+/>
+)}
+
+{bgType==="image"&&(
+<input
+className="scdb-input"
+value={bgImage}
+onChange={e=>setBgImage(e.target.value)}
+/>
+)}
+
+</div>
+
+)}
+
+</div>
+
+{/* PREVIEW */}
+
+<div className="scdb-preview">
+
+{bgType==="gradient"&&
+<div className="scdb-bg"
+style={{background:gradient}}/>}
+
+{bgType==="video"&&bgVideo&&
+<video
+className="scdb-video"
+src={bgVideo}
+autoPlay
+loop
+muted/>}
+
+{bgType==="image"&&bgImage&&
+<img
+className="scdb-image"
+src={bgImage}/>}
+
+{bgAudio&&
+<audio
+src={bgAudio}
+autoPlay
+loop/>}
+
+<div className="scdb-profile">
+
+<img
+src={avatar}
+className={`scdb-pfp ${avatarShape}`}
+style={{boxShadow:`0 0 40px ${accent}`}}
+/>
+
+<div
+className="scdb-name"
+style={{color:nameColor}}>
+{name}
+</div>
+
+<div
+className="scdb-bio"
+style={{color:bioColor}}>
+{bio}
+</div>
+
+<div className="scdb-links">
+
+{links.map(l=>{
+
+if(!l.url)return null
+
+const icon=getIcon(l.url)
+
+return(
+
+<a
+key={l.id}
+href={l.url}
+target="_blank"
+className="scdb-iconButton">
+
+<img src={icon}/>
+
+</a>
+
+)
+
+})}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+)
 }
