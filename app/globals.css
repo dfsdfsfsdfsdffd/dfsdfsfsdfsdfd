@@ -3,20 +3,6 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
-}
-
-body {
-  background: black;
-  color: white;
-  margin: 0;
-}
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
   --bg: #050505;
   --card: #0f0f0f;
   --border: #1f1f1f;
