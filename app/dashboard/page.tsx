@@ -24,6 +24,11 @@ export default function SoftcardDashboard() {
   const [bgValue, setBgValue] = useState("linear-gradient(135deg,#020617,#1e3a8a)")
   const [linkTitle, setLinkTitle] = useState("")
   const [linkUrl, setLinkUrl] = useState("")
+  
+  // New States: Socials & Music
+  const [discord, setDiscord] = useState("")
+  const [spotify, setSpotify] = useState("")
+  const [views, setViews] = useState(0)
 
   useEffect(() => {
     async function loadData() {
@@ -33,7 +38,6 @@ export default function SoftcardDashboard() {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       
       if (profile) {
-        // STRICT GATE: If setup isn't done, trigger the setup component
         if (!profile.setup_completed) {
           setSetupRequired(true)
         } else {
@@ -47,6 +51,9 @@ export default function SoftcardDashboard() {
           setBgValue(profile.background_value || "linear-gradient(135deg,#020617,#1e3a8a)")
           setLinkTitle(profile.link_title || "")
           setLinkUrl(profile.link_url || "")
+          setDiscord(profile.discord_user || "")
+          setSpotify(profile.spotify_url || "")
+          setViews(profile.views || 0)
         }
       }
       setLoading(false)
@@ -65,7 +72,9 @@ export default function SoftcardDashboard() {
       background_type: bgType,
       background_value: bgValue,
       link_title: linkTitle,
-      link_url: linkUrl
+      link_url: linkUrl,
+      discord_user: discord,
+      spotify_url: spotify
     }).eq('id', user?.id)
 
     if (error) alert("Error saving!")
@@ -75,7 +84,6 @@ export default function SoftcardDashboard() {
 
   if (loading) return <div style={{height: '100vh', background: '#020617'}} />
 
-  // If setup is needed, we RETURN here so the dashboard NEVER renders
   if (setupRequired) {
     return <UsernameSetup supabase={supabase} onComplete={() => window.location.reload()} />
   }
@@ -86,53 +94,64 @@ export default function SoftcardDashboard() {
         .scdb-dashboard { display:grid; grid-template-columns:420px 1fr; height:100vh; background:#020617; color:white; font-family:Inter, sans-serif; }
         .scdb-sidebar { padding:30px; background:#071321; border-right:1px solid rgba(255,255,255,.05); overflow:auto; display: flex; flex-direction: column; }
         .scdb-tabs { display:flex; gap:10px; margin-bottom:25px; }
-        .scdb-tab { flex:1; padding:12px; border-radius:12px; background:#0c1b2e; text-align:center; cursor:pointer; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.4); }
+        .scdb-tab { flex:1; padding:12px; border-radius:12px; background:#0c1b2e; text-align:center; cursor:pointer; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.4); }
         .scdb-tab-active { border:1px solid rgba(255,255,255,0.2); background: #162a45; color: white; }
         .scdb-card { background:#0c1b2e; padding:24px; border-radius:18px; margin-bottom:20px; border: 1px solid rgba(255,255,255,0.03); }
         .scdb-avatar { width:80px; height:80px; border-radius:50%; display:block; margin:0 auto 15px auto; object-fit:cover; }
-        .scdb-label { font-size:11px; opacity:.4; margin-top:15px; display:block; text-transform: uppercase; font-weight: 700; }
+        .scdb-label { font-size:10px; opacity:.4; margin-top:15px; display:block; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
         .scdb-input { width:100%; padding:14px; border-radius:10px; background:#020617; border:1px solid rgba(255,255,255,0.05); color:white; margin-top:8px; outline: none; font-size: 14px; }
         .scdb-username-display { font-size: 14px; color: ${accent}; font-weight: 600; margin-top: 8px; display: block; }
-        .scdb-save-btn { background: ${accent}; color: white; padding: 16px; border-radius: 12px; margin-top: auto; cursor: pointer; border: none; font-weight: 700; }
+        .scdb-save-btn { background: ${accent}; color: white; padding: 16px; border-radius: 12px; margin-top: auto; cursor: pointer; border: none; font-weight: 700; transition: 0.2s; }
+        .scdb-save-btn:hover { filter: brightness(1.2); }
         .scdb-preview { position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
         .scdb-bg { position:absolute; width:100%; height:100%; z-index:0; }
-        .scdb-profile { position:relative; z-index:2; text-align:center; padding: 40px; background: rgba(0,0,0,0.3); backdrop-filter: blur(12px); border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); width: 320px; }
+        .scdb-profile { position:relative; z-index:2; text-align:center; padding: 40px; background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); width: 340px; }
         .scdb-pfp { width:110px; height:110px; border-radius:50%; object-fit:cover; box-shadow:0 0 40px ${accent}44; border: 3px solid ${accent}; }
-        .scdb-link-btn { margin-top:25px; padding:14px; border-radius:12px; border:1px solid ${accent}; background: ${accent}11; color: white; font-weight: 600; }
+        .scdb-link-btn { margin-top:25px; padding:14px; border-radius:12px; border:1px solid ${accent}; background: ${accent}11; color: white; font-weight: 600; transition: 0.2s; }
+        .scdb-stats { display: flex; justify-content: center; gap: 20px; margin-top: 20px; opacity: 0.5; font-size: 12px; }
       `}</style>
 
       <div className="scdb-sidebar">
         <div className="scdb-tabs">
           <div className={`scdb-tab ${tab==="profile"?"scdb-tab-active":""}`} onClick={()=>setTab("profile")}>Profile</div>
-          <div className={`scdb-tab ${tab==="appearance"?"scdb-tab-active":""}`} onClick={()=>setTab("appearance")}>Appearance</div>
+          <div className={`scdb-tab ${tab==="socials"?"scdb-tab-active":""}`} onClick={()=>setTab("socials")}>Socials</div>
+          <div className={`scdb-tab ${tab==="appearance"?"scdb-tab-active":""}`} onClick={()=>setTab("appearance")}>Themes</div>
         </div>
 
         {tab==="profile" && (
           <>
             <div className="scdb-card">
               <img src={avatar} className="scdb-avatar" alt="avatar"/>
-              
-              <label className="scdb-label">Profile URL</label>
+              <label className="scdb-label">Active Link</label>
               <span className="scdb-username-display">softcard.cc/{username}</span>
-
               <label className="scdb-label">Avatar URL</label>
               <input className="scdb-input" value={avatar} onChange={e=>setAvatar(e.target.value)}/>
-              
               <label className="scdb-label">Display Name</label>
               <input className="scdb-input" value={name} onChange={e=>setName(e.target.value)}/>
-              
               <label className="scdb-label">Bio</label>
               <input className="scdb-input" value={bio} placeholder="Write something..." onChange={e=>setBio(e.target.value)}/>
             </div>
-
             <div className="scdb-card">
-              <div style={{fontWeight: 700, fontSize: '14px'}}>Link Button</div>
-              <label className="scdb-label">Button Text</label>
-              <input className="scdb-input" placeholder="e.g. My Instagram" value={linkTitle} onChange={e=>setLinkTitle(e.target.value)}/>
-              <label className="scdb-label">URL</label>
-              <input className="scdb-input" placeholder="https://" value={linkUrl} onChange={e=>setLinkUrl(e.target.value)}/>
+              <div style={{fontWeight: 700, fontSize: '14px'}}>Analytics</div>
+              <div className="scdb-stats">
+                <span>Total Views: <b>{views}</b></span>
+              </div>
             </div>
           </>
+        )}
+
+        {tab==="socials" && (
+          <div className="scdb-card">
+            <div style={{fontWeight: 700, fontSize: '14px', marginBottom: '10px'}}>Integrations</div>
+            <label className="scdb-label">Discord Username</label>
+            <input className="scdb-input" placeholder="user#0000" value={discord} onChange={e=>setDiscord(e.target.value)}/>
+            <label className="scdb-label">Spotify Song/Playlist URL</label>
+            <input className="scdb-input" placeholder="https://open.spotify.com/..." value={spotify} onChange={e=>setSpotify(e.target.value)}/>
+            <label className="scdb-label">Primary Button Text</label>
+            <input className="scdb-input" value={linkTitle} onChange={e=>setLinkTitle(e.target.value)}/>
+            <label className="scdb-label">Primary Button URL</label>
+            <input className="scdb-input" value={linkUrl} onChange={e=>setLinkUrl(e.target.value)}/>
+          </div>
         )}
 
         {tab==="appearance" && (
@@ -143,7 +162,7 @@ export default function SoftcardDashboard() {
               <option value="video">Video</option>
               <option value="image">Image</option>
             </select>
-            <label className="scdb-label">Background Source</label>
+            <label className="scdb-label">Background Value</label>
             <input className="scdb-input" value={bgValue} onChange={e=>setBgValue(e.target.value)}/>
             <label className="scdb-label">Accent Color</label>
             <input type="color" className="scdb-input" style={{height: '45px', padding: '2px'}} value={accent} onChange={e=>setAccent(e.target.value)}/>
@@ -151,7 +170,7 @@ export default function SoftcardDashboard() {
         )}
         
         <button className="scdb-save-btn" onClick={saveChanges}>
-          {saving ? "Saving..." : "Save Changes"}
+          {saving ? "Syncing..." : "Publish Changes"}
         </button>
       </div>
 
@@ -164,9 +183,21 @@ export default function SoftcardDashboard() {
           <img src={avatar} className="scdb-pfp" alt="preview"/>
           <div style={{fontSize: '28px', marginTop: '15px', fontWeight: '800'}}>{name || "Your Name"}</div>
           <div style={{opacity: 0.6, fontSize: '14px', marginTop: '5px'}}>{bio || "Your bio here"}</div>
+          
           {linkUrl && (
             <div className="scdb-link-btn">
               {linkTitle || "Visit Link"}
+            </div>
+          )}
+
+          {/* New Social Preview Elements */}
+          <div style={{marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '15px'}}>
+            {discord && <span style={{fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '5px'}}>@ {discord}</span>}
+          </div>
+
+          {spotify && (
+            <div style={{marginTop: '20px', borderRadius: '12px', overflow: 'hidden'}}>
+               <iframe src={spotify.replace("spotify.com/", "spotify.com/embed/")} width="100%" height="80" frameBorder="0" allow="encrypted-media"></iframe>
             </div>
           )}
         </div>
