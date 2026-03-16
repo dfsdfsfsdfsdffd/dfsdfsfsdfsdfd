@@ -52,6 +52,14 @@ export default function SoftcardDashboard() {
   const [name, setName] = useState("akuryō")
   const [username, setUsername] = useState("") 
   const [bio, setBio] = useState("")
+  
+  // NEW TAG STATES
+  const [age, setAge] = useState("")
+  const [gender, setGender] = useState("")
+  const [sexuality, setSexuality] = useState("")
+  const [birthday, setBirthday] = useState("")
+  const [timezone, setTimezone] = useState("")
+
   const [links, setLinks] = useState<any[]>([])
   const [badges, setBadges] = useState<any>({ user: true, dev: false })
   const [devPassword, setDevPassword] = useState("")
@@ -84,6 +92,14 @@ export default function SoftcardDashboard() {
         setName(profile.display_name || name)
         setUsername(profile.username || "") 
         setBio(profile.bio || "")
+        
+        // Load Tags
+        setAge(profile.age || "")
+        setGender(profile.gender || "")
+        setSexuality(profile.sexuality || "")
+        setBirthday(profile.birthday || "")
+        setTimezone(profile.timezone || "")
+
         setLinks(profile.links || [])
         setAccent(profile.accent_color || "#3b82f6")
         setNameColor(profile.name_color || "#ffffff")
@@ -114,6 +130,11 @@ export default function SoftcardDashboard() {
       display_name: name,
       avatar_url: avatar,
       bio: bio,
+      age: age,
+      gender: gender,
+      sexuality: sexuality,
+      birthday: birthday,
+      timezone: timezone,
       links: links,
       accent_color: accent,
       name_color: nameColor,
@@ -230,7 +251,6 @@ export default function SoftcardDashboard() {
             gap: 20px;
           }
 
-          /* Container for the side-by-side buttons */
           .hub-btns-group {
             display: flex;
             gap: 8px;
@@ -291,7 +311,6 @@ export default function SoftcardDashboard() {
                 <button className="hub-copy-btn" onClick={handleCopy}>
                   {copied ? "Copied!" : "Copy"}
                 </button>
-                {/* NEW VIEW BUTTON */}
                 <a 
                   href={`/${username}`} 
                   target="_blank" 
@@ -309,16 +328,13 @@ export default function SoftcardDashboard() {
     )
   }
 
-  // --- ORIGINAL EDITOR VIEW ---
   return (
     <div className="scdb-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
       <style>{`
-        /* Side-by-side Icons */
         .scdb-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
         .scdb-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
         .scdb-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
 
-        /* Username Positioning Fix */
         .name-container { 
           display: flex; 
           align-items: center; 
@@ -327,7 +343,6 @@ export default function SoftcardDashboard() {
           margin-bottom: 5px;
         }
 
-        /* Clean Flush Badges */
         .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
         .badge { 
           padding: 3px 10px; 
@@ -342,7 +357,25 @@ export default function SoftcardDashboard() {
           text-transform: uppercase;
         }
 
-        /* Preview Glass Card Restored */
+        /* Tags Styling */
+        .scdb-tags {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 8px;
+          margin-top: 15px;
+        }
+        .tag {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          background: rgba(255, 255, 255, 0.05);
+          padding: 4px 10px;
+          border-radius: 8px;
+          font-size: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
         .scdb-profile-card {
           ${showGlass ? `
             background: rgba(0, 0, 0, 0.3);
@@ -383,6 +416,22 @@ export default function SoftcardDashboard() {
             <input className="scdb-input" value={name} onChange={e => setName(e.target.value)} />
             <label className="scdb-label">Bio</label>
             <input className="scdb-input" value={bio} onChange={e => setBio(e.target.value)} />
+            
+            <label className="scdb-label">Age</label>
+            <input className="scdb-input" value={age} onChange={e => setAge(e.target.value)} />
+
+            <label className="scdb-label">Gender</label>
+            <input className="scdb-input" value={gender} onChange={e => setGender(e.target.value)} />
+
+            <label className="scdb-label">Sexuality</label>
+            <input className="scdb-input" value={sexuality} onChange={e => setSexuality(e.target.value)} />
+
+            <label className="scdb-label">Birthday</label>
+            <input className="scdb-input" value={birthday} onChange={e => setBirthday(e.target.value)} />
+
+            <label className="scdb-label">Timezone</label>
+            <input className="scdb-input" value={timezone} onChange={e => setTimezone(e.target.value)} />
+
             <button className="scdb-btn" onClick={addLink} style={{marginTop: '15px'}}>+ Add Link</button>
             {links.map((l, i) => (
               <div key={l.id} style={{ marginTop: '10px' }}>
@@ -441,11 +490,47 @@ export default function SoftcardDashboard() {
           <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
           
           <div className="name-container">
-            {/* REMOVED @USERNAME FROM HERE */}
             <div className="scdb-name" style={{ color: nameColor, fontSize: '24px', fontWeight: '600' }}>{name}</div>
           </div>
 
           <div className="scdb-bio" style={{ color: bioColor }}>{bio}</div>
+
+          <div className="scdb-tags">
+            {age && (
+              <div className="tag">
+                <span>🎂</span>
+                {age}
+              </div>
+            )}
+
+            {gender && (
+              <div className="tag">
+                <span>⚥</span>
+                {gender}
+              </div>
+            )}
+
+            {sexuality && (
+              <div className="tag">
+                <span>❤</span>
+                {sexuality}
+              </div>
+            )}
+
+            {birthday && (
+              <div className="tag">
+                <span>🎉</span>
+                {birthday}
+              </div>
+            )}
+
+            {timezone && (
+              <div className="tag">
+                <span>🌍</span>
+                {timezone}
+              </div>
+            )}
+          </div>
           
           <div className="scdb-badges">
             {badges.user && <div className="badge">User</div>}
