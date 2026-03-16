@@ -16,7 +16,6 @@ const iconMap: any = {
 function getIcon(url: string) {
   const lower = url.toLowerCase();
   const found = Object.keys(iconMap).find(key => lower.includes(key));
-  // Uses the white "World" icon for random sites as requested
   return found ? iconMap[found] : "https://cdn.simpleicons.org/pwa/ffffff";
 }
 
@@ -47,7 +46,6 @@ export default function PublicProfile({ params }: { params: { username: string }
 
   if (!profile) return null
 
-  // Socials (Icons only) vs Buttons (Links with text)
   const socials = profile.links?.filter((l: any) => !l.title || l.title === "New Link") || []
   const buttons = profile.links?.filter((l: any) => l.title && l.title !== "New Link") || []
 
@@ -58,30 +56,53 @@ export default function PublicProfile({ params }: { params: { username: string }
           height: 100vh; width: 100vw; background: #000;
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${profile.font_family || 'Inter'}, sans-serif;
+          overflow: hidden;
         }
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
           display: ${hasEntered ? 'none' : 'flex'};
           align-items: center; justify-content: center; cursor: pointer;
+          font-weight: bold; letter-spacing: 2px;
         }
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; }
         .bg-content { width: 100%; height: 100%; object-fit: cover; }
         
         .profile-card {
           position: relative; z-index: 5; text-align: center;
-          background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px);
-          padding: 35px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+          /* Respect the Glass Toggle from Dashboard */
+          background: ${profile.show_glass_card ? 'rgba(0, 0, 0, 0.4)' : 'transparent'};
+          backdrop-filter: ${profile.show_glass_card ? 'blur(12px)' : 'none'};
+          border: ${profile.show_glass_card ? '1px solid rgba(255,255,255,0.1)' : 'none'};
+          padding: 35px; border-radius: 20px;
           width: 90%; max-width: 400px;
+          transition: all 0.3s ease;
         }
+
         .pfp {
           width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
           margin-bottom: 15px; box-shadow: 0 0 30px ${profile.accent_color}88;
         }
-        .display-name { font-size: 26px; font-weight: 700; }
-        .username { font-size: 13px; opacity: 0.5; margin-bottom: 15px; }
+
+        .name-container { 
+          position: relative; 
+          display: inline-block; 
+          margin-bottom: 15px; 
+        }
+        .display-name { font-size: 26px; font-weight: 700; line-height: 1; }
+        
+        /* Adjusted Username Position */
+        .username { 
+          font-size: 12px; 
+          opacity: 0.5; 
+          position: absolute; 
+          left: -45px; /* Pulls it over to the side like your reference */
+          top: 50%;
+          transform: translateY(-50%);
+          white-space: nowrap;
+        }
+
         .bio { font-size: 14px; opacity: 0.8; margin-bottom: 20px; }
 
-        /* Flush Badges */
         .badge-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
         .badge {
           padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 800;
@@ -89,11 +110,10 @@ export default function PublicProfile({ params }: { params: { username: string }
           text-transform: uppercase; letter-spacing: 1px;
         }
 
-        /* Side-by-side Socials */
         .social-row { display: flex; justify-content: center; gap: 20px; align-items: center; }
         .social-icon { 
           width: 26px; height: 26px; 
-          filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6)); /* White Glow */
+          filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6)); 
           transition: transform 0.2s;
         }
         .social-icon:hover { transform: scale(1.1); }
@@ -102,7 +122,9 @@ export default function PublicProfile({ params }: { params: { username: string }
         .link-btn {
           padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.05);
           border: 1px solid rgba(255,255,255,0.1); color: white; text-decoration: none;
+          transition: background 0.2s;
         }
+        .link-btn:hover { background: rgba(255,255,255,0.1); }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
@@ -117,25 +139,32 @@ export default function PublicProfile({ params }: { params: { username: string }
 
       <div className="profile-card">
         <img src={profile.avatar_url} className="pfp" />
-        <div className="display-name">{profile.display_name}</div>
-        <div className="username">@{profile.username}</div>
+        
+        <div className="name-container">
+          <div className="username">@{profile.username}</div>
+          <div className="display-name">{profile.display_name}</div>
+        </div>
 
         <div className="badge-row">
           {profile.badges?.user && <div className="badge">User</div>}
-          {profile.badges?.dev && <div className="badge" style={{borderColor: profile.accent_color}}>Dev</div>}
+          {profile.badges?.dev && <div className="badge" style={{borderColor: profile.accent_color, color: profile.accent_color}}>Dev</div>}
         </div>
 
         <div className="bio">{profile.bio}</div>
 
         <div className="social-row">
           {socials.map((l: any) => (
-            <a key={l.id} href={l.url} target="_blank"><img src={getIcon(l.url)} className="social-icon" /></a>
+            <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank">
+              <img src={getIcon(l.url)} className="social-icon" />
+            </a>
           ))}
         </div>
 
         <div className="btn-list">
           {buttons.map((l: any) => (
-            <a key={l.id} href={l.url} className="link-btn" target="_blank">{l.title}</a>
+            <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} className="link-btn" target="_blank">
+              {l.title}
+            </a>
           ))}
         </div>
       </div>
