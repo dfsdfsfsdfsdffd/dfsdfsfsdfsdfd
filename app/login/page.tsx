@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createBrowserClient } from '@supabase/ssr';
+import { createBrowserClient } from '@supabase/ssr'; // Keep this
 import { Space_Grotesk } from "next/font/google";
 
 const font = Space_Grotesk({
@@ -14,7 +14,6 @@ const font = Space_Grotesk({
 export default function Login() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   
-  // State for form inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -22,7 +21,12 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
-  const supabase = createClientComponentClient();
+
+  // FIXED: Initialize the client correctly for Next.js 14 SSR
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +34,6 @@ export default function Login() {
     setError(null);
 
     if (mode === "signin") {
-      // SIGN IN LOGIC
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -38,13 +41,12 @@ export default function Login() {
       if (error) setError(error.message);
       else router.push("/dashboard");
     } else {
-      // SIGN UP LOGIC
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            full_name: username, // Saving the username to metadata
+            full_name: username,
           },
         },
       });
