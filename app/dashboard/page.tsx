@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
+import { useRouter } from "next/navigation" // Added for redirection
 
 // Social Icon Mapping
 const iconMap: any = {
@@ -33,6 +34,8 @@ function getIcon(url: string) {
 }
 
 export default function SoftcardDashboard() {
+  const router = useRouter();
+  
   const supabase = useMemo(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -46,7 +49,7 @@ export default function SoftcardDashboard() {
 
   const [avatar, setAvatar] = useState("https://i.imgur.com/1X6g1YH.jpeg")
   const [name, setName] = useState("akuryō")
-  const [username, setUsername] = useState("") // Added Username State
+  const [username, setUsername] = useState("") 
   const [bio, setBio] = useState("")
   const [links, setLinks] = useState<any[]>([])
   const [badges, setBadges] = useState<any>({ user: true, dev: false })
@@ -64,8 +67,16 @@ export default function SoftcardDashboard() {
   useEffect(() => {
     async function loadData() {
       if (!supabase) return;
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return;
+
+      // This checks if a session exists in cookies/localstorage automatically
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        router.push('/login'); // Not logged in? Boot them to login.
+        return;
+      }
+
+      const user = session.user;
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -76,7 +87,7 @@ export default function SoftcardDashboard() {
       if (profile) {
         setAvatar(profile.avatar_url || avatar)
         setName(profile.display_name || name)
-        setUsername(profile.username || "") // Load Username
+        setUsername(profile.username || "")
         setBio(profile.bio || "")
         setLinks(profile.links || [])
         setAccent(profile.accent_color || "#3b82f6")
@@ -94,7 +105,7 @@ export default function SoftcardDashboard() {
       setLoading(false)
     }
     loadData()
-  }, [supabase])
+  }, [supabase, router])
 
   async function saveChanges() {
     if (!supabase) return;
@@ -122,7 +133,15 @@ export default function SoftcardDashboard() {
     setSaving(false)
   }
 
+  // Added Sign Out Function
+  async function handleSignOut() {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    router.push('/login');
+  }
+
   const addLink = () => setLinks([...links, { id: Date.now(), title: "New Link", url: "" }])
+  const removeLink = (id: number) => setLinks(links.filter(l => l.id !== id)) // Helpful addition
 
   const updateLink = (i: number, key: string, val: string) => {
     const copy = [...links]
@@ -144,37 +163,21 @@ export default function SoftcardDashboard() {
   return (
     <div className="scdb-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
       <style>{`
-        /* Side-by-side Icons */
         .scdb-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
         .scdb-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
         .scdb-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
 
-        /* Username Positioning Fix */
-        .name-container { 
-          display: flex; 
-          align-items: baseline; 
-          justify-content: center; 
-          gap: 10px; 
-          margin-bottom: 5px;
-        }
+        .name-container { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 5px; }
         .scdb-username { font-size: 14px; opacity: 0.5; font-weight: 400; }
 
-        /* Clean Flush Badges */
         .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
         .badge { 
-          padding: 3px 10px; 
-          border-radius: 6px; 
-          background: rgba(255, 255, 255, 0.06); 
-          backdrop-filter: blur(4px);
-          font-size: 11px; 
-          font-weight: 800;
-          color: rgba(255, 255, 255, 0.85); 
-          border: 1px solid rgba(255, 255, 255, 0.1); 
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
+          padding: 3px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); 
+          backdrop-filter: blur(4px); font-size: 11px; font-weight: 800;
+          color: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); 
+          letter-spacing: 0.5px; text-transform: uppercase;
         }
 
-        /* Preview Glass Card Restored */
         .scdb-profile-card {
           ${showGlass ? `
             background: rgba(0, 0, 0, 0.3);
@@ -194,8 +197,11 @@ export default function SoftcardDashboard() {
       `}</style>
 
       <div className="scdb-sidebar">
-        <div className="scdb-back" onClick={saveChanges} style={{ cursor: 'pointer' }}>
-          {saving ? "Saving..." : "← Save & Publish"}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="scdb-back" onClick={saveChanges} style={{ cursor: 'pointer' }}>
+            {saving ? "Saving..." : "← Save & Publish"}
+            </div>
+            <button onClick={handleSignOut} style={{ background: 'none', border: 'none', color: '#666', fontSize: '12px', cursor: 'pointer' }}>Sign Out</button>
         </div>
 
         <div className="scdb-tabs">
@@ -212,10 +218,16 @@ export default function SoftcardDashboard() {
             <input className="scdb-input" value={name} onChange={e => setName(e.target.value)} />
             <label className="scdb-label">Bio</label>
             <input className="scdb-input" value={bio} onChange={e => setBio(e.target.value)} />
-            <button className="scdb-btn" onClick={addLink} style={{marginTop: '15px'}}>+ Add Link</button>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
+                <label className="scdb-label">Links</label>
+                <button className="scdb-btn" onClick={addLink} style={{ margin: 0, padding: '4px 10px', fontSize: '12px' }}>+ Add</button>
+            </div>
+            
             {links.map((l, i) => (
-              <div key={l.id} style={{ marginTop: '10px' }}>
-                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. google.com)" />
+              <div key={l.id} style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
+                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. instagram.com/user)" />
+                <button onClick={() => removeLink(l.id)} style={{ background: 'rgba(255,0,0,0.2)', border: 'none', color: 'white', borderRadius: '8px', padding: '0 10px', marginTop: '6px' }}>×</button>
               </div>
             ))}
           </div>
