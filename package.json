@@ -8,7 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "15.0.0",
+    "next": "15.0.3",
     "react": "19.0.0-rc-66a32d78-20241107",
     "react-dom": "19.0.0-rc-66a32d78-20241107",
     "@supabase/supabase-js": "latest",
