@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react"; // Added useMemo
+import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from '@supabase/ssr';
-import Link from "next/link";
 import { Space_Grotesk } from "next/font/google";
 
-const font = Space_Grotesk({ subsets: ["latin"], weight: ["400", "700"] });
+const font = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"]
+});
 
 export default function Login() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -18,7 +21,7 @@ export default function Login() {
 
   const router = useRouter();
 
-  // FIX: Wrap in useMemo to prevent Vercel "Unsupported Server Component" error
+  // Prevents the "Unsupported Server Component type" error during Vercel build
   const supabase = useMemo(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -29,8 +32,8 @@ export default function Login() {
     setLoading(true);
     setError(null);
 
-    // 1. Authenticate the user
-    const { data, error: authError } = mode === "signin" 
+    // 1. Auth Logic
+    const { data, error: authError } = mode === "signin"
       ? await supabase.auth.signInWithPassword({ email, password })
       : await supabase.auth.signUp({ 
           email, 
@@ -46,18 +49,17 @@ export default function Login() {
 
     if (!data.user) return;
 
-    // 2. Check if they have a profile/username already
+    // 2. Redirect Check: Does this user have a claimed link?
     const { data: profile } = await supabase
       .from('profiles')
       .select('username')
       .eq('id', data.user.id)
       .single();
 
-    // 3. Redirect based on existence of profile
     if (!profile?.username) {
-      router.push("/setup");
+      router.push("/setup"); // Go claim softcard.cc/username
     } else {
-      router.push("/dashboard");
+      router.push("/dashboard"); // Go to editor
     }
     
     setLoading(false);
@@ -65,11 +67,79 @@ export default function Login() {
 
   return (
     <main className={`loginPage ${font.className}`}>
-      {/* ... keep your existing return/JSX code here ... */}
-      <form onSubmit={handleSubmit}>
-         {/* your inputs */}
-         <button disabled={loading}>{loading ? "..." : mode}</button>
-      </form>
+      <nav className="nav">
+        <Link href="/" className="logo">♡ softcard.cc</Link>
+      </nav>
+
+      <div className="loginCard">
+        <h1>{mode === "signin" ? "Sign In" : "Create Account"}</h1>
+
+        <p className="subtitle">
+          {mode === "signin"
+            ? "Login to your Softcard dashboard"
+            : "Create your Softcard profile"}
+        </p>
+
+        <button className="discordBtn" type="button">
+          Continue with Discord
+        </button>
+
+        <div className="divider">
+          <span>or</span>
+        </div>
+
+        <form className="loginForm" onSubmit={handleSubmit}>
+          {error && <p style={{ color: '#ff5cad', fontSize: '13px', marginBottom: '10px' }}>{error}</p>}
+          
+          {mode === "signup" && (
+            <input
+              type="text"
+              placeholder="Username"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          )}
+
+          <input
+            type="email"
+            placeholder="Email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button className="loginBtn" disabled={loading}>
+            {loading ? "Processing..." : (mode === "signin" ? "Sign In" : "Sign Up")}
+          </button>
+        </form>
+
+        <div className="switchMode">
+          {mode === "signin" ? (
+            <>
+              Don't have an account?{" "}
+              <button type="button" onClick={() => setMode("signup")}>
+                Sign up
+              </button>
+            </>
+          ) : (
+            <>
+              Already have an account?{" "}
+              <button type="button" onClick={() => setMode("signin")}>
+                Sign in
+              </button>
+            </>
+          )}
+        </div>
+      </div>
     </main>
   );
 }
