@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from '@supabase/ssr'
 
 export default function SoftcardDashboard() {
-  // 1. Initialize client with a safety check for env vars
+  // Initialize client with a safety check for env vars
   const supabase = useMemo(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -35,7 +35,7 @@ export default function SoftcardDashboard() {
 
   useEffect(() => {
     async function loadData() {
-      // 2. CRITICAL: Stop if client isn't ready
+      // CRITICAL: Stop if client isn't ready to avoid "reading auth" error
       if (!supabase) return;
 
       const { data: { user } } = await supabase.auth.getUser()
@@ -55,12 +55,12 @@ export default function SoftcardDashboard() {
         setName(profile.display_name || "akuryō")
         setUsername(profile.username || "akuryo")
         setBio(profile.bio || "")
+        // Ensure links is treated as an array even if the DB returns null
         setLinks(profile.links || [])
         setAccent(profile.accent_color || "#3b82f6")
         setFont(profile.font_family || "Inter")
         setBgType(profile.background_type || "gradient")
         
-        // Handle background value persistence
         const bgVal = profile.background_value || "";
         if (profile.background_type === "gradient") setGradient(bgVal || "linear-gradient(135deg,#020617,#1e3a8a)");
         else if (profile.background_type === "video") setBgVideo(bgVal);
@@ -84,6 +84,7 @@ export default function SoftcardDashboard() {
       return;
     }
 
+    // This update includes 'links' and 'setup_completed' to fix the schema cache error
     const { error } = await supabase.from('profiles').update({
       display_name: name,
       avatar_url: avatar,
@@ -93,11 +94,15 @@ export default function SoftcardDashboard() {
       font_family: font,
       background_type: bgType,
       background_value: bgType === "gradient" ? gradient : (bgType === "video" ? bgVideo : bgImage),
-      audio_url: bgAudio
+      audio_url: bgAudio,
+      setup_completed: true 
     }).eq('id', user.id)
 
-    if (error) alert("Error saving: " + error.message)
-    else alert("Published! ♡")
+    if (error) {
+        alert("Error saving: " + error.message) //
+    } else {
+        alert("Published! ♡")
+    }
     setSaving(false)
   }
 
