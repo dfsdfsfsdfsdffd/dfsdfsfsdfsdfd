@@ -470,7 +470,6 @@ grid-template-columns:420px 1fr;
 height:100vh;
 background:#020617;
 color:white;
-font-family:${font},system-ui;
 }
 
 /* SIDEBAR */
