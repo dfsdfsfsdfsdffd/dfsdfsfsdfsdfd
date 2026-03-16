@@ -3,29 +3,30 @@ import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from '@supabase/ssr'
 import UsernameSetup from "@/components/UsernameSetup"
 
-export default function SoftcardDashboard(){
+export default function SoftcardDashboard() {
   const supabase = useMemo(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   ), [])
 
-  const [tab,setTab] = useState("profile")
+  const [tab, setTab] = useState("profile")
   const [loading, setLoading] = useState(true)
   const [setupRequired, setSetupRequired] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   // State linked to DB
-  const [avatar,setAvatar] = useState("https://i.imgur.com/1X6g1YH.jpeg")
-  const [name,setName] = useState("akuryō")
-  const [username,setUsername] = useState("akuryo")
-  const [bio,setBio] = useState("")
-  const [links,setLinks] = useState<any[]>([])
-  const [accent,setAccent] = useState("#3b82f6")
-  const [font,setFont] = useState("Inter")
-  const [bgType,setBgType] = useState("gradient")
-  const [bgValue,setBgValue] = useState("linear-gradient(135deg,#020617,#1e3a8a)")
-  const [bgAudio,setBgAudio] = useState("")
+  const [avatar, setAvatar] = useState("https://i.imgur.com/1X6g1YH.jpeg")
+  const [name, setName] = useState("akuryō")
+  const [username, setUsername] = useState("")
+  const [bio, setBio] = useState("")
+  const [accent, setAccent] = useState("#3b82f6")
+  const [bgType, setBgType] = useState("gradient")
+  const [bgValue, setBgValue] = useState("linear-gradient(135deg,#020617,#1e3a8a)")
+  
+  // Single Link State
+  const [linkTitle, setLinkTitle] = useState("")
+  const [linkUrl, setLinkUrl] = useState("")
 
-  // 1. Load Data on Mount
   useEffect(() => {
     async function loadData() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -43,57 +44,61 @@ export default function SoftcardDashboard(){
         setBio(profile.bio || "")
         setAccent(profile.accent_color || "#3b82f6")
         setBgType(profile.background_type || "gradient")
-        setBgValue(profile.background_value || "")
-        setBgAudio(profile.audio_url || "")
-        setFont(profile.font_family || "Inter")
-        
-        // Load links from separate table if you kept it, or JSON column
-        const { data: userLinks } = await supabase.from('user_links').select('*').eq('user_id', user.id)
-        if (userLinks) setLinks(userLinks)
+        setBgValue(profile.background_value || "linear-gradient(135deg,#020617,#1e3a8a)")
+        setLinkTitle(profile.link_title || "")
+        setLinkUrl(profile.link_url || "")
       }
       setLoading(false)
     }
     loadData()
   }, [supabase])
 
-  // 2. Save Logic
   async function saveChanges() {
+    setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('profiles').update({
+    const { error } = await supabase.from('profiles').update({
       display_name: name,
       avatar_url: avatar,
       bio: bio,
       accent_color: accent,
       background_type: bgType,
       background_value: bgValue,
-      audio_url: bgAudio,
-      font_family: font
+      link_title: linkTitle,
+      link_url: linkUrl
     }).eq('id', user?.id)
-    alert("Saved! ♡")
+
+    if (error) alert("Error saving!")
+    else alert("Saved! ♡")
+    setSaving(false)
   }
 
-  function addLink(){
-    setLinks([...links,{ id:Date.now(), title:"Link Title", url:"" }])
-    // Logic to insert into DB would go here
-  }
-
-  if (loading) return <div style={{color:'white', padding:'20px'}}>Loading...</div>
+  if (loading) return <div style={{color:'white', padding:'20px'}}>Loading Dashboard...</div>
   if (setupRequired) return <UsernameSetup supabase={supabase} onComplete={() => setSetupRequired(false)} />
 
-  return(
+  return (
     <div className="scdb-dashboard">
       <style jsx>{`
-        /* ... Your exact CSS here ... */
-        .scdb-save-btn {
-            background: #10b981; 
-            color: white; 
-            padding: 12px; 
-            border-radius: 10px; 
-            margin-top: 10px; 
-            cursor: pointer; 
-            border: none;
-            width: 100%;
-        }
+        .scdb-dashboard { display:grid; grid-template-columns:420px 1fr; height:100vh; background:#020617; color:white; font-family:Inter,system-ui; }
+        .scdb-sidebar { padding:30px; background:#071321; border-right:1px solid rgba(255,255,255,.05); overflow:auto; }
+        .scdb-back { opacity:.7; margin-bottom:20px; cursor:pointer; font-size: 14px; }
+        .scdb-tabs { display:flex; gap:10px; margin-bottom:20px; }
+        .scdb-tab { flex:1; padding:12px; border-radius:10px; background:#0c1b2e; text-align:center; cursor:pointer; transition: 0.2s; }
+        .scdb-tab:hover { background: #162a45; }
+        .scdb-tab-active { border:1px solid white; background: #162a45; }
+        .scdb-card { background:#0c1b2e; padding:20px; border-radius:14px; margin-bottom:20px; border: 1px solid rgba(255,255,255,0.05); }
+        .scdb-avatar { width:80px; height:80px; border-radius:50%; display:block; margin:0 auto 15px auto; object-fit:cover; border: 2px solid rgba(255,255,255,0.1); }
+        .scdb-label { font-size:12px; opacity:.6; margin-top:10px; display:block; text-transform: uppercase; letter-spacing: 0.5px; }
+        .scdb-input { width:100%; padding:12px; border-radius:8px; background:#020617; border:1px solid rgba(255,255,255,0.1); color:white; margin-top:6px; outline: none; }
+        .scdb-input:focus { border-color: ${accent}; }
+        .scdb-save-btn { background: #3b82f6; color: white; padding: 14px; border-radius: 10px; margin-top: 10px; cursor: pointer; border: none; width: 100%; font-weight: 600; }
+        .scdb-preview { position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+        .scdb-bg { position:absolute; width:100%; height:100%; z-index:0; }
+        .scdb-profile { position:relative; z-index:2; text-align:center; padding: 20px; }
+        .scdb-pfp { width:110px; height:110px; border-radius:50%; object-fit:cover; box-shadow:0 0 40px ${accent}; border: 3px solid ${accent}; }
+        .scdb-name { font-size:28px; margin-top:15px; font-weight: 700; }
+        .scdb-bio { margin-top:6px; opacity: 0.7; font-size: 15px; max-width: 300px; }
+        .scdb-links { margin-top:25px; width: 100%; min-width: 260px; }
+        .scdb-link { padding:14px; border-radius:12px; border:1px solid ${accent}; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); color: white; text-align: center; font-weight: 500; }
       `}</style>
 
       <div className="scdb-sidebar">
@@ -109,52 +114,64 @@ export default function SoftcardDashboard(){
               <img src={avatar} className="scdb-avatar"/>
               <label className="scdb-label">Avatar URL</label>
               <input className="scdb-input" value={avatar} onChange={e=>setAvatar(e.target.value)}/>
+              
               <label className="scdb-label">Display Name</label>
               <input className="scdb-input" value={name} onChange={e=>setName(e.target.value)}/>
+              
               <label className="scdb-label">Username (Locked)</label>
-              <input className="scdb-input" value={username} disabled />
+              <input className="scdb-input" value={username} disabled style={{opacity: 0.5, cursor: 'not-allowed'}} />
+              
               <label className="scdb-label">Bio</label>
               <input className="scdb-input" value={bio} onChange={e=>setBio(e.target.value)}/>
             </div>
-            <button className="scdb-save-btn" onClick={saveChanges}>Save Profile</button>
+
+            <div className="scdb-card">
+              <div style={{fontWeight: 600, marginBottom: '10px'}}>Your Single Link</div>
+              <label className="scdb-label">Button Text</label>
+              <input className="scdb-input" placeholder="e.g. My Portfolio" value={linkTitle} onChange={e=>setLinkTitle(e.target.value)}/>
+              <label className="scdb-label">URL</label>
+              <input className="scdb-input" placeholder="https://" value={linkUrl} onChange={e=>setLinkUrl(e.target.value)}/>
+            </div>
+            <button className="scdb-save-btn" onClick={saveChanges}>{saving ? "Saving..." : "Save Changes"}</button>
           </>
         )}
 
         {tab==="appearance" && (
           <>
             <div className="scdb-card">
-              <div>Background</div>
+              <div style={{fontWeight: 600, marginBottom: '10px'}}>Background</div>
               <select className="scdb-input" value={bgType} onChange={e=>setBgType(e.target.value)}>
                 <option value="gradient">Gradient</option>
                 <option value="video">Video</option>
                 <option value="image">Image</option>
               </select>
-              <input className="scdb-input" placeholder="URL or CSS Gradient" value={bgValue} onChange={e=>setBgValue(e.target.value)}/>
+              <label className="scdb-label">Background Value (URL or CSS)</label>
+              <input className="scdb-input" placeholder="Value" value={bgValue} onChange={e=>setBgValue(e.target.value)}/>
             </div>
             <div className="scdb-card">
-              <div>Accent Color</div>
-              <input type="color" className="scdb-input" value={accent} onChange={e=>setAccent(e.target.value)}/>
+              <div style={{fontWeight: 600, marginBottom: '10px'}}>Accent Color</div>
+              <input type="color" className="scdb-input" style={{height: '45px', padding: '2px'}} value={accent} onChange={e=>setAccent(e.target.value)}/>
             </div>
-            <button className="scdb-save-btn" onClick={saveChanges}>Save Appearance</button>
+            <button className="scdb-save-btn" onClick={saveChanges}>{saving ? "Saving..." : "Save Changes"}</button>
           </>
         )}
       </div>
 
       <div className="scdb-preview">
         {bgType==="gradient" && <div className="scdb-bg" style={{background:bgValue}}/>}
-        {bgType==="video" && bgValue && <video className="scdb-video" src={bgValue} autoPlay loop muted/>}
-        {bgType==="image" && bgValue && <img className="scdb-image" src={bgValue}/>}
+        {bgType==="video" && bgValue && <video className="scdb-bg" style={{objectFit:'cover'}} src={bgValue} autoPlay loop muted/>}
+        {bgType==="image" && bgValue && <img className="scdb-bg" style={{objectFit:'cover'}} src={bgValue}/>}
         
         <div className="scdb-profile">
           <img src={avatar} className="scdb-pfp"/>
-          <div className="scdb-name" style={{color:'white'}}>{name}</div>
-          <div className="scdb-bio" style={{opacity:0.7}}>{bio}</div>
+          <div className="scdb-name">{name || "Your Name"}</div>
+          <div className="scdb-bio">{bio || "Your bio description goes here"}</div>
           <div className="scdb-links">
-            {links.map(l=>(
-              <div key={l.id} className="scdb-link" style={{borderColor: accent, background: accent}}>
-                {l.title}
+            {linkUrl && (
+              <div className="scdb-link">
+                {linkTitle || "Visit Link"}
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
