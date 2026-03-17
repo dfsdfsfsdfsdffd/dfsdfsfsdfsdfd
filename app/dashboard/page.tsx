@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { Pencil, BarChart3, LogOut, Copy, Check, ExternalLink } from "lucide-material"
+import { Pencil, BarChart3, LogOut, Copy, Check, ExternalLink } from "lucide-react"
 
 // Social Icon Mapping
 const iconMap: any = {
