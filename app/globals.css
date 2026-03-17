@@ -575,3 +575,203 @@ button, input {
   cursor: not-allowed;
   box-shadow: none;
 }
+
+/* ===== ROOT ===== */
+.hx-root {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 0, 150, 0.18), transparent 45%),
+    radial-gradient(circle at 80% 30%, rgba(255, 0, 200, 0.15), transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(200, 0, 255, 0.15), transparent 55%),
+    #040405;
+
+  color: white;
+}
+
+/* ===== CONTAINER ===== */
+.hx-container {
+  text-align: center;
+  width: 100%;
+  max-width: 600px;
+  padding: 20px;
+}
+
+/* ===== HEADER ===== */
+.hx-status {
+  font-size: 10px;
+  letter-spacing: 2px;
+  opacity: 0.4;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.hx-title {
+  font-size: 34px;
+  font-weight: 600;
+}
+
+.hx-username {
+  background: linear-gradient(90deg, #ff008c, #ff4df0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===== AVATAR CIRCLE ===== */
+.hx-circle-wrap {
+  position: relative;
+  margin: 50px auto;
+  width: 260px;
+  height: 260px;
+}
+
+.hx-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+
+  background: rgba(255, 0, 120, 0.06);
+  border: 1px solid rgba(255, 0, 200, 0.2);
+
+  backdrop-filter: blur(20px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow:
+    0 0 80px rgba(255, 0, 150, 0.08),
+    inset 0 0 20px rgba(255,255,255,0.03);
+}
+
+/* AVATAR */
+.hx-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+
+  border: 2px solid rgba(255, 0, 200, 0.6);
+  box-shadow: 0 0 25px rgba(255, 0, 200, 0.3);
+}
+
+.hx-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.hx-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  padding: 12px 22px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(255, 0, 200, 0.25);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.hx-btn:hover {
+  background: rgba(255, 0, 200, 0.18);
+  border-color: rgba(255, 0, 200, 0.5);
+  box-shadow: 0 0 25px rgba(255, 0, 200, 0.4);
+}
+
+.hx-left { left: -80px; }
+.hx-right { right: -80px; }
+
+/* ===== URL BAR ===== */
+.hx-url {
+  margin-top: 20px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+
+  padding: 10px 12px 10px 20px;
+
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(14px);
+}
+
+/* URL TEXT */
+.hx-url span {
+  opacity: 0.6;
+  font-size: 14px;
+}
+
+/* BUTTON GROUP */
+.hx-url-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* COPY + VIEW */
+.hx-small-btn {
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: none;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+/* PRIMARY */
+.hx-copy {
+  background: linear-gradient(90deg, #ff008c, #ff4df0);
+  color: white;
+}
+
+.hx-copy:hover {
+  box-shadow: 0 0 20px rgba(255, 0, 200, 0.5);
+}
+
+/* SECONDARY */
+.hx-view {
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+
+.hx-view:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* ===== LOGOUT ===== */
+.hx-logout {
+  position: fixed;
+  top: 25px;
+  right: 25px;
+  opacity: 0.3;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.hx-logout:hover {
+  opacity: 1;
+  color: #ff4df0;
+}
