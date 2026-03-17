@@ -96,25 +96,61 @@ export default function PublicProfile({ params }: { params: { username: string }
           align-items: center;
           justify-content: center;
           width: 100%;
-          gap: 12px;
-          margin-bottom: 6px;
+          margin-bottom: 8px;
+          position: relative; /* Essential for absolute positioning of badges */
         }
 
-        .spacer {
-          flex: 1;
-          visibility: hidden;
+        .display-name { 
+          font-size: 28px; font-weight: 800;
+          color: ${profile.name_color || '#ffffff'};
+          letter-spacing: -0.02em;
+          white-space: nowrap;
+          z-index: 2;
         }
 
         .badges-container {
-          flex: 1;
+          position: absolute;
+          left: calc(50% + (var(--name-width, 0px) / 2) + 12px); /* Offsets it to the right of the center name */
           display: flex; 
-          gap: 8px;
-          justify-content: flex-start;
-          background: rgba(255, 255, 255, 0.05);
-          padding: 6px 10px;
-          border-radius: 12px;
+          gap: 6px;
+          align-items: center;
+          background: rgba(255, 255, 255, 0.08);
+          padding: 4px 8px;
+          border-radius: 10px;
           border: 1px solid rgba(255, 255, 255, 0.05);
-          width: fit-content;
+          white-space: nowrap;
+          /* If you don't want to use JS for width, this flex-based side-car works better: */
+        }
+
+        /* Revised logic: Flexbox with balanced empty space */
+        .name-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          gap: 10px;
+        }
+        
+        /* This keeps the name in the middle by making both sides equal width */
+        .name-wrapper::before {
+          content: "";
+          flex: 1;
+        }
+        .badge-anchor {
+          flex: 1;
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+        }
+
+        .badges-pill {
+          display: flex;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.06);
+          padding: 5px 10px;
+          border-radius: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.03);
+          backdrop-filter: blur(5px);
         }
 
         .badge-item {
@@ -138,13 +174,6 @@ export default function PublicProfile({ params }: { params: { username: string }
           border-radius: 50%;
           border: 3px solid ${accent};
           box-shadow: 0 0 25px ${accent}44;
-        }
-
-        .display-name { 
-          font-size: 28px; font-weight: 800;
-          color: ${profile.name_color || '#ffffff'};
-          letter-spacing: -0.02em;
-          white-space: nowrap;
         }
 
         .bio { 
@@ -204,27 +233,29 @@ export default function PublicProfile({ params }: { params: { username: string }
         <img src={profile.avatar_url} className="pfp" alt="profile" />
         
         <div className="name-wrapper">
-          <div className="spacer" /> 
-          
           <div className="display-name">{profile.display_name}</div>
           
-          <div className="badges-container">
-            {profile.badges?.user && (
-              <div className="badge-item" data-tooltip="Verified User">
-                <ShieldCheck size={18} />
+          {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
+            <div className="badge-anchor">
+              <div className="badges-pill">
+                {profile.badges?.user && (
+                  <div className="badge-item" data-tooltip="Verified User">
+                    <ShieldCheck size={16} />
+                  </div>
+                )}
+                {profile.badges?.dev && (
+                  <div className="badge-item" data-tooltip="Developer" style={{ color: accent }}>
+                    <Code size={16} />
+                  </div>
+                )}
+                {profile.badges?.staff && (
+                  <div className="badge-item" data-tooltip="Staff Member">
+                    <Star size={16} />
+                  </div>
+                )}
               </div>
-            )}
-            {profile.badges?.dev && (
-              <div className="badge-item" data-tooltip="Developer" style={{ color: accent }}>
-                <Code size={18} />
-              </div>
-            )}
-            {profile.badges?.staff && (
-              <div className="badge-item" data-tooltip="Staff Member">
-                <Star size={18} />
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="bio">{profile.bio}</div>
