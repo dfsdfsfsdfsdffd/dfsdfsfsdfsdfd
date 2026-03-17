@@ -714,150 +714,154 @@ opacity:.9;
 
 /* Updated Class Mapping: softcardx- System */
 
-/* ROOT */
+/* ===== DASHBOARD ROOT ===== */
 .softcardx-root {
   display: grid;
-  grid-template-columns: 420px 1fr;
+  grid-template-columns: 320px 1fr;
   height: 100vh;
-  background: #020617;
-  color: white;
-  font-family: Inter;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 0, 140, 0.15), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(255, 0, 200, 0.1), transparent 40%),
+    #030003;
 }
 
-/* SIDEBAR */
+/* ===== SIDEBAR ===== */
 .softcardx-sidebar {
-  width: 320px;
   padding: 25px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(10, 0, 15, 0.7);
   backdrop-filter: blur(30px);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-  overflow: auto;
+  border-right: 1px solid rgba(255, 0, 128, 0.15);
 }
 
-/* INPUTS */
+/* ===== INPUT ===== */
 .softcardx-input {
   width: 100%;
   padding: 12px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: white;
-  margin-top: 6px;
   margin-bottom: 12px;
-  outline: none;
-  transition: 0.2s ease;
+
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: white;
 }
 
 .softcardx-input:focus {
-  border: 1px solid rgba(255, 0, 200, 0.6);
-  box-shadow: 0 0 15px rgba(255, 0, 200, 0.3);
+  border-color: #ff2a8a;
+  box-shadow: 0 0 10px rgba(255,0,128,0.4);
 }
 
-/* BUTTONS */
-.softcardx-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #ff008c, #ff4df0);
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-weight: 500;
-  transition: 0.25s ease;
-}
-
-.softcardx-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(255, 0, 180, 0.5);
-}
-
-/* PREVIEW SECTION */
+/* ===== PREVIEW SIDE ===== */
 .softcardx-preview {
-  flex: 1;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
+
+  /* 🔥 THIS FIXES YOUR BLUE SHIT */
+  background:
+    radial-gradient(circle at center, rgba(255, 0, 128, 0.08), transparent 60%),
+    #020002;
 }
 
-/* PROFILE CARD */
+/* subtle glow layer */
+.softcardx-preview::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 0, 150, 0.1), transparent 70%);
+  filter: blur(80px);
+}
+
+/* ===== CARD ===== */
 .softcardx-card {
+  position: relative;
+  z-index: 2;
+
   padding: 40px 30px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: 22px;
+
+  background: rgba(15, 0, 25, 0.65);
   backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  border: 1px solid rgba(255, 0, 128, 0.15);
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.9),
+    0 0 40px rgba(255, 0, 128, 0.1);
+
   text-align: center;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  width: 360px;
 }
 
-/* AVATAR / PFP */
+/* ===== AVATAR ===== */
 .softcardx-avatar {
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  object-fit: cover;
-  margin-bottom: 10px;
-  border: 2px solid rgba(255, 0, 180, 0.5);
-  box-shadow: 0 0 30px rgba(255, 0, 180, 0.4);
+  margin-bottom: 15px;
+
+  border: 2px solid #ff2a8a;
+
+  box-shadow:
+    0 0 25px rgba(255,0,128,0.6),
+    0 0 60px rgba(255,0,128,0.2);
 }
 
-/* NAME */
+/* ===== NAME ===== */
 .softcardx-name {
-  font-size: 28px;
+  font-size: 22px;
+  font-weight: 600;
+
+  background: linear-gradient(90deg,#ff2a8a,#ff66c4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===== BIO ===== */
+.softcardx-bio {
+  font-size: 13px;
+  opacity: 0.7;
+  margin-top: 6px;
+}
+
+/* ===== BADGES ===== */
+.softcardx-badges {
   margin-top: 10px;
-  font-weight: 600;
-  color: white;
-}
-
-/* TAGS */
-.softcardx-tag {
   display: flex;
-  align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(6px);
+  justify-content: center;
 }
 
-/* BADGES */
 .softcardx-badge {
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
-  font-size: 12px;
-  background: #111827;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
+
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .softcardx-badge.dev {
-  background: #7c3aed;
-  box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+  border-color: #ff2a8a;
+  color: #ff2a8a;
 }
 
-/* LINKS ROW */
+/* ===== LINKS ===== */
 .softcardx-links {
+  margin-top: 18px;
   display: flex;
   gap: 14px;
   justify-content: center;
-  margin-top: 25px;
-  flex-wrap: wrap;
 }
 
 .softcardx-links img {
   width: 26px;
-  opacity: 0.8;
   transition: 0.2s;
+  filter: drop-shadow(0 0 6px rgba(255,0,128,0.5));
 }
 
 .softcardx-links img:hover {
-  opacity: 1;
-  transform: translateY(-2px);
-  filter: drop-shadow(0 0 10px rgba(255, 0, 200, 0.7));
+  transform: translateY(-3px);
+  filter: drop-shadow(0 0 14px rgba(255,0,128,0.9));
 }
