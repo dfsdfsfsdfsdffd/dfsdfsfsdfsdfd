@@ -13,6 +13,14 @@ body {
     user-select: none;
 }
 
+/* 🚨 HARD OVERRIDE OLD BLUE SHIT */
+.scdb-preview,
+.scdb-dashboard,
+.dx-preview,
+.hx-preview {
+  background: transparent !important;
+}
+
 /* MAIN */
 .main {
     min-height: 100vh;
