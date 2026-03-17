@@ -21,7 +21,6 @@ export default function Login() {
 
   const router = useRouter();
 
-  // Prevents the "Unsupported Server Component type" error during Vercel build
   const supabase = useMemo(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -32,13 +31,12 @@ export default function Login() {
     setLoading(true);
     setError(null);
 
-    // 1. Auth Logic
     const { data, error: authError } = mode === "signin"
       ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ 
-          email, 
+      : await supabase.auth.signUp({
+          email,
           password,
-          options: { data: { full_name: username } } 
+          options: { data: { full_name: username } }
         });
 
     if (authError) {
@@ -49,7 +47,6 @@ export default function Login() {
 
     if (!data.user) return;
 
-    // 2. Redirect Check: Does this user have a claimed link?
     const { data: profile } = await supabase
       .from('profiles')
       .select('username')
@@ -57,42 +54,40 @@ export default function Login() {
       .single();
 
     if (!profile?.username) {
-      router.push("/setup"); // Go claim softcard.cc/username
+      router.push("/setup");
     } else {
-      router.push("/dashboard"); // Go to editor
+      router.push("/dashboard");
     }
-    
+
     setLoading(false);
   };
 
   return (
-    <main className={`loginPage ${font.className}`}>
-      <nav className="nav">
-        <Link href="/" className="logo">♡ softcard.cc</Link>
+    <main className={`lx-main ${font.className}`}>
+
+      <nav className="lx-nav">
+        <Link href="/" className="lx-logo">softcard.cc</Link>
       </nav>
 
-      <div className="loginCard">
-        <h1>{mode === "signin" ? "Sign In" : "Create Account"}</h1>
+      <section className="lx-wrap">
 
-        <p className="subtitle">
+        <h1 className="lx-title">
+          {mode === "signin" ? "Welcome Back" : "Create Account"}
+        </h1>
+
+        <p className="lx-sub">
           {mode === "signin"
-            ? "Login to your Softcard dashboard"
-            : "Create your Softcard profile"}
+            ? "Login to your dashboard"
+            : "Start your Softcard page"}
         </p>
 
-        <button className="discordBtn" type="button">
-          Continue with Discord
-        </button>
+        <form className="lx-form" onSubmit={handleSubmit}>
 
-        <div className="divider">
-          <span>or</span>
-        </div>
+          {error && <p className="lx-error">{error}</p>}
 
-        <form className="loginForm" onSubmit={handleSubmit}>
-          {error && <p style={{ color: '#ff5cad', fontSize: '13px', marginBottom: '10px' }}>{error}</p>}
-          
           {mode === "signup" && (
             <input
+              className="lx-input"
               type="text"
               placeholder="Username"
               required
@@ -102,6 +97,7 @@ export default function Login() {
           )}
 
           <input
+            className="lx-input"
             type="email"
             placeholder="Email"
             required
@@ -110,6 +106,7 @@ export default function Login() {
           />
 
           <input
+            className="lx-input"
             type="password"
             placeholder="Password"
             required
@@ -117,29 +114,28 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <button className="loginBtn" disabled={loading}>
+          <button className="lx-primary" disabled={loading}>
             {loading ? "Processing..." : (mode === "signin" ? "Sign In" : "Sign Up")}
           </button>
+
         </form>
 
-        <div className="switchMode">
+        <div className="lx-switch">
           {mode === "signin" ? (
             <>
-              Don't have an account?{" "}
-              <button type="button" onClick={() => setMode("signup")}>
-                Sign up
-              </button>
+              Don’t have an account?{" "}
+              <button onClick={() => setMode("signup")}>Sign up</button>
             </>
           ) : (
             <>
               Already have an account?{" "}
-              <button type="button" onClick={() => setMode("signin")}>
-                Sign in
-              </button>
+              <button onClick={() => setMode("signin")}>Sign in</button>
             </>
           )}
         </div>
-      </div>
+
+      </section>
+
     </main>
   );
 }
