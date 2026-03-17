@@ -280,7 +280,7 @@ export default function SoftcardDashboard() {
         `}</style>
 
         <div className="hx-logout" onClick={() => supabase?.auth.signOut()}>
-          <LogOut size={20} />
+          <LogOut size(20) />
         </div>
 
         <div className="hx-container">
@@ -358,7 +358,6 @@ export default function SoftcardDashboard() {
           box-shadow: 0 0 25px ${accent}44; 
         }
 
-        /* FLEX WRAPPER FOR NAME AND BADGES */
         .sx-name-wrapper {
           display: flex;
           align-items: center;
@@ -368,15 +367,29 @@ export default function SoftcardDashboard() {
           margin-bottom: 6px;
         }
 
-        .sx-spacer { flex: 1; }
+        /* Centering Logic */
+        .sx-spacer { flex: 1; visibility: hidden; }
 
-        .sx-name { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+        .sx-name { 
+          font-size: 28px; font-weight: 800; letter-spacing: -0.02em; 
+          white-space: nowrap; flex: 0 0 auto;
+        }
 
         .sx-badges-container {
           flex: 1;
           display: flex; 
           gap: 6px;
           justify-content: flex-start;
+          align-items: center;
+        }
+
+        .sx-badge-pill {
+            display: flex;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 4px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .sx-bio { font-size: 15px; margin-bottom: 20px; max-width: 90%; line-height: 1.5; }
@@ -511,13 +524,19 @@ export default function SoftcardDashboard() {
           <img src={avatar} className="sx-pfp" />
           
           <div className="sx-name-wrapper">
+             {/* Invisible spacer to balance the badges on the right */}
              <div className="sx-spacer" />
+             
              <div className="sx-name" style={{ color: nameColor }}>{name}</div>
              
              <div className="sx-badges-container">
-                {badges.user && <ShieldCheck size={18} color="rgba(255,255,255,0.6)" />}
-                {badges.dev && <Code size={18} color={accent} />}
-                {badges.staff && <Star size={18} color="rgba(255,255,255,0.6)" />}
+               {(badges.user || badges.dev || badges.staff) && (
+                 <div className="sx-badge-pill">
+                    {badges.user && <ShieldCheck size={16} color="rgba(255,255,255,0.6)" />}
+                    {badges.dev && <Code size={16} color={accent} />}
+                    {badges.staff && <Star size={16} color="rgba(255,255,255,0.6)" />}
+                 </div>
+               )}
              </div>
           </div>
 
