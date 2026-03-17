@@ -722,156 +722,149 @@ opacity:.9;
 
 /* Updated Class Mapping: softcardx- System */
 
-/* ===== DASHBOARD ROOT ===== */
+/* DASHBOARD ROOT */
 .softcardx-root {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  height: 100vh;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(255, 0, 140, 0.15), transparent 40%),
-    radial-gradient(circle at 80% 30%, rgba(255, 0, 200, 0.1), transparent 40%),
-    #030003;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: 100vh;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 0, 140, 0.15), transparent 40%),
+                radial-gradient(circle at 80% 30%, rgba(255, 0, 200, 0.1), transparent 40%),
+                #030003;
 }
 
-/* ===== SIDEBAR ===== */
+/* SIDEBAR */
 .softcardx-sidebar {
-  padding: 25px;
-  background: rgba(10, 0, 15, 0.7);
-  backdrop-filter: blur(30px);
-  border-right: 1px solid rgba(255, 0, 128, 0.15);
+    padding: 25px;
+    background: rgba(10, 0, 15, 0.7);
+    backdrop-filter: blur(30px);
+    border-right: 1px solid rgba(255, 0, 128, 0.15);
 }
 
-/* ===== INPUT ===== */
+/* INPUTS */
 .softcardx-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 12px;
-
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: white;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: white;
+    outline: none;
+    transition: 0.2s;
 }
 
 .softcardx-input:focus {
-  border-color: #ff2a8a;
-  box-shadow: 0 0 10px rgba(255,0,128,0.4);
+    border-color: #ff2a8a;
+    box-shadow: 0 0 10px rgba(255, 0, 128, 0.4);
 }
 
-/* ===== PREVIEW SIDE ===== */
+/* PREVIEW SIDE (Kills the Blue) */
 .softcardx-preview {
-  position: relative;
-  display: flex;
-  width: 100%;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-
-  /* 🔥 THIS FIXES YOUR BLUE SHIT */
-  background:
-    radial-gradient(circle at center, rgba(255, 0, 128, 0.08), transparent 60%),
-    #020002;
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    /* This background overrides the scdb-blue */
+    background: radial-gradient(circle at center, rgba(255, 0, 128, 0.08), transparent 60%),
+                #020002;
 }
 
-/* subtle glow layer */
+/* Subtle Glow Layer */
 .softcardx-preview::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle, rgba(255, 0, 150, 0.1), transparent 70%);
-  filter: blur(80px);
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(255, 0, 150, 0.1), transparent 70%);
+    filter: blur(80px);
 }
 
-/* ===== CARD ===== */
+/* PREVIEW CARD */
 .softcardx-card {
-  position: relative;
-  z-index: 2;
-
-  padding: 40px 30px;
-  border-radius: 22px;
-
-  background: rgba(15, 0, 25, 0.65);
-  backdrop-filter: blur(30px);
-
-  border: 1px solid rgba(255, 0, 128, 0.15);
-
-  box-shadow:
-    0 30px 80px rgba(0,0,0,0.9),
-    0 0 40px rgba(255, 0, 128, 0.1);
-
-  text-align: center;
-  width: 360px;
+    position: relative;
+    z-index: 2;
+    padding: 40px 30px;
+    border-radius: 22px;
+    background: rgba(15, 0, 25, 0.65);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 0, 128, 0.15);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9),
+                0 0 40px rgba(255, 0, 128, 0.1);
+    text-align: center;
+    width: 360px;
 }
 
-/* ===== AVATAR ===== */
+/* AVATAR */
 .softcardx-avatar {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  margin-bottom: 15px;
-
-  border: 2px solid #ff2a8a;
-
-  box-shadow:
-    0 0 25px rgba(255,0,128,0.6),
-    0 0 60px rgba(255,0,128,0.2);
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    border: 2px solid #ff2a8a;
+    box-shadow: 0 0 25px rgba(255, 0, 128, 0.6),
+                0 0 60px rgba(255, 0, 128, 0.2);
+    object-fit: cover;
 }
 
-/* ===== NAME ===== */
+/* NAME & BIO */
 .softcardx-name {
-  font-size: 22px;
-  font-weight: 600;
-
-  background: linear-gradient(90deg,#ff2a8a,#ff66c4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+    font-size: 22px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #ff2a8a, #ff66c4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-/* ===== BIO ===== */
 .softcardx-bio {
-  font-size: 13px;
-  opacity: 0.7;
-  margin-top: 6px;
+    font-size: 13px;
+    opacity: 0.7;
+    margin-top: 6px;
 }
 
-/* ===== BADGES ===== */
+/* BADGES */
 .softcardx-badges {
-  margin-top: 10px;
-  display: flex;
-  gap: 6px;
-  justify-content: center;
+    margin-top: 10px;
+    display: flex;
+    gap: 6px;
+    justify-content: center;
 }
 
 .softcardx-badge {
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
-
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .softcardx-badge.dev {
-  border-color: #ff2a8a;
-  color: #ff2a8a;
+    border-color: #ff2a8a;
+    color: #ff2a8a;
 }
 
-/* ===== LINKS ===== */
+/* LINKS */
 .softcardx-links {
-  margin-top: 18px;
-  display: flex;
-  gap: 14px;
-  justify-content: center;
+    margin-top: 18px;
+    display: flex;
+    gap: 14px;
+    justify-content: center;
 }
 
 .softcardx-links img {
-  width: 26px;
-  transition: 0.2s;
-  filter: drop-shadow(0 0 6px rgba(255,0,128,0.5));
+    width: 26px;
+    transition: 0.2s;
+    filter: drop-shadow(0 0 6px rgba(255, 0, 128, 0.5));
 }
 
 .softcardx-links img:hover {
-  transform: translateY(-3px);
-  filter: drop-shadow(0 0 14px rgba(255,0,128,0.9));
+    transform: translateY(-3px);
+    filter: drop-shadow(0 0 14px rgba(255, 0, 128, 0.9));
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+    0% { opacity: 0; transform: translateY(25px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
