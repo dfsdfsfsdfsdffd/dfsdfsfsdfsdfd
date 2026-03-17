@@ -49,6 +49,9 @@ export default function PublicProfile({ params }: { params: { username: string }
 
   const socials = profile.links?.filter((l: any) => !l.url.includes('title') && (!l.title || l.title === "New Link")) || []
   const accent = profile.accent_color || '#7000ff';
+  
+  // Logic Fix: Background Priority
+  const hasCustomBg = profile.background_value && profile.background_value.trim() !== "";
 
   return (
     <div className="container">
@@ -60,7 +63,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           overflow: hidden;
         }
 
-        /* --- BACKGROUND --- */
+        /* --- BACKGROUND LOGIC --- */
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
         .bg-content { width: 100%; height: 100%; object-fit: cover; }
         
@@ -70,26 +73,25 @@ export default function PublicProfile({ params }: { params: { username: string }
           position: relative;
         }
 
-        /* --- CLEAN GLASS CARD --- */
+        /* --- PROFILE CARD (Toggleable) --- */
         .profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
           width: 90%; max-width: 400px;
           padding: 35px 25px;
-          background: rgba(255, 255, 255, 0.03);
-          backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 24px;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+          /* Logic Fix: If 'show_transparent_card' is false, strip the background and border */
+          background: ${profile.show_transparent_card ? 'rgba(255, 255, 255, 0.03)' : 'transparent'};
+          backdrop-filter: ${profile.show_transparent_card ? 'blur(12px)' : 'none'};
+          border: ${profile.show_transparent_card ? '1px solid rgba(255, 255, 255, 0.08)' : 'none'};
+          box-shadow: ${profile.show_transparent_card ? '0 20px 50px rgba(0,0,0,0.5)' : 'none'};
         }
 
         /* --- BADGES IN TOP RIGHT --- */
         .badges-container {
           position: absolute;
-          top: 15px;
-          right: 15px;
-          display: flex;
-          gap: 8px;
+          top: 15px; right: 15px;
+          display: flex; gap: 8px;
           padding: 6px 10px;
           background: rgba(255, 255, 255, 0.05);
           border-radius: 12px;
@@ -97,36 +99,23 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         .badge-item {
-          position: relative;
-          display: flex;
-          align-items: center;
-          cursor: help;
-          color: rgba(255, 255, 255, 0.6);
-          transition: 0.2s;
+          position: relative; display: flex; align-items: center;
+          cursor: help; color: rgba(255, 255, 255, 0.6); transition: 0.2s;
         }
 
         .badge-item:hover { color: #fff; transform: scale(1.1); }
-
-        /* Tooltip logic */
         .badge-item:hover::after {
           content: attr(data-tooltip);
-          position: absolute;
-          bottom: 130%;
-          left: 50%;
+          position: absolute; bottom: 130%; left: 50%;
           transform: translateX(-50%);
-          background: #fff;
-          color: #000;
-          padding: 4px 8px;
-          border-radius: 6px;
-          font-size: 10px;
-          font-weight: 700;
-          white-space: nowrap;
-          z-index: 20;
+          background: #fff; color: #000;
+          padding: 4px 8px; border-radius: 6px;
+          font-size: 10px; font-weight: 700;
+          white-space: nowrap; z-index: 20;
         }
 
         .pfp {
-          width: 95px; height: 95px; 
-          object-fit: cover; margin-bottom: 18px;
+          width: 95px; height: 95px; object-fit: cover; margin-bottom: 18px;
           border-radius: 50%;
           border: 2px solid ${accent};
           box-shadow: 0 0 25px ${accent}44;
@@ -167,10 +156,12 @@ export default function PublicProfile({ params }: { params: { username: string }
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
 
       <div className="bg-wrapper">
-        {profile.background_type === "video" ? (
-          <video ref={videoRef} src={profile.background_value} className="bg-content" loop muted playsInline />
-        ) : profile.background_type === "image" ? (
-          <img src={profile.background_value} className="bg-content" alt="bg" />
+        {hasCustomBg ? (
+          profile.background_type === "video" ? (
+            <video ref={videoRef} src={profile.background_value} className="bg-content" loop muted playsInline />
+          ) : (
+            <img src={profile.background_value} className="bg-content" alt="bg" />
+          )
         ) : (
           <div className="animated-bg" />
         )}
@@ -179,7 +170,7 @@ export default function PublicProfile({ params }: { params: { username: string }
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className="profile-card">
-        {/* Badges in Top Right */}
+        {/* Badges container inside the card */}
         {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
           <div className="badges-container">
             {profile.badges?.user && (
