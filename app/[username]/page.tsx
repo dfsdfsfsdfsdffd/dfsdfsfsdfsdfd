@@ -50,8 +50,9 @@ export default function PublicProfile({ params }: { params: { username: string }
   const socials = profile.links?.filter((l: any) => !l.url.includes('title') && (!l.title || l.title === "New Link")) || []
   const accent = profile.accent_color || '#7000ff';
   
-  // Logic Fix: Background Priority
+  // LOGIC FIX: Background Priority + Cache Buster
   const hasCustomBg = profile.background_value && profile.background_value.trim() !== "";
+  const bgUrl = hasCustomBg ? `${profile.background_value}?t=${new Date().getTime()}` : null;
 
   return (
     <div className="container">
@@ -63,7 +64,6 @@ export default function PublicProfile({ params }: { params: { username: string }
           overflow: hidden;
         }
 
-        /* --- BACKGROUND LOGIC --- */
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
         .bg-content { width: 100%; height: 100%; object-fit: cover; }
         
@@ -73,21 +73,18 @@ export default function PublicProfile({ params }: { params: { username: string }
           position: relative;
         }
 
-        /* --- PROFILE CARD (Toggleable) --- */
         .profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
           width: 90%; max-width: 400px;
           padding: 35px 25px;
           border-radius: 24px;
-          /* Logic Fix: If 'show_transparent_card' is false, strip the background and border */
           background: ${profile.show_transparent_card ? 'rgba(255, 255, 255, 0.03)' : 'transparent'};
           backdrop-filter: ${profile.show_transparent_card ? 'blur(12px)' : 'none'};
           border: ${profile.show_transparent_card ? '1px solid rgba(255, 255, 255, 0.08)' : 'none'};
           box-shadow: ${profile.show_transparent_card ? '0 20px 50px rgba(0,0,0,0.5)' : 'none'};
         }
 
-        /* --- BADGES IN TOP RIGHT --- */
         .badges-container {
           position: absolute;
           top: 15px; right: 15px;
@@ -117,7 +114,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         .pfp {
           width: 95px; height: 95px; object-fit: cover; margin-bottom: 18px;
           border-radius: 50%;
-          border: 2px solid ${accent};
+          border: 3px solid ${accent}; /* Fixed to solid border as requested earlier */
           box-shadow: 0 0 25px ${accent}44;
         }
 
@@ -158,9 +155,20 @@ export default function PublicProfile({ params }: { params: { username: string }
       <div className="bg-wrapper">
         {hasCustomBg ? (
           profile.background_type === "video" ? (
-            <video ref={videoRef} src={profile.background_value} className="bg-content" loop muted playsInline />
+            <video 
+              key={profile.background_value} 
+              ref={videoRef} 
+              src={bgUrl} 
+              className="bg-content" 
+              loop muted playsInline 
+            />
           ) : (
-            <img src={profile.background_value} className="bg-content" alt="bg" />
+            <img 
+              key={profile.background_value} 
+              src={bgUrl} 
+              className="bg-content" 
+              alt="bg" 
+            />
           )
         ) : (
           <div className="animated-bg" />
@@ -170,7 +178,6 @@ export default function PublicProfile({ params }: { params: { username: string }
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className="profile-card">
-        {/* Badges container inside the card */}
         {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
           <div className="badges-container">
             {profile.badges?.user && (
@@ -192,9 +199,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         )}
 
         <img src={profile.avatar_url} className="pfp" alt="profile" />
-        
         <div className="display-name">{profile.display_name}</div>
-        
         <div className="bio">{profile.bio}</div>
 
         <div className="tags-row">
