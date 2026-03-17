@@ -387,7 +387,7 @@ export default function SoftcardDashboard() {
             backdrop-filter: blur(25px);
             padding: 40px 30px;
             border-radius: 28px;
-            border: 1px solid rgba(255, 0, 128, 0.2);
+            border: 0px solid rgba(255, 0, 128, 0.2);
             box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
           ` : 'background: transparent; border: none; padding: 40px 30px;'}
           width: 100%;
