@@ -51,7 +51,7 @@ export default function SoftcardDashboard() {
   const [sexuality, setSexuality] = useState("")
   const [birthday, setBirthday] = useState("")
   const [timezone, setTimezone] = useState("")
-  const [location, setLocation] = useState("") // Added missing common tag
+  const [location, setLocation] = useState("")
 
   const [links, setLinks] = useState<any[]>([])
   const [badges, setBadges] = useState<any>({ user: true, dev: false, staff: false })
@@ -339,7 +339,7 @@ export default function SoftcardDashboard() {
         .sx-profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
-          width: 90%; max-width: 400px;
+          width: 90%; max-width: 450px;
           padding: 35px 25px;
           border-radius: 24px;
           transition: all 0.3s ease;
@@ -356,28 +356,35 @@ export default function SoftcardDashboard() {
         .sx-name-wrapper {
           display: flex; align-items: center; justify-content: center; width: 100%; gap: 10px; margin-bottom: 6px;
         }
-        .sx-spacer { flex: 1; visibility: hidden; }
-        .sx-name { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; flex: 0 0 auto; }
-        .sx-badges-container { flex: 1; display: flex; gap: 6px; justify-content: flex-start; align-items: center; }
-        .sx-badge-pill { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.08); padding: 4px 8px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .sx-name { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+        
+        /* PILL BADGE STYLING (Next to name) */
+        .sx-badge-pill { 
+          display: flex; gap: 8px; background: rgba(255, 255, 255, 0.08); 
+          padding: 6px 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+        
         .sx-bio { font-size: 15px; margin-bottom: 20px; max-width: 90%; line-height: 1.5; }
         
-        /* TAGS STYLING */
-        .sx-tags-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 25px; }
+        /* UPDATED TAGS STYLING TO MATCH IMAGE_EA3436 */
+        .sx-tags-row { 
+          display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; 
+          margin-bottom: 25px; width: 100%; max-width: 320px;
+        }
         .sx-tag { 
-          font-size: 12px; 
-          font-weight: 500; 
-          background: rgba(255,255,255,0.05); 
-          padding: 4px 10px; 
-          border-radius: 8px; 
-          color: rgba(255,255,255,0.7);
-          border: 1px solid rgba(255,255,255,0.05);
+          font-size: 13px; font-weight: 500; 
+          background: rgba(255,255,255,0.06); 
+          padding: 6px 14px; border-radius: 10px; 
+          color: white; border: 1px solid rgba(255,255,255,0.05);
+          display: flex; align-items: center; gap: 6px;
+          white-space: nowrap;
         }
 
-        .sx-links-row { display: flex; justify-content: center; gap: 22px; }
+        .sx-links-row { display: flex; justify-content: center; gap: 24px; }
         .sx-icon-link { transition: 0.3s ease; opacity: 0.8; }
         .sx-icon-link:hover { opacity: 1; transform: translateY(-3px); }
-        .sx-icon-link img { width: 22px; height: 22px; }
+        .sx-icon-link img { width: 24px; height: 24px; }
+
         .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-block; opacity: 0.5; font-size: 13px; }
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
         .sx-publish-btn {
@@ -385,60 +392,36 @@ export default function SoftcardDashboard() {
             background: linear-gradient(90deg, #ff008c, #ff4df0); color: white; cursor: pointer;
             box-shadow: 0 10px 20px rgba(255, 0, 128, 0.3); margin-bottom: 20px;
         }
-        .sx-tabs-row { display: flex; gap: 6px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .sx-tab { flex: 1; padding: 10px; border-radius: 10px; cursor: pointer; opacity: 0.6; background: rgba(255,255,255,0.03); text-align: center; transition: 0.2s; font-size: 12px; white-space: nowrap; }
+        .sx-tabs-row { display: flex; gap: 6px; margin-bottom: 20px; }
+        .sx-tab { flex: 1; padding: 10px; border-radius: 10px; cursor: pointer; opacity: 0.6; background: rgba(255,255,255,0.03); text-align: center; transition: 0.2s; font-size: 12px; }
         .sx-tab-active { background: rgba(255,0,200,0.2); opacity: 1; border: 1px solid rgba(255,0,200,0.4); }
+        
         .sx-input-group { margin-bottom: 15px; }
         .sx-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; margin-bottom: 5px; display: block; }
-        
         .sx-input {
             width: 100%; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.08); color: white; outline: none; transition: 0.2s; font-size: 14px;
         }
         .sx-input:focus { border-color: #ff2a8a; }
         
-        select.sx-input {
-          appearance: none;
-          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-          background-repeat: no-repeat;
-          background-position: right 12px center;
-          padding-right: 35px;
-        }
-        
-        select.sx-input option {
-          background-color: #1a0b1a;
-          color: white;
-          padding: 10px;
-        }
-
         .sx-bg-layer { position: absolute; inset: 0; z-index: 1; object-fit: cover; width: 100%; height: 100%; }
 
         .sx-link-card {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 12px;
-            position: relative;
+            border-radius: 12px; padding: 12px; margin-bottom: 12px; position: relative;
         }
         .sx-remove-link {
             position: absolute; top: -8px; right: -8px;
             background: #ef4444; color: white; border: none;
             width: 22px; height: 22px; border-radius: 50%;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 14px; font-weight: bold;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            transition: 0.2s;
         }
-        .sx-remove-link:hover { transform: scale(1.1); background: #f87171; }
       `}</style>
 
       <div className="sx-sidebar">
         <div className="sx-editor-link" onClick={() => setView("hub")}>← Back to Hub</div>
-        
-        <button className="sx-publish-btn" onClick={saveChanges}>
-          {saving ? "Saving..." : "Save & Publish"}
-        </button>
+        <button className="sx-publish-btn" onClick={saveChanges}>{saving ? "Saving..." : "Save & Publish"}</button>
 
         <div className="sx-tabs-row">
           <div className={`sx-tab ${tab === "profile" ? "sx-tab-active" : ""}`} onClick={() => setTab("profile")}>Profile</div>
@@ -452,82 +435,37 @@ export default function SoftcardDashboard() {
             <div className="sx-input-group"><label className="sx-label">Avatar URL</label><input className="sx-input" value={avatar} onChange={e => setAvatar(e.target.value)} /></div>
             <div className="sx-input-group"><label className="sx-label">Display Name</label><input className="sx-input" value={name} onChange={e => setName(e.target.value)} /></div>
             <div className="sx-input-group"><label className="sx-label">Bio</label><input className="sx-input" value={bio} onChange={e => setBio(e.target.value)} /></div>
-
+            
             <label className="sx-label">Social Links</label>
             <button className="sx-publish-btn" onClick={addLink} style={{background: 'rgba(255,255,255,0.05)', boxShadow: 'none', border: '1px dashed rgba(255,255,255,0.2)'}}>+ Add Social</button>
-            
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {links.map((l, i) => (
-                <div key={l.id} className="sx-link-card">
-                  <button className="sx-remove-link" onClick={() => removeLink(l.id)}>×</button>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <select 
-                      className="sx-input" 
-                      style={{ flex: '0 0 110px', fontSize: '12px' }} 
-                      value={l.type} 
-                      onChange={e => updateLink(i, "type", e.target.value)}
-                    >
-                      <option value="website">Website</option>
-                      <option value="tiktok">TikTok</option>
-                      <option value="instagram">Instagram</option>
-                      <option value="x">X / Twitter</option>
-                      <option value="youtube">YouTube</option>
-                      <option value="twitch">Twitch</option>
-                      <option value="spotify">Spotify</option>
-                      <option value="discord">Discord</option>
-                      <option value="github">GitHub</option>
-                      <option value="threads">Threads</option>
-                      <option value="linkedin">LinkedIn</option>
-                    </select>
-                    <input 
-                      className="sx-input" 
-                      value={l.url} 
-                      onChange={e => updateLink(i, "url", e.target.value)} 
-                      placeholder="URL (e.g. tiktok.com/@user)" 
-                    />
-                  </div>
+            {links.map((l, i) => (
+              <div key={l.id} className="sx-link-card">
+                <button className="sx-remove-link" onClick={() => removeLink(l.id)}>×</button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <select className="sx-input" style={{ flex: '0 0 110px' }} value={l.type} onChange={e => updateLink(i, "type", e.target.value)}>
+                    {Object.keys(iconMap).map(k => <option key={k} value={k}>{k}</option>)}
+                  </select>
+                  <input className="sx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL" />
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* TAGS TAB INTEGRATION */}
         {tab === "tags" && (
           <div className="sx-pane">
-            <div className="sx-input-group">
-                <label className="sx-label">Age</label>
-                <input className="sx-input" placeholder="e.g. 19" value={age} onChange={e => setAge(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Gender</label>
-                <input className="sx-input" placeholder="e.g. Male" value={gender} onChange={e => setGender(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Sexuality</label>
-                <input className="sx-input" placeholder="e.g. Straight" value={sexuality} onChange={e => setSexuality(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Birthday</label>
-                <input className="sx-input" placeholder="e.g. Oct 12" value={birthday} onChange={e => setBirthday(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Location</label>
-                <input className="sx-input" placeholder="e.g. London" value={location} onChange={e => setLocation(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Timezone</label>
-                <input className="sx-input" placeholder="e.g. GMT+1" value={timezone} onChange={e => setTimezone(e.target.value)} />
-            </div>
+            <div className="sx-input-group"><label className="sx-label">Age</label><input className="sx-input" placeholder="18" value={age} onChange={e => setAge(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Gender</label><input className="sx-input" placeholder="female" value={gender} onChange={e => setGender(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Sexuality</label><input className="sx-input" placeholder="gay" value={sexuality} onChange={e => setSexuality(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Birthday</label><input className="sx-input" placeholder="april 11th" value={birthday} onChange={e => setBirthday(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Location</label><input className="sx-input" placeholder="usa" value={location} onChange={e => setLocation(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Timezone</label><input className="sx-input" placeholder="est" value={timezone} onChange={e => setTimezone(e.target.value)} /></div>
           </div>
         )}
 
         {tab === "appearance" && (
           <div className="sx-pane">
-            <label className="sx-label" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '15px', textTransform: 'none', opacity: 1 }}>
-                <input type="checkbox" checked={showGlass} onChange={e => setShowGlass(e.target.checked)} />
-                Show Transparent Card
-            </label>
+            <label className="sx-label"><input type="checkbox" checked={showGlass} onChange={e => setShowGlass(e.target.checked)} /> Show Transparent Card</label>
             <div className="sx-input-group">
                 <label className="sx-label">Background Type</label>
                 <select className="sx-input" value={bgType} onChange={e => setBgType(e.target.value)}>
@@ -536,40 +474,16 @@ export default function SoftcardDashboard() {
                   <option value="image">Image</option>
                 </select>
             </div>
-
-            {bgType === "gradient" && (
-              <div className="sx-input-group">
-                <label className="sx-label">Gradient Colors</label>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <input type="color" value={gradientStart} onChange={e => {
-                      const ns = e.target.value; setGradientStart(ns);
-                      setGradient(`linear-gradient(135deg, ${ns} 0%, ${gradientEnd} 100%)`)
-                  }} />
-                  <input type="color" value={gradientEnd} onChange={e => {
-                      const ne = e.target.value; setGradientEnd(ne);
-                      setGradient(`linear-gradient(135deg, ${gradientStart} 0%, ${ne} 100%)`)
-                  }} />
-                </div>
-              </div>
-            )}
-
-            {bgType === "video" && <div className="sx-input-group"><input className="sx-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" /></div>}
-            {bgType === "image" && <div className="sx-input-group"><input className="sx-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" /></div>}
-            
-            <div className="sx-input-group"><label className="sx-label">Audio URL (.mp3)</label><input className="sx-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Name Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={nameColor} onChange={e => setNameColor(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Bio Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={bioColor} onChange={e => setBioColor(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={accent} onChange={e => setAccent(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Name Color</label><input type="color" className="sx-input" value={nameColor} onChange={e => setNameColor(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Bio Color</label><input type="color" className="sx-input" value={bioColor} onChange={e => setBioColor(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" value={accent} onChange={e => setAccent(e.target.value)} /></div>
           </div>
         )}
 
         {tab === "badges" && (
           <div className="sx-pane">
-            <label className="sx-label" style={{ display: "flex", gap: 10, alignItems: 'center', textTransform: 'none', opacity: 1 }}>
-              <input type="checkbox" checked={badges.user} onChange={() => setBadges({ ...badges, user: !badges.user })} />
-              User Badge
-            </label>
-            <div className="sx-input-group" style={{ marginTop: 20 }}>
+            <label className="sx-label"><input type="checkbox" checked={badges.user} onChange={() => setBadges({ ...badges, user: !badges.user })} /> User Badge</label>
+            <div className="sx-input-group" style={{marginTop: 20}}>
                 <label className="sx-label">Unlock Dev Badge</label>
                 <input className="sx-input" placeholder="Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
             </div>
@@ -587,22 +501,19 @@ export default function SoftcardDashboard() {
           <img src={avatar} className="sx-pfp" alt="profile" />
           
           <div className="sx-name-wrapper">
-             <div className="sx-spacer" />
              <div className="sx-name" style={{ color: nameColor }}>{name}</div>
-             <div className="sx-badges-container">
-               {(badges.user || badges.dev || badges.staff) && (
-                 <div className="sx-badge-pill">
-                    {badges.user && <ShieldCheck size={16} color="rgba(255,255,255,0.6)" />}
-                    {badges.dev && <Code size={16} color={accent} />}
-                    {badges.staff && <Star size={16} color="rgba(255,255,255,0.6)" />}
-                 </div>
-               )}
-             </div>
+             {(badges.user || badges.dev || badges.staff) && (
+               <div className="sx-badge-pill">
+                  {badges.user && <ShieldCheck size={16} color="rgba(255,255,255,0.6)" />}
+                  {badges.dev && <Code size={16} color={accent} />}
+                  {badges.staff && <Star size={16} color="rgba(255,255,255,0.6)" />}
+               </div>
+             )}
           </div>
 
           <div className="sx-bio" style={{ color: bioColor }}>{bio}</div>
 
-          {/* DYNAMIC TAGS PREVIEW */}
+          {/* PREVIEW TAGS - MATCHING PILL STYLE IN IMAGE_EA3436 */}
           <div className="sx-tags-row">
             {age && <div className="sx-tag">🎂 {age}</div>}
             {gender && <div className="sx-tag">⚥ {gender}</div>}
@@ -613,14 +524,11 @@ export default function SoftcardDashboard() {
           </div>
           
           <div className="sx-links-row">
-            {links.map(l => {
-              if (!l.url) return null;
-              return (
-                <div key={l.id} className="sx-icon-link">
-                  <img src={getIcon(l)} alt="" />
-                </div>
-              )
-            })}
+            {links.map(l => l.url && (
+              <div key={l.id} className="sx-icon-link">
+                <img src={getIcon(l)} alt="" />
+              </div>
+            ))}
           </div>
         </div>
       </div>
