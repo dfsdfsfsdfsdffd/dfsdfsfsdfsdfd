@@ -10,38 +10,37 @@ const font = Space_Grotesk({
 
 export default function Home() {
   return (
-    <main className={`sc-main ${font.className}`}>
+    <main className={`sf-main ${font.className}`}>
 
-      <nav className="sc-nav">
-        <div className="sc-logo">♡ softcard.cc</div>
+      <nav className="sf-nav">
+        <div className="sf-logo">softcard.cc</div>
 
         <Link href="/login">
-          <button className="sc-dashboard-btn">Dashboard →</button>
+          <button className="sf-nav-btn">Dashboard →</button>
         </Link>
       </nav>
 
-      <section className="sc-hero">
+      <section className="sf-hero">
 
-        <div className="sc-glass-card">
+        <div className="sf-glass">
 
-          <h1 className="sc-title">
+          <h1 className="sf-title">
             Welcome to <br />
-            <span>Softcard Biolink</span>
+            <span>Softcard</span>
           </h1>
 
-          <p className="sc-subtext">
-            Create a single link for everything you share online — socials,
-            projects, and content — all organized in one beautiful profile.
+          <p className="sf-sub">
+            A clean, beautiful way to share everything you do online.
           </p>
 
-          <div className="sc-buttons">
+          <div className="sf-actions">
             <Link href="/login">
-              <button className="sc-primary-btn">
-                Create Your Page →
+              <button className="sf-primary">
+                Create Your Page
               </button>
             </Link>
 
-            <button className="sc-secondary-btn">
+            <button className="sf-secondary">
               Learn More
             </button>
           </div>
