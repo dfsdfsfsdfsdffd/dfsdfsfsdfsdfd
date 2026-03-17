@@ -67,7 +67,6 @@ export default function PublicProfile({ params }: { params: { username: string }
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; }
         .bg-content { width: 100%; height: 100%; object-fit: cover; }
         
-        /* --- MINIMALIST CARD (IMAGE 3 STYLE) --- */
         .profile-card {
           position: relative; z-index: 5; text-align: center;
           background: transparent;
@@ -75,92 +74,106 @@ export default function PublicProfile({ params }: { params: { username: string }
           flex-direction: column;
           align-items: center;
           width: 100%;
-          max-width: 400px;
+          max-width: 500px;
+          padding: 20px;
         }
 
         .pfp {
-          width: 85px; height: 85px; 
+          width: 100px; height: 100px; 
           object-fit: cover;
-          margin-bottom: 15px;
+          margin-bottom: 24px;
           border-radius: 50%;
-          border: 2px solid ${profile.accent_color || 'rgba(255,255,255,0.2)'};
-          box-shadow: ${profile.accent_glow ? `0 0 20px ${profile.accent_color}` : 'none'};
+          border: 2px solid ${profile.accent_color || 'rgba(255,255,255,0.4)'};
+          box-shadow: ${profile.accent_glow ? `0 0 30px ${profile.accent_color}` : '0 0 15px rgba(0,0,0,0.5)'};
         }
 
         .display-name { 
-          font-size: 24px; 
+          font-size: 32px; 
           font-weight: 700; 
-          margin-bottom: 4px;
-          color: ${profile.name_color || '#ffffff'}; 
+          margin-bottom: 12px;
+          color: ${profile.name_color || '#ffffff'};
+          text-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
 
-        /* Badge Row (Placed where the eye icon was) */
+        /* Badge Row - Increased spacing and size */
         .badge-row {
           display: flex;
           justify-content: center;
-          gap: 10px;
-          margin-bottom: 12px;
-          opacity: 0.8;
+          gap: 14px;
+          margin-bottom: 18px;
+          min-height: 20px;
         }
         
         .badge-icon {
           position: relative;
           cursor: help;
-          transition: 0.2s;
+          transition: 0.3s ease;
+          opacity: 0.8;
         }
-        .badge-icon:hover { transform: scale(1.1); opacity: 1; }
+        .badge-icon:hover { 
+          transform: scale(1.2); 
+          opacity: 1; 
+          filter: drop-shadow(0 0 8px ${profile.accent_color || '#ffffff'});
+        }
 
-        /* Simple Tooltip */
         .badge-icon::after {
           content: attr(data-tooltip);
           position: absolute;
-          bottom: 130%;
+          bottom: 150%;
           left: 50%;
           transform: translateX(-50%);
           background: rgba(0,0,0,0.9);
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 10px;
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-size: 11px;
           white-space: nowrap;
           opacity: 0;
           pointer-events: none;
           transition: 0.2s;
+          border: 1px solid rgba(255,255,255,0.1);
         }
         .badge-icon:hover::after { opacity: 1; }
 
         .bio { 
-          font-size: 14px; 
-          margin-bottom: 20px; 
+          font-size: 17px; 
+          margin-bottom: 28px; 
           color: ${profile.bio_color || '#ffffff'}; 
           font-weight: 400;
-          letter-spacing: 0.3px;
+          line-height: 1.5;
+          max-width: 80%;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
+
+        .tags-row { 
+          display: flex; 
+          flex-wrap: wrap; 
+          justify-content: center; 
+          gap: 12px; 
+          margin-bottom: 32px;
+          opacity: 0.7;
+        }
+        .tag { font-size: 14px; letter-spacing: 0.5px; }
 
         .social-row { 
           display: flex; 
           justify-content: center; 
-          gap: 18px; 
-          margin-top: 5px; 
+          gap: 24px; 
         }
 
         .social-link {
-          transition: 0.2s;
-          opacity: 0.8;
+          transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          opacity: 0.75;
         }
         .social-link:hover {
           opacity: 1;
-          transform: translateY(-2px);
+          transform: translateY(-4px);
         }
 
         .social-icon { 
-          width: 20px; 
-          height: 20px; 
-          filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+          width: 24px; 
+          height: 24px; 
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
         }
-
-        /* Simple Tag Style */
-        .tags-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 15px; }
-        .tag { font-size: 12px; opacity: 0.7; }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
@@ -174,39 +187,31 @@ export default function PublicProfile({ params }: { params: { username: string }
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className="profile-card">
-        {/* Profile Picture */}
         <img src={profile.avatar_url} className="pfp" alt="profile" />
 
-        {/* Name */}
         <div className="display-name">{profile.display_name}</div>
 
-        {/* Badge Row (Eye icon replacement) */}
-        {(profile.badges?.user || profile.badges?.dev) && (
-          <div className="badge-row">
-            {profile.badges?.user && (
-              <div className="badge-icon" data-tooltip="Verified User">
-                <User size={14} strokeWidth={2.5} />
-              </div>
-            )}
-            {profile.badges?.dev && (
-              <div className="badge-icon" data-tooltip="Developer" style={{ color: profile.accent_color }}>
-                <Code size={14} strokeWidth={2.5} />
-              </div>
-            )}
-          </div>
-        )}
+        <div className="badge-row">
+          {profile.badges?.user && (
+            <div className="badge-icon" data-tooltip="Verified User">
+              <User size={18} strokeWidth={2} />
+            </div>
+          )}
+          {profile.badges?.dev && (
+            <div className="badge-icon" data-tooltip="Developer" style={{ color: profile.accent_color }}>
+              <Code size={18} strokeWidth={2} />
+            </div>
+          )}
+        </div>
 
-        {/* Bio */}
         <div className="bio">{profile.bio}</div>
 
-        {/* Tags (Age, Gender, etc.) */}
         <div className="tags-row">
           {profile.age && <span className="tag">{profile.age}</span>}
           {profile.gender && <span className="tag">{profile.gender}</span>}
           {profile.timezone && <span className="tag">{profile.timezone}</span>}
         </div>
 
-        {/* Social Icons (Floating Glyph Style) */}
         <div className="social-row">
           {socials.map((l: any) => (
             <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" className="social-link">
