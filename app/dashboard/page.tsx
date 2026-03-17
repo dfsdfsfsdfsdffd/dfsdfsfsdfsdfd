@@ -383,6 +383,11 @@ export default function SoftcardDashboard() {
 
         .sx-profile-card {
           ${showGlass ? `
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+          ` : 'background: transparent; border: none;'}
+            padding: 40px; border-radius: 24px;
             backdrop-filter: blur(25px);
             padding: 40px 30px;
             background: rgba(0, 0, 0, 0.35);
