@@ -50,15 +50,20 @@ export default function PublicProfile({ params }: { params: { username: string }
   const socials = profile.links?.filter((l: any) => !l.url.includes('title') && (!l.title || l.title === "New Link")) || []
   const accent = profile.accent_color || '#7000ff';
   
-  // LOGIC FIX: Background Priority + Cache Buster
-  const hasCustomBg = profile.background_value && profile.background_value.trim() !== "";
-  const bgUrl = hasCustomBg ? `${profile.background_value}?t=${new Date().getTime()}` : null;
+  // Logic: Handle Images/Videos with Cache Busting
+  const hasMediaBg = (profile.background_type === "image" || profile.background_type === "video") && profile.background_value;
+  const bgUrl = hasMediaBg ? `${profile.background_value}?t=${new Date().getTime()}` : null;
+
+  // Logic: Construct Gradient String
+  const gradientBg = `linear-gradient(135deg, ${profile.gradient_color_1 || '#000000'} 0%, ${profile.gradient_color_2 || '#000000'} 100%)`;
 
   return (
     <div className="container">
       <style jsx>{`
         .container {
-          height: 100vh; width: 100vw; background: #000;
+          height: 100vh; width: 100vw; 
+          /* Apply gradient if type is Gradient, otherwise black */
+          background: ${profile.background_type === 'Gradient' ? gradientBg : '#000'};
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${profile.font_family || 'Inter'}, sans-serif;
           overflow: hidden;
@@ -114,7 +119,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         .pfp {
           width: 95px; height: 95px; object-fit: cover; margin-bottom: 18px;
           border-radius: 50%;
-          border: 3px solid ${accent}; /* Fixed to solid border as requested earlier */
+          border: 3px solid ${accent};
           box-shadow: 0 0 25px ${accent}44;
         }
 
@@ -153,24 +158,26 @@ export default function PublicProfile({ params }: { params: { username: string }
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
 
       <div className="bg-wrapper">
-        {hasCustomBg ? (
-          profile.background_type === "video" ? (
-            <video 
-              key={profile.background_value} 
-              ref={videoRef} 
-              src={bgUrl} 
-              className="bg-content" 
-              loop muted playsInline 
-            />
-          ) : (
-            <img 
-              key={profile.background_value} 
-              src={bgUrl} 
-              className="bg-content" 
-              alt="bg" 
-            />
-          )
+        {profile.background_type === "video" ? (
+          <video 
+            key={profile.background_value} 
+            ref={videoRef} 
+            src={bgUrl} 
+            className="bg-content" 
+            loop muted playsInline 
+          />
+        ) : profile.background_type === "image" ? (
+          <img 
+            key={profile.background_value} 
+            src={bgUrl} 
+            className="bg-content" 
+            alt="bg" 
+          />
+        ) : profile.background_type === "Gradient" ? (
+          /* Gradient is handled by .container background style */
+          null
         ) : (
+          /* Default fallback if nothing is set */
           <div className="animated-bg" />
         )}
       </div>
