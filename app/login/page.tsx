@@ -31,46 +31,98 @@ export default function Login() {
     setLoading(true);
     setError(null);
 
-    const { data, error: authError } = mode === "signin"
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: username } }
-        });
+    try {
+      if (mode === "signup") {
+        // 🔍 Check username first (faster UX)
+        const { data: existingUsername } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("username", username)
+          .maybeSingle();
 
-    if (authError) {
-      setError(authError.message);
+        if (existingUsername) {
+          setError("That username is already taken.");
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 🔐 AUTH
+      const { data, error: authError } = mode === "signin"
+        ? await supabase.auth.signInWithPassword({ email, password })
+        : await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { full_name: username } }
+          });
+
+      if (authError) {
+        // 🔥 Handle duplicate email cleanly
+        if (authError.message.toLowerCase().includes("already")) {
+          setError("An account with this email already exists.");
+        } else {
+          setError(authError.message);
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (!data.user) {
+        setLoading(false);
+        return;
+      }
+
+      // 📦 CREATE PROFILE (protected by SQL constraints too)
+      if (mode === "signup") {
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({
+            id: data.user.id,
+            username: username,
+            email: email
+          });
+
+        // 🔥 This catches DB-level duplicate errors
+        if (insertError) {
+          if (insertError.message.toLowerCase().includes("username")) {
+            setError("That username is already taken.");
+          } else if (insertError.message.toLowerCase().includes("email")) {
+            setError("An account with this email already exists.");
+          } else {
+            setError("Something went wrong. Try again.");
+          }
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 🔁 REDIRECT LOGIC
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', data.user.id)
+        .single();
+
+      if (!profile?.username) {
+        router.push("/setup");
+      } else {
+        router.push("/dashboard");
+      }
+
+    } catch (err) {
+      setError("Unexpected error. Try again.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    if (!data.user) return;
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', data.user.id)
-      .single();
-
-    if (!profile?.username) {
-      router.push("/setup");
-    } else {
-      router.push("/dashboard");
-    }
-
-    setLoading(false);
   };
 
   return (
     <main className={`lx-main ${font.className}`}>
-
       <nav className="lx-nav">
         <Link href="/" className="lx-logo">softcard.cc</Link>
       </nav>
 
       <section className="lx-wrap">
-
         <h1 className="lx-title">
           {mode === "signin" ? "Welcome Back" : "Create Account"}
         </h1>
@@ -82,7 +134,6 @@ export default function Login() {
         </p>
 
         <form className="lx-form" onSubmit={handleSubmit}>
-
           {error && <p className="lx-error">{error}</p>}
 
           {mode === "signup" && (
@@ -117,7 +168,6 @@ export default function Login() {
           <button className="lx-primary" disabled={loading}>
             {loading ? "Processing..." : (mode === "signin" ? "Sign In" : "Sign Up")}
           </button>
-
         </form>
 
         <div className="lx-switch">
@@ -133,9 +183,7 @@ export default function Login() {
             </>
           )}
         </div>
-
       </section>
-
     </main>
   );
 }
