@@ -7,9 +7,22 @@ import { Space_Grotesk } from "next/font/google";
 
 const font = Space_Grotesk({ subsets: ["latin"], weight: ["400", "600"] });
 
+// 1. Define your banned/reserved list here
+const RESERVED_USERNAMES = [
+  "setup", 
+  "dashboard", 
+  "admin", 
+  "login", 
+  "api", 
+  "settings", 
+  "hub", 
+  "edit"
+];
+
 export default function Setup() {
   const [username, setUsername] = useState("");
   const [isTaken, setIsTaken] = useState(false);
+  const [isReserved, setIsReserved] = useState(false); // 2. New state for reserved check
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   
@@ -18,15 +31,29 @@ export default function Setup() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // Check if username is available
   useEffect(() => {
     const checkUsername = async () => {
-      if (username.length < 3) return;
+      const lowerUsername = username.toLowerCase();
+      
+      if (lowerUsername.length < 3) {
+        setIsReserved(false);
+        setIsTaken(false);
+        return;
+      }
+
+      // 3. Check if it's in the reserved list first
+      if (RESERVED_USERNAMES.includes(lowerUsername)) {
+        setIsReserved(true);
+        setIsTaken(false);
+        return;
+      } else {
+        setIsReserved(false);
+      }
       
       const { data } = await supabase
-        .from('profiles') // Assumes you have a 'profiles' table
+        .from('profiles')
         .select('username')
-        .eq('username', username.toLowerCase())
+        .eq('username', lowerUsername)
         .single();
 
       setIsTaken(!!data);
@@ -68,7 +95,7 @@ export default function Setup() {
               softcard.cc/
             </span>
             <input
-              style={{ paddingLeft: '105px' }} // Make room for the prefix
+              style={{ paddingLeft: '105px' }}
               type="text"
               placeholder="username"
               value={username}
@@ -77,14 +104,18 @@ export default function Setup() {
           </div>
 
           {username.length > 0 && (
-            <p style={{ fontSize: '12px', color: isTaken ? '#ff5cad' : '#00ffaa' }}>
-              {isTaken ? "✖ This link is already taken" : "✔ Link available!"}
+            <p style={{ fontSize: '12px', color: (isTaken || isReserved) ? '#ff5cad' : '#00ffaa' }}>
+              {isReserved 
+                ? "✖ This username is reserved" 
+                : isTaken 
+                ? "✖ This link is already taken" 
+                : "✔ Link available!"}
             </p>
           )}
 
           <button 
             className="loginBtn" 
-            disabled={loading || isTaken || username.length < 3}
+            disabled={loading || isTaken || isReserved || username.length < 3}
             onClick={handleSave}
           >
             {loading ? "Saving..." : "Create My Page"}
