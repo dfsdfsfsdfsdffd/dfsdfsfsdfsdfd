@@ -52,21 +52,24 @@ export default function PublicProfile({ params }: { params: { username: string }
   
   // Logic: Handle Images/Videos with Cache Busting
   const hasMediaBg = (profile.background_type === "image" || profile.background_type === "video") && profile.background_value;
-  const bgUrl = hasMediaBg ? `${profile.background_value}?t=${new Date().getTime()}` : null;
+  const bgUrl = hasMediaBg ? `${profile.background_value}` : null;
 
-  // Logic: Construct Gradient String
-  const gradientBg = `linear-gradient(135deg, ${profile.gradient_color_1 || '#000000'} 0%, ${profile.gradient_color_2 || '#000000'} 100%)`;
+  // Logic: Support both the raw gradient value from dashboard AND the legacy color columns
+  const finalGradient = profile.background_value && profile.background_type === "gradient" 
+    ? profile.background_value 
+    : `linear-gradient(135deg, ${profile.gradient_color_1 || '#000000'} 0%, ${profile.gradient_color_2 || '#000000'} 100%)`;
 
   return (
     <div className="container">
       <style jsx>{`
         .container {
           height: 100vh; width: 100vw; 
-          /* Apply gradient if type is Gradient, otherwise black */
-          background: ${profile.background_type === 'Gradient' ? gradientBg : '#000'};
+          /* Support both "gradient" and "Gradient" casing from DB */
+          background: ${profile.background_type?.toLowerCase() === 'gradient' ? finalGradient : '#000'};
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${profile.font_family || 'Inter'}, sans-serif;
           overflow: hidden;
+          position: relative;
         }
 
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
@@ -84,10 +87,12 @@ export default function PublicProfile({ params }: { params: { username: string }
           width: 90%; max-width: 400px;
           padding: 35px 25px;
           border-radius: 24px;
-          background: ${profile.show_transparent_card ? 'rgba(255, 255, 255, 0.03)' : 'transparent'};
-          backdrop-filter: ${profile.show_transparent_card ? 'blur(12px)' : 'none'};
-          border: ${profile.show_transparent_card ? '1px solid rgba(255, 255, 255, 0.08)' : 'none'};
-          box-shadow: ${profile.show_transparent_card ? '0 20px 50px rgba(0,0,0,0.5)' : 'none'};
+          transition: all 0.3s ease;
+          /* Fixed: Supporting both potential database column names for the toggle */
+          background: ${profile.show_glass_card || profile.show_transparent_card ? 'rgba(0, 0, 0, 0.4)' : 'transparent'};
+          backdrop-filter: ${profile.show_glass_card || profile.show_transparent_card ? 'blur(20px)' : 'none'};
+          border: ${profile.show_glass_card || profile.show_transparent_card ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
+          box-shadow: ${profile.show_glass_card || profile.show_transparent_card ? '0 20px 50px rgba(0,0,0,0.5)' : 'none'};
         }
 
         .badges-container {
@@ -137,14 +142,14 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         .tags-row { 
           display: flex; flex-wrap: wrap; justify-content: center; 
-          gap: 12px; margin-bottom: 25px; opacity: 0.5;
+          gap: 12px; margin-bottom: 25px; opacity: 0.6;
         }
         .tag { font-size: 13px; font-weight: 500; }
 
         .social-row { display: flex; justify-content: center; gap: 22px; }
-        .social-link { transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.6; }
+        .social-link { transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.8; }
         .social-link:hover { opacity: 1; transform: translateY(-3px); }
-        .social-icon { width: 20px; height: 20px; }
+        .social-icon { width: 22px; height: 22px; }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
@@ -173,11 +178,9 @@ export default function PublicProfile({ params }: { params: { username: string }
             className="bg-content" 
             alt="bg" 
           />
-        ) : profile.background_type === "Gradient" ? (
-          /* Gradient is handled by .container background style */
+        ) : profile.background_type?.toLowerCase() === "gradient" ? (
           null
         ) : (
-          /* Default fallback if nothing is set */
           <div className="animated-bg" />
         )}
       </div>
