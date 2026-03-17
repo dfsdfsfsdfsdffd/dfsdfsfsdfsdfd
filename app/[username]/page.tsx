@@ -57,8 +57,6 @@ export default function PublicProfile({ params }: { params: { username: string }
     ? profile.background_value 
     : `linear-gradient(135deg, ${profile.gradient_color_1 || '#000000'} 0%, ${profile.gradient_color_2 || '#000000'} 100%)`;
 
-  const hasBadges = profile.badges?.user || profile.badges?.dev || profile.badges?.staff;
-
   return (
     <div className="container">
       <style jsx>{`
@@ -98,22 +96,25 @@ export default function PublicProfile({ params }: { params: { username: string }
           align-items: center;
           justify-content: center;
           width: 100%;
-          gap: 10px;
+          gap: 12px;
           margin-bottom: 6px;
         }
 
-        /* This keeps the name centered by mirroring the badge width on the left */
         .spacer {
           flex: 1;
-          display: flex;
-          justify-content: flex-end;
+          visibility: hidden;
         }
 
         .badges-container {
           flex: 1;
           display: flex; 
-          gap: 6px;
+          gap: 8px;
           justify-content: flex-start;
+          background: rgba(255, 255, 255, 0.05);
+          padding: 6px 10px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          width: fit-content;
         }
 
         .badge-item {
@@ -203,7 +204,6 @@ export default function PublicProfile({ params }: { params: { username: string }
         <img src={profile.avatar_url} className="pfp" alt="profile" />
         
         <div className="name-wrapper">
-          {/* Invisible spacer to balance the badges on the right */}
           <div className="spacer" /> 
           
           <div className="display-name">{profile.display_name}</div>
