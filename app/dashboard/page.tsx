@@ -19,7 +19,6 @@ const iconMap: any = {
   website: "https://cdn.simpleicons.org/pwa/ffffff"
 }
 
-// Updated getIcon to handle the new link object structure
 function getIcon(linkObj: any) {
   if (linkObj.type && iconMap[linkObj.type]) {
     return iconMap[linkObj.type]
@@ -153,7 +152,6 @@ export default function SoftcardDashboard() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Updated link handlers
   const addLink = () => setLinks([...links, { id: Date.now(), type: "website", url: "" }])
   
   const removeLink = (id: number) => {
@@ -376,14 +374,30 @@ export default function SoftcardDashboard() {
         .sx-tab-active { background: rgba(255,0,200,0.2); opacity: 1; border: 1px solid rgba(255,0,200,0.4); }
         .sx-input-group { margin-bottom: 15px; }
         .sx-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; margin-bottom: 5px; display: block; }
+        
+        /* FIX FOR DROPDOWNS */
         .sx-input {
             width: 100%; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.08); color: white; outline: none; transition: 0.2s; font-size: 14px;
         }
         .sx-input:focus { border-color: #ff2a8a; }
+        
+        select.sx-input {
+          appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 12px center;
+          padding-right: 35px;
+        }
+        
+        select.sx-input option {
+          background-color: #1a0b1a; /* Dark background for the dropdown list */
+          color: white;
+          padding: 10px;
+        }
+
         .sx-bg-layer { position: absolute; inset: 0; z-index: 1; object-fit: cover; width: 100%; height: 100%; }
 
-        /* New Link Editor Styles */
         .sx-link-card {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.08);
