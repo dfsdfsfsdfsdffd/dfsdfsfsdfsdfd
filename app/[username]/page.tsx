@@ -48,7 +48,10 @@ export default function PublicProfile({ params }: { params: { username: string }
   if (!profile) return null
 
   const socials = profile.links?.filter((l: any) => !l.url.includes('title') && (!l.title || l.title === "New Link")) || []
-  const accent = profile.accent_color || '#ff0000';
+  const accent = profile.accent_color || '#7000ff';
+
+  // Check if user has a custom background set
+  const hasCustomBg = profile.background_value && profile.background_value !== "";
 
   return (
     <div className="container">
@@ -60,109 +63,88 @@ export default function PublicProfile({ params }: { params: { username: string }
           overflow: hidden;
         }
 
-        /* --- SWEEPING LIGHT TRAILS BG --- */
+        /* --- BACKGROUND LOGIC --- */
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
-        .animated-bg { width: 100%; height: 100%; background: #000; position: relative; }
+        .bg-content { width: 100%; height: 100%; object-fit: cover; }
         
+        .default-animated-bg {
+          width: 100%; height: 100%; background: #000; position: relative;
+        }
         .trail {
-          position: absolute;
-          width: 150%; height: 150%;
-          top: -25%; left: -25%;
+          position: absolute; width: 150%; height: 150%; top: -25%; left: -25%;
           background: radial-gradient(ellipse at center, ${accent}22 0%, transparent 70%);
-          filter: blur(60px);
-          border-radius: 40%;
-          animation: sweep 25s infinite linear;
+          filter: blur(60px); border-radius: 40%; animation: sweep 25s infinite linear;
         }
-
-        .trail-2 {
-          position: absolute;
-          width: 120%; height: 120%;
-          bottom: -10%; right: -10%;
-          background: radial-gradient(ellipse at center, ${accent}15 0%, transparent 60%);
-          filter: blur(80px);
-          border-radius: 35%;
-          animation: sweep 30s infinite linear reverse;
-        }
-
         @keyframes sweep {
           from { transform: rotate(0deg) scale(1); }
           to { transform: rotate(360deg) scale(1.1); }
         }
 
-        /* --- PROFILE CARD (SHRUNK FOR SCALE) --- */
+        /* --- PROFILE CARD --- */
         .profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
-          width: 100%;
+          width: 100%; max-width: 500px;
         }
 
-        /* --- THE VIBRANT GLOW --- */
-        .pfp-container {
-          position: relative; margin-bottom: 20px;
+        /* --- BADGES (Moved closer to the content) --- */
+        .floating-badges {
+          position: absolute; top: -20px; right: -40px;
+          display: flex; gap: 10px; padding: 10px;
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(12px); border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
+
+        /* --- PFP WITH ACTUAL BORDER + GLOW --- */
+        .pfp-container { position: relative; margin-bottom: 25px; }
         .pfp-glow {
-          position: absolute; inset: -4px;
-          background: ${accent};
-          border-radius: 50%;
-          filter: blur(20px);
-          opacity: 0.5;
-          z-index: -1;
+          position: absolute; inset: -10px; background: ${accent};
+          border-radius: 50%; filter: blur(30px); opacity: 0.5; z-index: -1;
         }
         .pfp {
-          width: 90px; height: 90px; 
-          object-fit: cover; border-radius: 50%;
-          border: 1.5px solid rgba(255,255,255,0.1);
+          width: 125px; height: 125px; object-fit: cover; border-radius: 50%;
+          border: 3px solid ${accent}; /* ACTUAL BORDER */
           position: relative; z-index: 2;
         }
 
         .display-name { 
-          font-size: 26px; font-weight: 700; margin-bottom: 6px;
+          font-size: 38px; font-weight: 800; margin-bottom: 10px;
           color: ${profile.name_color || '#ffffff'};
-          letter-spacing: -0.5px;
         }
 
         .bio { 
-          font-size: 14px; margin-bottom: 20px; opacity: 0.8;
-          color: ${profile.bio_color || '#fff'}; line-height: 1.4;
-          max-width: 250px;
+          font-size: 18px; margin-bottom: 30px; opacity: 0.9;
+          color: ${profile.bio_color || '#fff'}; max-width: 90%;
         }
 
-        /* --- BADGES HELD AT TOP RIGHT --- */
-        .floating-badges {
-          position: absolute; top: 30px; right: 30px;
-          display: flex; gap: 8px; padding: 10px;
-          background: rgba(255, 255, 255, 0.03);
-          backdrop-filter: blur(8px); border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          z-index: 10;
-        }
+        .social-row { display: flex; gap: 28px; }
+        .social-icon { width: 26px; height: 26px; opacity: 0.8; transition: 0.2s; }
+        .social-icon:hover { opacity: 1; transform: translateY(-3px); }
 
-        .social-row { display: flex; gap: 18px; }
-        .social-icon { width: 18px; height: 18px; opacity: 0.6; transition: 0.3s; }
-        .social-icon:hover { opacity: 1; transform: scale(1.1); }
-
-        .tag { font-size: 11px; opacity: 0.4; margin: 0 6px; font-weight: 500; }
+        .tag { font-size: 14px; opacity: 0.6; margin: 0 10px; }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
           display: ${hasEntered ? 'none' : 'flex'};
           align-items: center; justify-content: center; cursor: pointer;
-          font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
-          color: rgba(255,255,255,0.4);
+          font-weight: 800; letter-spacing: 5px;
         }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ ENTER ]</div>}
 
       <div className="bg-wrapper">
-        {profile.background_type === "video" ? (
-          <video ref={videoRef} src={profile.background_value} className="bg-content" loop muted playsInline />
-        ) : profile.background_type === "image" ? (
-          <img src={profile.background_value} className="bg-content" alt="bg" />
+        {hasCustomBg ? (
+          profile.background_type === "video" ? (
+            <video ref={videoRef} src={profile.background_value} className="bg-content" loop muted playsInline />
+          ) : (
+            <img src={profile.background_value} className="bg-content" alt="custom-bg" />
+          )
         ) : (
-          <div className="animated-bg">
+          <div className="default-animated-bg">
             <div className="trail"></div>
-            <div className="trail-2"></div>
+            <div className="trail" style={{ animationDirection: 'reverse', opacity: 0.5 }}></div>
           </div>
         )}
       </div>
@@ -170,10 +152,11 @@ export default function PublicProfile({ params }: { params: { username: string }
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className="profile-card">
+        {/* Badges positioned relative to the card, not the whole screen */}
         {(profile.badges?.user || profile.badges?.dev) && (
           <div className="floating-badges">
-            {profile.badges?.user && <User size={16} strokeWidth={2} />}
-            {profile.badges?.dev && <Code size={16} strokeWidth={2} style={{ color: accent }} />}
+            {profile.badges?.user && <User size={20} strokeWidth={2.5} />}
+            {profile.badges?.dev && <Code size={20} strokeWidth={2.5} style={{ color: accent }} />}
           </div>
         )}
 
@@ -185,7 +168,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         <h1 className="display-name">{profile.display_name}</h1>
         <p className="bio">{profile.bio}</p>
 
-        <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ marginBottom: '35px' }}>
           {profile.age && <span className="tag">{profile.age}</span>}
           {profile.gender && <span className="tag">{profile.gender}</span>}
           {profile.timezone && <span className="tag">{profile.timezone}</span>}
