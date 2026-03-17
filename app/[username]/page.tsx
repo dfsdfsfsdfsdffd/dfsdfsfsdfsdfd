@@ -50,21 +50,20 @@ export default function PublicProfile({ params }: { params: { username: string }
   const socials = profile.links?.filter((l: any) => !l.url.includes('title') && (!l.title || l.title === "New Link")) || []
   const accent = profile.accent_color || '#7000ff';
   
-  // Logic: Handle Images/Videos with Cache Busting
   const hasMediaBg = (profile.background_type === "image" || profile.background_type === "video") && profile.background_value;
   const bgUrl = hasMediaBg ? `${profile.background_value}` : null;
 
-  // Logic: Support both the raw gradient value from dashboard AND the legacy color columns
   const finalGradient = profile.background_value && profile.background_type === "gradient" 
     ? profile.background_value 
     : `linear-gradient(135deg, ${profile.gradient_color_1 || '#000000'} 0%, ${profile.gradient_color_2 || '#000000'} 100%)`;
+
+  const hasBadges = profile.badges?.user || profile.badges?.dev || profile.badges?.staff;
 
   return (
     <div className="container">
       <style jsx>{`
         .container {
           height: 100vh; width: 100vw; 
-          /* Support both "gradient" and "Gradient" casing from DB */
           background: ${profile.background_type?.toLowerCase() === 'gradient' ? finalGradient : '#000'};
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${profile.font_family || 'Inter'}, sans-serif;
@@ -88,21 +87,33 @@ export default function PublicProfile({ params }: { params: { username: string }
           padding: 35px 25px;
           border-radius: 24px;
           transition: all 0.3s ease;
-          /* Fixed: Supporting both potential database column names for the toggle */
           background: ${profile.show_glass_card || profile.show_transparent_card ? 'rgba(0, 0, 0, 0.4)' : 'transparent'};
           backdrop-filter: ${profile.show_glass_card || profile.show_transparent_card ? 'blur(20px)' : 'none'};
           border: ${profile.show_glass_card || profile.show_transparent_card ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
           box-shadow: ${profile.show_glass_card || profile.show_transparent_card ? '0 20px 50px rgba(0,0,0,0.5)' : 'none'};
         }
 
+        .name-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          gap: 10px;
+          margin-bottom: 6px;
+        }
+
+        /* This keeps the name centered by mirroring the badge width on the left */
+        .spacer {
+          flex: 1;
+          display: flex;
+          justify-content: flex-end;
+        }
+
         .badges-container {
-          position: absolute;
-          top: 15px; right: 15px;
-          display: flex; gap: 8px;
-          padding: 6px 10px;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          flex: 1;
+          display: flex; 
+          gap: 6px;
+          justify-content: flex-start;
         }
 
         .badge-item {
@@ -129,9 +140,10 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         .display-name { 
-          font-size: 28px; font-weight: 800; margin-bottom: 6px;
+          font-size: 28px; font-weight: 800;
           color: ${profile.name_color || '#ffffff'};
           letter-spacing: -0.02em;
+          white-space: nowrap;
         }
 
         .bio { 
@@ -188,28 +200,33 @@ export default function PublicProfile({ params }: { params: { username: string }
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className="profile-card">
-        {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
+        <img src={profile.avatar_url} className="pfp" alt="profile" />
+        
+        <div className="name-wrapper">
+          {/* Invisible spacer to balance the badges on the right */}
+          <div className="spacer" /> 
+          
+          <div className="display-name">{profile.display_name}</div>
+          
           <div className="badges-container">
             {profile.badges?.user && (
               <div className="badge-item" data-tooltip="Verified User">
-                <ShieldCheck size={16} />
+                <ShieldCheck size={18} />
               </div>
             )}
             {profile.badges?.dev && (
               <div className="badge-item" data-tooltip="Developer" style={{ color: accent }}>
-                <Code size={16} />
+                <Code size={18} />
               </div>
             )}
             {profile.badges?.staff && (
               <div className="badge-item" data-tooltip="Staff Member">
-                <Star size={16} />
+                <Star size={18} />
               </div>
             )}
           </div>
-        )}
+        </div>
 
-        <img src={profile.avatar_url} className="pfp" alt="profile" />
-        <div className="display-name">{profile.display_name}</div>
         <div className="bio">{profile.bio}</div>
 
         <div className="tags-row">
