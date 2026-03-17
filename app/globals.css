@@ -682,6 +682,14 @@ opacity:.9;
     inset 0 1px 1px rgba(255,255,255,0.08);
 }
 
+/* 🚨 HARD OVERRIDE OLD BLUE SHIT */
+.scdb-preview,
+.scdb-dashboard,
+.dx-preview,
+.hx-preview {
+  background: transparent !important;
+}
+
 /* PFP */
 .dx-pfp {
   width: 90px;
