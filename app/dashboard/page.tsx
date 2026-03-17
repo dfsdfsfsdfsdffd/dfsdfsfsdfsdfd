@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { Pencil, BarChart3, LogOut, Copy, Check, ExternalLink } from "lucide-react"
+import { Pencil, BarChart3, LogOut, Copy, Check, ExternalLink, ShieldCheck, Code, Star } from "lucide-react"
 
 // Social Icon Mapping
 const iconMap: any = {
@@ -60,16 +60,16 @@ export default function SoftcardDashboard() {
   const [timezone, setTimezone] = useState("")
 
   const [links, setLinks] = useState<any[]>([])
-  const [badges, setBadges] = useState<any>({ user: true, dev: false })
+  const [badges, setBadges] = useState<any>({ user: true, dev: false, staff: false })
   const [devPassword, setDevPassword] = useState("")
 
-  const [accent, setAccent] = useState("#3b82f6")
+  const [accent, setAccent] = useState("#7000ff")
   const [nameColor, setNameColor] = useState("#ffffff")
   const [bioColor, setBioColor] = useState("rgba(255,255,255,0.7)")
   const [font, setFont] = useState("Inter")
   const [bgType, setBgType] = useState("gradient")
   
-  const [gradient, setGradient] = useState("radial-gradient(circle at center, #1a0b1a 0%, #050106 100%)")
+  const [gradient, setGradient] = useState("linear-gradient(135deg, #1a0b1a 0%, #050106 100%)")
   const [gradientStart, setGradientStart] = useState("#1a0b1a")
   const [gradientEnd, setGradientEnd] = useState("#050106")
 
@@ -101,17 +101,20 @@ export default function SoftcardDashboard() {
         setBirthday(profile.birthday || "")
         setTimezone(profile.timezone || "")
         setLinks(profile.links || [])
-        setAccent(profile.accent_color || "#3b82f6")
+        setAccent(profile.accent_color || "#7000ff")
         setNameColor(profile.name_color || "#ffffff")
         setBioColor(profile.bio_color || "rgba(255,255,255,0.7)")
         setFont(profile.font_family || "Inter")
         setBgType(profile.background_type || "gradient")
         setBadges(profile.badges || { user: true })
         setBgAudio(profile.audio_url || "")
-        setShowGlass(profile.show_glass_card ?? true)
+        // Matches the "show_glass_card" column used in Public Profile
+        setShowGlass(profile.show_glass_card ?? profile.show_transparent_card ?? true)
 
         const bgVal = profile.background_value || "";
-        if (profile.background_type === "gradient") setGradient(bgVal || gradient);
+        if (profile.background_type === "gradient") {
+          setGradient(bgVal || gradient);
+        }
         else if (profile.background_type === "video") setBgVideo(bgVal);
         else if (profile.background_type === "image") setBgImage(bgVal);
       }
@@ -144,7 +147,7 @@ export default function SoftcardDashboard() {
       background_value: bgType === "gradient" ? gradient : (bgType === "video" ? bgVideo : bgImage),
       audio_url: bgAudio,
       badges: badges,
-      show_glass_card: showGlass,
+      show_glass_card: showGlass, // Standardized column
       setup_completed: true
     }).eq('id', user.id)
 
@@ -337,68 +340,43 @@ export default function SoftcardDashboard() {
         
         .sx-preview-pane { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #020002; }
 
-        .sx-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
-        .sx-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
-        .sx-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
-
-        .sx-name-container { 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          gap: 10px; 
-          margin-bottom: 5px;
-        }
-
-        .sx-badges-row { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
-        .sx-badge { 
-          padding: 3px 10px; 
-          border-radius: 6px; 
-          background: rgba(255, 255, 255, 0.06); 
-          backdrop-filter: blur(4px);
-          font-size: 11px; 
-          font-weight: 800;
-          color: rgba(255, 255, 255, 0.85); 
-          border: 1px solid rgba(255, 255, 255, 0.1); 
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-        }
-
-        .sx-tags-row {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 8px;
-          margin-top: 15px;
-        }
-        .sx-tag {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          background: rgba(255, 255, 255, 0.05);
-          padding: 4px 10px;
-          border-radius: 8px;
-          font-size: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
         .sx-profile-card {
-          ${showGlass ? `
-            padding: 40px; border-radius: 24px;
-            backdrop-filter: blur(25px);
-            padding: 40px 30px;
-            background: rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.08);
-          ` : 'background: transparent; border: none; padding: 40px 30px;'}
-          width: 100%;
-          max-width: 420px;
-          text-align: center;
-          position: relative;
-          z-index: 5;
+          position: relative; z-index: 5; text-align: center;
+          display: flex; flex-direction: column; align-items: center;
+          width: 90%; max-width: 400px;
+          padding: 35px 25px;
+          border-radius: 24px;
           transition: all 0.3s ease;
+          /* Preview logic mirrors Public Profile */
+          background: ${showGlass ? 'rgba(0, 0, 0, 0.4)' : 'transparent'};
+          backdrop-filter: ${showGlass ? 'blur(20px)' : 'none'};
+          border: ${showGlass ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
+          box-shadow: ${showGlass ? '0 20px 50px rgba(0,0,0,0.5)' : 'none'};
         }
 
-        .sx-pfp { width: 105px; height: 105px; border-radius: 50%; object-fit: cover; margin: 0 auto 20px; display: block; }
+        .sx-pfp { 
+          width: 95px; height: 95px; border-radius: 50%; object-fit: cover; margin-bottom: 18px;
+          border: 3px solid ${accent};
+          box-shadow: 0 0 25px ${accent}44; 
+        }
+
+        .sx-name { font-size: 28px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em; }
+        .sx-bio { font-size: 15px; margin-bottom: 20px; max-width: 90%; line-height: 1.5; }
+
+        .sx-tags-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 25px; opacity: 0.6; }
+        .sx-tag { font-size: 13px; font-weight: 500; }
+
+        .sx-badges-container {
+          position: absolute; top: 15px; right: 15px;
+          display: flex; gap: 8px; padding: 6px 10px;
+          background: rgba(255, 255, 255, 0.05); border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sx-links-row { display: flex; justify-content: center; gap: 22px; }
+        .sx-icon-link { transition: 0.3s ease; opacity: 0.8; }
+        .sx-icon-link:hover { opacity: 1; transform: translateY(-3px); }
+        .sx-icon-link img { width: 22px; height: 22px; }
 
         .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-block; opacity: 0.5; font-size: 13px; }
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
@@ -421,16 +399,6 @@ export default function SoftcardDashboard() {
         }
         .sx-input:focus { border-color: #ff2a8a; }
 
-        input[type="color"] {
-          width: 100%;
-          height: 40px;
-          border: none;
-          border-radius: 10px;
-          background: none;
-          margin-top: 6px;
-          cursor: pointer;
-        }
-
         .sx-bg-layer { position: absolute; inset: 0; z-index: 1; object-fit: cover; width: 100%; height: 100%; }
       `}</style>
 
@@ -449,43 +417,19 @@ export default function SoftcardDashboard() {
 
         {tab === "profile" && (
           <div className="sx-pane">
-            <div className="sx-input-group">
-                <label className="sx-label">Avatar URL</label>
-                <input className="sx-input" value={avatar} onChange={e => setAvatar(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Display Name</label>
-                <input className="sx-input" value={name} onChange={e => setName(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Bio</label>
-                <input className="sx-input" value={bio} onChange={e => setBio(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Age</label>
-                <input className="sx-input" value={age} onChange={e => setAge(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Gender</label>
-                <input className="sx-input" value={gender} onChange={e => setGender(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Sexuality</label>
-                <input className="sx-input" value={sexuality} onChange={e => setSexuality(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Birthday</label>
-                <input className="sx-input" value={birthday} onChange={e => setBirthday(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Timezone</label>
-                <input className="sx-input" value={timezone} onChange={e => setTimezone(e.target.value)} />
-            </div>
+            <div className="sx-input-group"><label className="sx-label">Avatar URL</label><input className="sx-input" value={avatar} onChange={e => setAvatar(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Display Name</label><input className="sx-input" value={name} onChange={e => setName(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Bio</label><input className="sx-input" value={bio} onChange={e => setBio(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Age</label><input className="sx-input" value={age} onChange={e => setAge(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Gender</label><input className="sx-input" value={gender} onChange={e => setGender(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Sexuality</label><input className="sx-input" value={sexuality} onChange={e => setSexuality(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Birthday</label><input className="sx-input" value={birthday} onChange={e => setBirthday(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Timezone</label><input className="sx-input" value={timezone} onChange={e => setTimezone(e.target.value)} /></div>
 
             <button className="sx-publish-btn" onClick={addLink} style={{background: 'rgba(255,255,255,0.05)', boxShadow: 'none'}}>+ Add Link</button>
             {links.map((l, i) => (
               <div key={l.id} className="sx-input-group">
-                <input className="sx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. google.com)" />
+                <input className="sx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. tiktok.com/user)" />
               </div>
             ))}
           </div>
@@ -510,24 +454,14 @@ export default function SoftcardDashboard() {
               <div className="sx-input-group">
                 <label className="sx-label">Gradient Colors</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <input
-                    type="color"
-                    value={gradientStart}
-                    onChange={e => {
-                      const newStart = e.target.value
-                      setGradientStart(newStart)
-                      setGradient(`linear-gradient(135deg, ${newStart}, ${gradientEnd})`)
-                    }}
-                  />
-                  <input
-                    type="color"
-                    value={gradientEnd}
-                    onChange={e => {
-                      const newEnd = e.target.value
-                      setGradientEnd(newEnd)
-                      setGradient(`linear-gradient(135deg, ${gradientStart}, ${newEnd})`)
-                    }}
-                  />
+                  <input type="color" value={gradientStart} onChange={e => {
+                      const ns = e.target.value; setGradientStart(ns);
+                      setGradient(`linear-gradient(135deg, ${ns} 0%, ${gradientEnd} 100%)`)
+                  }} />
+                  <input type="color" value={gradientEnd} onChange={e => {
+                      const ne = e.target.value; setGradientEnd(ne);
+                      setGradient(`linear-gradient(135deg, ${gradientStart} 0%, ${ne} 100%)`)
+                  }} />
                 </div>
               </div>
             )}
@@ -535,22 +469,10 @@ export default function SoftcardDashboard() {
             {bgType === "video" && <div className="sx-input-group"><input className="sx-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" /></div>}
             {bgType === "image" && <div className="sx-input-group"><input className="sx-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" /></div>}
             
-            <div className="sx-input-group">
-                <label className="sx-label">Audio URL (.mp3)</label>
-                <input className="sx-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Name Color</label>
-                <input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={nameColor} onChange={e => setNameColor(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Bio Color</label>
-                <input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={bioColor} onChange={e => setBioColor(e.target.value)} />
-            </div>
-            <div className="sx-input-group">
-                <label className="sx-label">Accent Color</label>
-                <input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={accent} onChange={e => setAccent(e.target.value)} />
-            </div>
+            <div className="sx-input-group"><label className="sx-label">Audio URL (.mp3)</label><input className="sx-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Name Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={nameColor} onChange={e => setNameColor(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Bio Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={bioColor} onChange={e => setBioColor(e.target.value)} /></div>
+            <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={accent} onChange={e => setAccent(e.target.value)} /></div>
           </div>
         )}
 
@@ -573,38 +495,33 @@ export default function SoftcardDashboard() {
         {bgType === "gradient" && <div className="sx-bg-layer" style={{ background: gradient }} />}
         {bgType === "video" && bgVideo && <video className="sx-bg-layer" src={bgVideo} autoPlay loop muted playsInline />}
         {bgType === "image" && bgImage && <img className="sx-bg-layer" src={bgImage} />}
-        {bgAudio && <audio src={bgAudio} autoPlay loop />}
         
         <div className="sx-profile-card">
-          <img src={avatar} className="sx-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
-          
-          <div className="sx-name-container">
-            <div className="sx-name" style={{ color: nameColor, fontSize: '24px', fontWeight: '600' }}>{name}</div>
-          </div>
+          {(badges.user || badges.dev || badges.staff) && (
+            <div className="sx-badges-container">
+              {badges.user && <ShieldCheck size={16} color="rgba(255,255,255,0.6)" />}
+              {badges.dev && <Code size={16} color={accent} />}
+              {badges.staff && <Star size={16} color="rgba(255,255,255,0.6)" />}
+            </div>
+          )}
 
+          <img src={avatar} className="sx-pfp" />
+          <div className="sx-name" style={{ color: nameColor }}>{name}</div>
           <div className="sx-bio" style={{ color: bioColor }}>{bio}</div>
 
           <div className="sx-tags-row">
-            {age && <div className="sx-tag"><span>🎂</span>{age}</div>}
-            {gender && <div className="sx-tag"><span>⚥</span>{gender}</div>}
-            {sexuality && <div className="sx-tag"><span>❤</span>{sexuality}</div>}
-            {birthday && <div className="sx-tag"><span>🎉</span>{birthday}</div>}
-            {timezone && <div className="sx-tag"><span>🌍</span>{timezone}</div>}
+            {age && <div className="sx-tag">🎂 {age}</div>}
+            {gender && <div className="sx-tag">⚥ {gender}</div>}
+            {timezone && <div className="sx-tag">🌍 {timezone}</div>}
           </div>
           
-          <div className="sx-badges-row">
-            {badges.user && <div className="sx-badge">User</div>}
-            {badges.dev && <div className="sx-badge dev" style={{ borderColor: accent, color: accent }}>Dev</div>}
-          </div>
-
           <div className="sx-links-row">
             {links.map(l => {
               if (!l.url) return null;
-              const icon = getIcon(l.url)
               return (
-                <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="sx-icon-link">
-                  <img src={icon} alt="" />
-                </a>
+                <div key={l.id} className="sx-icon-link">
+                  <img src={getIcon(l.url)} alt="" />
+                </div>
               )
             })}
           </div>
