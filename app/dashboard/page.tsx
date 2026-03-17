@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { Pencil, BarChart3, LogOut, Copy, Check, ExternalLink } from "lucide-react"
+import { Pencil, BarChart3, LogOut, Copy, Check, ExternalLink } from "lucide-material"
 
 // Social Icon Mapping
 const iconMap: any = {
@@ -53,7 +53,6 @@ export default function SoftcardDashboard() {
   const [username, setUsername] = useState("") 
   const [bio, setBio] = useState("")
   
-  // NEW TAG STATES
   const [age, setAge] = useState("")
   const [gender, setGender] = useState("")
   const [sexuality, setSexuality] = useState("")
@@ -69,7 +68,12 @@ export default function SoftcardDashboard() {
   const [bioColor, setBioColor] = useState("rgba(255,255,255,0.7)")
   const [font, setFont] = useState("Inter")
   const [bgType, setBgType] = useState("gradient")
-  const [gradient, setGradient] = useState("linear-gradient(135deg,#020617,#1e3a8a)")
+  
+  // UPDATED: Default Gradient & New Picker States
+  const [gradient, setGradient] = useState("radial-gradient(circle at center, #1a0b1a 0%, #050106 100%)")
+  const [gradientStart, setGradientStart] = useState("#1a0b1a")
+  const [gradientEnd, setGradientEnd] = useState("#050106")
+
   const [bgVideo, setBgVideo] = useState("")
   const [bgImage, setBgImage] = useState("")
   const [bgAudio, setBgAudio] = useState("")
@@ -92,14 +96,11 @@ export default function SoftcardDashboard() {
         setName(profile.display_name || name)
         setUsername(profile.username || "") 
         setBio(profile.bio || "")
-        
-        // Load Tags
         setAge(profile.age || "")
         setGender(profile.gender || "")
         setSexuality(profile.sexuality || "")
         setBirthday(profile.birthday || "")
         setTimezone(profile.timezone || "")
-
         setLinks(profile.links || [])
         setAccent(profile.accent_color || "#3b82f6")
         setNameColor(profile.name_color || "#ffffff")
@@ -178,7 +179,6 @@ export default function SoftcardDashboard() {
 
   if (loading) return <div style={{ height: '100vh', background: '#020617' }} />
 
-  // --- HUB VIEW RENDER ---
   if (view === "hub") {
     return (
       <div className="hub-view-root">
@@ -421,6 +421,17 @@ export default function SoftcardDashboard() {
         }
         .sx-input:focus { border-color: #ff2a8a; }
 
+        /* SEXY COLOR PICKER OVERRIDE */
+        input[type="color"] {
+          width: 100%;
+          height: 40px;
+          border: none;
+          border-radius: 10px;
+          background: none;
+          margin-top: 6px;
+          cursor: pointer;
+        }
+
         .sx-bg-layer { position: absolute; inset: 0; z-index: 1; object-fit: cover; width: 100%; height: 100%; }
       `}</style>
 
@@ -495,7 +506,34 @@ export default function SoftcardDashboard() {
                   <option value="image">Image</option>
                 </select>
             </div>
-            {bgType === "gradient" && <div className="sx-input-group"><input className="sx-input" value={gradient} onChange={e => setGradient(e.target.value)} /></div>}
+
+            {/* UPDATED: SEXY GRADIENT PICKER SYSTEM */}
+            {bgType === "gradient" && (
+              <div className="sx-input-group">
+                <label className="sx-label">Gradient Colors</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input
+                    type="color"
+                    value={gradientStart}
+                    onChange={e => {
+                      const newStart = e.target.value
+                      setGradientStart(newStart)
+                      setGradient(`linear-gradient(135deg, ${newStart}, ${gradientEnd})`)
+                    }}
+                  />
+                  <input
+                    type="color"
+                    value={gradientEnd}
+                    onChange={e => {
+                      const newEnd = e.target.value
+                      setGradientEnd(newEnd)
+                      setGradient(`linear-gradient(135deg, ${gradientStart}, ${newEnd})`)
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             {bgType === "video" && <div className="sx-input-group"><input className="sx-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" /></div>}
             {bgType === "image" && <div className="sx-input-group"><input className="sx-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" /></div>}
             
