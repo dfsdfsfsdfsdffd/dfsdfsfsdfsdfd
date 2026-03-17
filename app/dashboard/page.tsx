@@ -53,6 +53,7 @@ export default function SoftcardDashboard() {
   const [username, setUsername] = useState("") 
   const [bio, setBio] = useState("")
   
+  // NEW TAG STATES
   const [age, setAge] = useState("")
   const [gender, setGender] = useState("")
   const [sexuality, setSexuality] = useState("")
@@ -91,11 +92,14 @@ export default function SoftcardDashboard() {
         setName(profile.display_name || name)
         setUsername(profile.username || "") 
         setBio(profile.bio || "")
+        
+        // Load Tags
         setAge(profile.age || "")
         setGender(profile.gender || "")
         setSexuality(profile.sexuality || "")
         setBirthday(profile.birthday || "")
         setTimezone(profile.timezone || "")
+
         setLinks(profile.links || [])
         setAccent(profile.accent_color || "#3b82f6")
         setNameColor(profile.name_color || "#ffffff")
@@ -177,9 +181,9 @@ export default function SoftcardDashboard() {
   // --- HUB VIEW RENDER ---
   if (view === "hub") {
     return (
-      <div className="hx-root">
+      <div className="hub-view-root">
         <style>{`
-          .hx-root {
+          .hub-view-root {
             min-height: 100vh;
             width: 100%;
             background: radial-gradient(circle at center, #1a0b1a 0%, #050106 100%);
@@ -189,14 +193,14 @@ export default function SoftcardDashboard() {
             justify-content: center;
             font-family: 'Inter', sans-serif;
           }
-          .hx-container { text-align: center; width: 100%; max-width: 600px; padding: 20px; }
+          .hub-container { text-align: center; width: 100%; max-width: 600px; padding: 20px; }
           .hub-header { margin-bottom: 40px; }
           .hub-status { font-size: 10px; letter-spacing: 2px; opacity: 0.5; margin-bottom: 8px; font-weight: 700; }
-          .hx-title { font-size: 32px; font-weight: 600; }
+          .hub-title { font-size: 32px; font-weight: 600; }
           .hub-brand { color: #f472b6; }
           
-          .hx-circle-wrap { position: relative; display: inline-block; margin-bottom: 50px; width: 300px; height: 300px; }
-          .hx-circle {
+          .hub-circle-wrapper { position: relative; display: inline-block; margin-bottom: 50px; width: 300px; height: 300px; }
+          .hub-circle {
             width: 100%; height: 100%;
             background: rgba(190, 24, 93, 0.1);
             border-radius: 50%;
@@ -206,16 +210,16 @@ export default function SoftcardDashboard() {
             justify-content: center;
             backdrop-filter: blur(10px);
           }
-          .hx-avatar {
+          .hub-avatar-img {
             width: 130px; height: 130px;
             border-radius: 50%;
             overflow: hidden;
             border: 3px solid #f472b6;
             box-shadow: 0 0 40px rgba(244, 114, 182, 0.2);
           }
-          .hx-avatar img { width: 100%; height: 100%; object-fit: cover; }
+          .hub-avatar-img img { width: 100%; height: 100%; object-fit: cover; }
           
-          .hx-btn {
+          .hub-action-btn {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
@@ -233,11 +237,11 @@ export default function SoftcardDashboard() {
             transition: all 0.3s ease;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
           }
-          .hx-btn:hover { transform: translateY(-50%) scale(1.05); background: #f472b6; }
-          .hx-left { left: -70px; }
-          .hx-right { right: -70px; }
+          .hub-action-btn:hover { transform: translateY(-50%) scale(1.05); background: #f472b6; }
+          .btn-left { left: -70px; }
+          .btn-right { right: -70px; }
           
-          .hx-url {
+          .hub-url-bar {
             display: inline-flex;
             align-items: center;
             background: rgba(255, 255, 255, 0.05);
@@ -252,7 +256,7 @@ export default function SoftcardDashboard() {
             gap: 8px;
           }
 
-          .hx-url-btn {
+          .hub-copy-btn {
             background: #ec4899;
             border: none;
             color: white;
@@ -266,7 +270,7 @@ export default function SoftcardDashboard() {
             align-items: center;
             transition: opacity 0.2s;
           }
-          .hx-url-btn:hover { opacity: 0.9; }
+          .hub-copy-btn:hover { opacity: 0.9; }
 
           .hub-logout-icon { position: fixed; top: 30px; right: 30px; opacity: 0.3; cursor: pointer; }
           .hub-logout-icon:hover { opacity: 1; color: #f472b6; }
@@ -276,42 +280,42 @@ export default function SoftcardDashboard() {
           <LogOut size={20} />
         </div>
 
-        <div className="hx-container">
+        <div className="hub-container">
           <div className="hub-header">
             <p className="hub-status">LOGGED INTO SOFTCARD.CC</p>
-            <h1 className="hx-title">Welcome back, <span className="hub-brand">{username || "User"}</span></h1>
+            <h1 className="hub-title">Welcome back, <span className="hub-brand">{username || "User"}</span></h1>
           </div>
 
-          <div className="hx-circle-wrap">
-            <div className="hx-circle">
-              <div className="hx-avatar">
+          <div className="hub-circle-wrapper">
+            <div className="hub-circle">
+              <div className="hub-avatar-img">
                 <img src={avatar} alt="avatar" />
               </div>
             </div>
 
-            <button className="hx-btn hx-left" onClick={() => setView("editor")}>
+            <button className="hub-action-btn btn-left" onClick={() => setView("editor")}>
               <Pencil size={18} />
               <span>Edit</span>
             </button>
 
-            <button className="hx-btn hx-right">
+            <button className="hub-action-btn btn-right">
               <BarChart3 size={18} />
               <span>Stats</span>
             </button>
           </div>
 
           <div>
-            <div className="hx-url">
+            <div className="hub-url-bar">
               <span style={{ opacity: 0.6 }}>softcard.cc/{username}</span>
               <div className="hub-btns-group">
-                <button className="hx-url-btn" onClick={handleCopy}>
+                <button className="hub-copy-btn" onClick={handleCopy}>
                   {copied ? "Copied!" : "Copy"}
                 </button>
                 <a 
                   href={`/${username}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="hx-url-btn"
+                  className="hub-copy-btn"
                   style={{ background: 'rgba(255,255,255,0.1)' }}
                 >
                   View
@@ -325,11 +329,11 @@ export default function SoftcardDashboard() {
   }
 
   return (
-    <div className="dx-root" style={{ fontFamily: `${font}, system-ui` }}>
+    <div className="scdb-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
       <style>{`
-        .dx-links { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
-        .dx-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
-        .dx-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
+        .scdb-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
+        .scdb-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
+        .scdb-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
 
         .name-container { 
           display: flex; 
@@ -339,7 +343,7 @@ export default function SoftcardDashboard() {
           margin-bottom: 5px;
         }
 
-        .hub-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+        .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
         .badge { 
           padding: 3px 10px; 
           border-radius: 6px; 
@@ -353,6 +357,7 @@ export default function SoftcardDashboard() {
           text-transform: uppercase;
         }
 
+        /* Tags Styling */
         .scdb-tags {
           display: flex;
           flex-wrap: wrap;
@@ -360,7 +365,7 @@ export default function SoftcardDashboard() {
           gap: 8px;
           margin-top: 15px;
         }
-        .dx-tag {
+        .tag {
           display: flex;
           align-items: center;
           gap: 5px;
@@ -371,7 +376,7 @@ export default function SoftcardDashboard() {
           border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .dx-card {
+        .scdb-profile-card {
           ${showGlass ? `
             background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(15px);
@@ -391,46 +396,46 @@ export default function SoftcardDashboard() {
         .editor-back-link:hover { opacity: 1; color: #ec4899; }
       `}</style>
 
-      <div className="dx-sidebar">
+      <div className="scdb-sidebar">
         <div className="editor-back-link" onClick={() => setView("hub")}>← Back to Hub</div>
         <div className="scdb-back" onClick={saveChanges} style={{ cursor: 'pointer' }}>
           {saving ? "Saving..." : "← Save & Publish"}
         </div>
 
         <div className="scdb-tabs">
-          <div className={`dx-tab ${tab === "profile" ? "dx-tab-active" : ""}`} onClick={() => setTab("profile")}>Profile</div>
-          <div className={`dx-tab ${tab === "appearance" ? "dx-tab-active" : ""}`} onClick={() => setTab("appearance")}>Appearance</div>
-          <div className={`dx-tab ${tab === "badges" ? "dx-tab-active" : ""}`} onClick={() => setTab("badges")}>Badges</div>
+          <div className={`scdb-tab ${tab === "profile" ? "scdb-tab-active" : ""}`} onClick={() => setTab("profile")}>Profile</div>
+          <div className={`scdb-tab ${tab === "appearance" ? "scdb-tab-active" : ""}`} onClick={() => setTab("appearance")}>Appearance</div>
+          <div className={`scdb-tab ${tab === "badges" ? "scdb-tab-active" : ""}`} onClick={() => setTab("badges")}>Badges</div>
         </div>
 
         {tab === "profile" && (
           <div className="scdb-card">
             <label className="scdb-label">Avatar URL</label>
-            <input className="dx-input" value={avatar} onChange={e => setAvatar(e.target.value)} />
+            <input className="scdb-input" value={avatar} onChange={e => setAvatar(e.target.value)} />
             <label className="scdb-label">Display Name</label>
-            <input className="dx-input" value={name} onChange={e => setName(e.target.value)} />
+            <input className="scdb-input" value={name} onChange={e => setName(e.target.value)} />
             <label className="scdb-label">Bio</label>
-            <input className="dx-input" value={bio} onChange={e => setBio(e.target.value)} />
+            <input className="scdb-input" value={bio} onChange={e => setBio(e.target.value)} />
             
             <label className="scdb-label">Age</label>
-            <input className="dx-input" value={age} onChange={e => setAge(e.target.value)} />
+            <input className="scdb-input" value={age} onChange={e => setAge(e.target.value)} />
 
             <label className="scdb-label">Gender</label>
-            <input className="dx-input" value={gender} onChange={e => setGender(e.target.value)} />
+            <input className="scdb-input" value={gender} onChange={e => setGender(e.target.value)} />
 
             <label className="scdb-label">Sexuality</label>
-            <input className="dx-input" value={sexuality} onChange={e => setSexuality(e.target.value)} />
+            <input className="scdb-input" value={sexuality} onChange={e => setSexuality(e.target.value)} />
 
             <label className="scdb-label">Birthday</label>
-            <input className="dx-input" value={birthday} onChange={e => setBirthday(e.target.value)} />
+            <input className="scdb-input" value={birthday} onChange={e => setBirthday(e.target.value)} />
 
             <label className="scdb-label">Timezone</label>
-            <input className="dx-input" value={timezone} onChange={e => setTimezone(e.target.value)} />
+            <input className="scdb-input" value={timezone} onChange={e => setTimezone(e.target.value)} />
 
-            <button className="dx-btn" onClick={addLink} style={{marginTop: '15px'}}>+ Add Link</button>
+            <button className="scdb-btn" onClick={addLink} style={{marginTop: '15px'}}>+ Add Link</button>
             {links.map((l, i) => (
               <div key={l.id} style={{ marginTop: '10px' }}>
-                <input className="dx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. google.com)" />
+                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. google.com)" />
               </div>
             ))}
           </div>
@@ -443,22 +448,22 @@ export default function SoftcardDashboard() {
                 Show Transparent Card
             </label>
             <label className="scdb-label">Background Type</label>
-            <select className="dx-input" value={bgType} onChange={e => setBgType(e.target.value)}>
+            <select className="scdb-input" value={bgType} onChange={e => setBgType(e.target.value)}>
               <option value="gradient">Gradient</option>
               <option value="video">Video</option>
               <option value="image">Image</option>
             </select>
-            {bgType === "gradient" && <input className="dx-input" value={gradient} onChange={e => setGradient(e.target.value)} />}
-            {bgType === "video" && <input className="dx-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" />}
-            {bgType === "image" && <input className="dx-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" />}
+            {bgType === "gradient" && <input className="scdb-input" value={gradient} onChange={e => setGradient(e.target.value)} />}
+            {bgType === "video" && <input className="scdb-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" />}
+            {bgType === "image" && <input className="scdb-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" />}
             <label className="scdb-label" style={{ marginTop: '20px' }}>Audio URL (.mp3)</label>
-            <input className="dx-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} />
+            <input className="scdb-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} />
             <label className="scdb-label" style={{ marginTop: '20px' }}>Name Color</label>
-            <input type="color" className="dx-input" value={nameColor} onChange={e => setNameColor(e.target.value)} />
+            <input type="color" className="scdb-input" value={nameColor} onChange={e => setNameColor(e.target.value)} />
             <label className="scdb-label" style={{ marginTop: '10px' }}>Bio Color</label>
-            <input type="color" className="dx-input" value={bioColor} onChange={e => setBioColor(e.target.value)} />
+            <input type="color" className="scdb-input" value={bioColor} onChange={e => setBioColor(e.target.value)} />
             <label className="scdb-label" style={{ marginTop: '10px' }}>Accent Color</label>
-            <input type="color" className="dx-input" value={accent} onChange={e => setAccent(e.target.value)} />
+            <input type="color" className="scdb-input" value={accent} onChange={e => setAccent(e.target.value)} />
           </div>
         )}
 
@@ -469,20 +474,20 @@ export default function SoftcardDashboard() {
               User Badge
             </label>
             <div style={{ marginTop: 20 }}>Unlock Dev Badge</div>
-            <input className="dx-input" placeholder="Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
-            <button className="dx-btn" onClick={unlockDev}>Unlock</button>
+            <input className="scdb-input" placeholder="Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
+            <button className="scdb-btn" onClick={unlockDev}>Unlock</button>
           </div>
         )}
       </div>
 
-      <div className="dx-preview">
+      <div className="scdb-preview">
         {bgType === "gradient" && <div className="scdb-bg" style={{ background: gradient }} />}
         {bgType === "video" && bgVideo && <video className="scdb-video" src={bgVideo} autoPlay loop muted playsInline />}
         {bgType === "image" && bgImage && <img className="scdb-image" src={bgImage} />}
         {bgAudio && <audio src={bgAudio} autoPlay loop />}
         
-        <div className="dx-card">
-          <img src={avatar} className="dx-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
+        <div className="scdb-profile-card">
+          <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
           
           <div className="name-container">
             <div className="scdb-name" style={{ color: nameColor, fontSize: '24px', fontWeight: '600' }}>{name}</div>
@@ -492,52 +497,52 @@ export default function SoftcardDashboard() {
 
           <div className="scdb-tags">
             {age && (
-              <div className="dx-tag">
+              <div className="tag">
                 <span>🎂</span>
                 {age}
               </div>
             )}
 
             {gender && (
-              <div className="dx-tag">
+              <div className="tag">
                 <span>⚥</span>
                 {gender}
               </div>
             )}
 
             {sexuality && (
-              <div className="dx-tag">
+              <div className="tag">
                 <span>❤</span>
                 {sexuality}
               </div>
             )}
 
             {birthday && (
-              <div className="dx-tag">
+              <div className="tag">
                 <span>🎉</span>
                 {birthday}
               </div>
             )}
 
             {timezone && (
-              <div className="dx-tag">
+              <div className="tag">
                 <span>🌍</span>
                 {timezone}
               </div>
             )}
           </div>
           
-          <div className="hub-badges">
+          <div className="scdb-badges">
             {badges.user && <div className="badge">User</div>}
             {badges.dev && <div className="badge dev" style={{ borderColor: accent, color: accent }}>Dev</div>}
           </div>
 
-          <div className="dx-links">
+          <div className="scdb-links-row">
             {links.map(l => {
               if (!l.url) return null;
               const icon = getIcon(l.url)
               return (
-                <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="dx-icon-link">
+                <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="scdb-icon-link">
                   <img src={icon} alt="" />
                 </a>
               )
