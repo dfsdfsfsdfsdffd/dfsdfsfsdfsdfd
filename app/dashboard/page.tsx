@@ -69,7 +69,6 @@ export default function SoftcardDashboard() {
   const [font, setFont] = useState("Inter")
   const [bgType, setBgType] = useState("gradient")
   
-  // UPDATED: Default Gradient & New Picker States
   const [gradient, setGradient] = useState("radial-gradient(circle at center, #1a0b1a 0%, #050106 100%)")
   const [gradientStart, setGradientStart] = useState("#1a0b1a")
   const [gradientEnd, setGradientEnd] = useState("#050106")
@@ -181,9 +180,9 @@ export default function SoftcardDashboard() {
 
   if (view === "hub") {
     return (
-      <div className="hub-view-root">
+      <div className="hx-root">
         <style>{`
-          .hub-view-root {
+          .hx-root {
             min-height: 100vh;
             width: 100%;
             background: radial-gradient(circle at center, #1a0b1a 0%, #050106 100%);
@@ -193,14 +192,14 @@ export default function SoftcardDashboard() {
             justify-content: center;
             font-family: 'Inter', sans-serif;
           }
-          .hub-container { text-align: center; width: 100%; max-width: 600px; padding: 20px; }
+          .hx-container { text-align: center; width: 100%; max-width: 600px; padding: 20px; }
           .hub-header { margin-bottom: 40px; }
-          .hub-status { font-size: 10px; letter-spacing: 2px; opacity: 0.5; margin-bottom: 8px; font-weight: 700; }
-          .hub-title { font-size: 32px; font-weight: 600; }
-          .hub-brand { color: #f472b6; }
+          .hx-status { font-size: 10px; letter-spacing: 2px; opacity: 0.5; margin-bottom: 8px; font-weight: 700; }
+          .hx-title { font-size: 32px; font-weight: 600; }
+          .hx-username { color: #f472b6; }
           
-          .hub-circle-wrapper { position: relative; display: inline-block; margin-bottom: 50px; width: 300px; height: 300px; }
-          .hub-circle {
+          .hx-circle-wrap { position: relative; display: inline-block; margin-bottom: 50px; width: 300px; height: 300px; }
+          .hx-circle {
             width: 100%; height: 100%;
             background: rgba(190, 24, 93, 0.1);
             border-radius: 50%;
@@ -210,16 +209,16 @@ export default function SoftcardDashboard() {
             justify-content: center;
             backdrop-filter: blur(10px);
           }
-          .hub-avatar-img {
+          .hx-avatar {
             width: 130px; height: 130px;
             border-radius: 50%;
             overflow: hidden;
             border: 3px solid #f472b6;
             box-shadow: 0 0 40px rgba(244, 114, 182, 0.2);
           }
-          .hub-avatar-img img { width: 100%; height: 100%; object-fit: cover; }
+          .hx-avatar img { width: 100%; height: 100%; object-fit: cover; }
           
-          .hub-action-btn {
+          .hx-btn {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
@@ -237,11 +236,11 @@ export default function SoftcardDashboard() {
             transition: all 0.3s ease;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
           }
-          .hub-action-btn:hover { transform: translateY(-50%) scale(1.05); background: #f472b6; }
-          .btn-left { left: -70px; }
-          .btn-right { right: -70px; }
+          .hx-btn:hover { transform: translateY(-50%) scale(1.05); background: #f472b6; }
+          .hx-left { left: -70px; }
+          .hx-right { right: -70px; }
           
-          .hub-url-bar {
+          .hx-url {
             display: inline-flex;
             align-items: center;
             background: rgba(255, 255, 255, 0.05);
@@ -251,12 +250,12 @@ export default function SoftcardDashboard() {
             gap: 20px;
           }
 
-          .hub-btns-group {
+          .hx-url-actions {
             display: flex;
             gap: 8px;
           }
 
-          .hub-copy-btn {
+          .hx-small-btn {
             background: #ec4899;
             border: none;
             color: white;
@@ -270,53 +269,54 @@ export default function SoftcardDashboard() {
             align-items: center;
             transition: opacity 0.2s;
           }
-          .hub-copy-btn:hover { opacity: 0.9; }
+          .hx-small-btn:hover { opacity: 0.9; }
+          .hx-copy { background: #ec4899; }
+          .hx-view { background: rgba(255,255,255,0.1); }
 
-          .hub-logout-icon { position: fixed; top: 30px; right: 30px; opacity: 0.3; cursor: pointer; }
-          .hub-logout-icon:hover { opacity: 1; color: #f472b6; }
+          .hx-logout { position: fixed; top: 30px; right: 30px; opacity: 0.3; cursor: pointer; }
+          .hx-logout:hover { opacity: 1; color: #f472b6; }
         `}</style>
 
-        <div className="hub-logout-icon" onClick={() => supabase?.auth.signOut()}>
+        <div className="hx-logout" onClick={() => supabase?.auth.signOut()}>
           <LogOut size={20} />
         </div>
 
-        <div className="hub-container">
+        <div className="hx-container">
           <div className="hub-header">
-            <p className="hub-status">LOGGED INTO SOFTCARD.CC</p>
-            <h1 className="hub-title">Welcome back, <span className="hub-brand">{username || "User"}</span></h1>
+            <p className="hx-status">LOGGED INTO SOFTCARD.CC</p>
+            <h1 className="hx-title">Welcome back, <span className="hx-username">{username || "User"}</span></h1>
           </div>
 
-          <div className="hub-circle-wrapper">
-            <div className="hub-circle">
-              <div className="hub-avatar-img">
+          <div className="hx-circle-wrap">
+            <div className="hx-circle">
+              <div className="hx-avatar">
                 <img src={avatar} alt="avatar" />
               </div>
             </div>
 
-            <button className="hub-action-btn btn-left" onClick={() => setView("editor")}>
+            <button className="hx-btn hx-left" onClick={() => setView("editor")}>
               <Pencil size={18} />
               <span>Edit</span>
             </button>
 
-            <button className="hub-action-btn btn-right">
+            <button className="hx-btn hx-right">
               <BarChart3 size={18} />
               <span>Stats</span>
             </button>
           </div>
 
           <div>
-            <div className="hub-url-bar">
+            <div className="hx-url">
               <span style={{ opacity: 0.6 }}>softcard.cc/{username}</span>
-              <div className="hub-btns-group">
-                <button className="hub-copy-btn" onClick={handleCopy}>
+              <div className="hx-url-actions">
+                <button className="hx-small-btn hx-copy" onClick={handleCopy}>
                   {copied ? "Copied!" : "Copy"}
                 </button>
                 <a 
                   href={`/${username}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="hub-copy-btn"
-                  style={{ background: 'rgba(255,255,255,0.1)' }}
+                  className="hx-small-btn hx-view"
                 >
                   View
                 </a>
@@ -421,7 +421,6 @@ export default function SoftcardDashboard() {
         }
         .sx-input:focus { border-color: #ff2a8a; }
 
-        /* SEXY COLOR PICKER OVERRIDE */
         input[type="color"] {
           width: 100%;
           height: 40px;
@@ -507,7 +506,6 @@ export default function SoftcardDashboard() {
                 </select>
             </div>
 
-            {/* UPDATED: SEXY GRADIENT PICKER SYSTEM */}
             {bgType === "gradient" && (
               <div className="sx-input-group">
                 <label className="sx-label">Gradient Colors</label>
