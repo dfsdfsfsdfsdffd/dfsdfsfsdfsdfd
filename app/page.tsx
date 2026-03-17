@@ -22,28 +22,24 @@ export default function Home() {
 
       <section className="sx-hero">
 
-        <div className="sx-glass">
+        <h1 className="sx-title">
+          Build Your <span>Presence</span>
+        </h1>
 
-          <h1 className="sx-title">
-            Build Your <span>Presence</span>
-          </h1>
+        <p className="sx-sub">
+          One clean link for everything you are.
+        </p>
 
-          <p className="sx-sub">
-            One clean link for everything you are.
-          </p>
-
-          <div className="sx-actions">
-            <Link href="/login">
-              <button className="sx-primary">
-                Create Page →
-              </button>
-            </Link>
-
-            <button className="sx-secondary">
-              Learn More
+        <div className="sx-actions">
+          <Link href="/login">
+            <button className="sx-primary">
+              Create Page →
             </button>
-          </div>
+          </Link>
 
+          <button className="sx-secondary">
+            Learn More
+          </button>
         </div>
 
       </section>
