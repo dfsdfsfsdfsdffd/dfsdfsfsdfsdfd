@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { Pencil, BarChart3, LogOut, Copy, Check, ExternalLink, ShieldCheck, Code, Star } from "lucide-react"
+import { Pencil, BarChart3, LogOut, ShieldCheck, Code, Star } from "lucide-react"
 
 // Social Icon Mapping
 const iconMap: any = {
@@ -120,7 +120,7 @@ export default function SoftcardDashboard() {
       setLoading(false)
     }
     loadData()
-  }, [supabase])
+  }, [supabase, avatar, name, gradient])
 
   async function saveChanges() {
     if (!supabase) return;
@@ -156,6 +156,7 @@ export default function SoftcardDashboard() {
   }
 
   const handleCopy = () => {
+    if (!username) return;
     navigator.clipboard.writeText(`softcard.cc/${username}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -275,12 +276,13 @@ export default function SoftcardDashboard() {
           .hx-copy { background: #ec4899; }
           .hx-view { background: rgba(255,255,255,0.1); }
 
-          .hx-logout { position: fixed; top: 30px; right: 30px; opacity: 0.3; cursor: pointer; }
+          .hx-logout { position: fixed; top: 30px; right: 30px; opacity: 0.3; cursor: pointer; transition: 0.2s; }
           .hx-logout:hover { opacity: 1; color: #f472b6; }
         `}</style>
 
+        {/* FIXED: size={20} instead of size(20) */}
         <div className="hx-logout" onClick={() => supabase?.auth.signOut()}>
-          <LogOut size(20) />
+          <LogOut size={20} />
         </div>
 
         <div className="hx-container">
@@ -309,7 +311,7 @@ export default function SoftcardDashboard() {
 
           <div>
             <div className="hx-url">
-              <span style={{ opacity: 0.6 }}>softcard.cc/{username}</span>
+              <span style={{ opacity: 0.6 }}>softcard.cc/{username || "..."}</span>
               <div className="hx-url-actions">
                 <button className="hx-small-btn hx-copy" onClick={handleCopy}>
                   {copied ? "Copied!" : "Copy"}
@@ -367,7 +369,6 @@ export default function SoftcardDashboard() {
           margin-bottom: 6px;
         }
 
-        /* Centering Logic */
         .sx-spacer { flex: 1; visibility: hidden; }
 
         .sx-name { 
@@ -518,17 +519,14 @@ export default function SoftcardDashboard() {
       <div className="sx-preview-pane">
         {bgType === "gradient" && <div className="sx-bg-layer" style={{ background: gradient }} />}
         {bgType === "video" && bgVideo && <video className="sx-bg-layer" src={bgVideo} autoPlay loop muted playsInline />}
-        {bgType === "image" && bgImage && <img className="sx-bg-layer" src={bgImage} />}
+        {bgType === "image" && bgImage && <img className="sx-bg-layer" src={bgImage} alt="bg" />}
         
         <div className="sx-profile-card">
-          <img src={avatar} className="sx-pfp" />
+          <img src={avatar} className="sx-pfp" alt="profile" />
           
           <div className="sx-name-wrapper">
-             {/* Invisible spacer to balance the badges on the right */}
              <div className="sx-spacer" />
-             
              <div className="sx-name" style={{ color: nameColor }}>{name}</div>
-             
              <div className="sx-badges-container">
                {(badges.user || badges.dev || badges.staff) && (
                  <div className="sx-badge-pill">
