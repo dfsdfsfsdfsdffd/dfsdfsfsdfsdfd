@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { Pencil, BarChart3, LogOut, ShieldCheck, Code, Star, Trash2, Globe } from "lucide-react"
+import { Pencil, BarChart3, LogOut, ShieldCheck, Code, Star, Trash2, Globe, Tag as TagIcon, Plus } from "lucide-react"
 
 // Social Icon Mapping
 const iconMap: any = {
@@ -44,11 +44,14 @@ export default function SoftcardDashboard() {
   const [name, setName] = useState("akuryō")
   const [username, setUsername] = useState("") 
   const [bio, setBio] = useState("")
+  
+  // Tag States
   const [age, setAge] = useState("")
   const [gender, setGender] = useState("")
   const [sexuality, setSexuality] = useState("")
   const [birthday, setBirthday] = useState("")
   const [timezone, setTimezone] = useState("")
+  const [location, setLocation] = useState("") // Added missing common tag
 
   const [links, setLinks] = useState<any[]>([])
   const [badges, setBadges] = useState<any>({ user: true, dev: false, staff: false })
@@ -90,6 +93,7 @@ export default function SoftcardDashboard() {
         setSexuality(profile.sexuality || "")
         setBirthday(profile.birthday || "")
         setTimezone(profile.timezone || "")
+        setLocation(profile.location || "")
         setLinks(profile.links || [])
         setAccent(profile.accent_color || "#7000ff")
         setNameColor(profile.name_color || "#ffffff")
@@ -127,6 +131,7 @@ export default function SoftcardDashboard() {
       sexuality: sexuality,
       birthday: birthday,
       timezone: timezone,
+      location: location,
       links: links,
       accent_color: accent,
       name_color: nameColor,
@@ -356,8 +361,19 @@ export default function SoftcardDashboard() {
         .sx-badges-container { flex: 1; display: flex; gap: 6px; justify-content: flex-start; align-items: center; }
         .sx-badge-pill { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.08); padding: 4px 8px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
         .sx-bio { font-size: 15px; margin-bottom: 20px; max-width: 90%; line-height: 1.5; }
-        .sx-tags-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 25px; opacity: 0.6; }
-        .sx-tag { font-size: 13px; font-weight: 500; }
+        
+        /* TAGS STYLING */
+        .sx-tags-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 25px; }
+        .sx-tag { 
+          font-size: 12px; 
+          font-weight: 500; 
+          background: rgba(255,255,255,0.05); 
+          padding: 4px 10px; 
+          border-radius: 8px; 
+          color: rgba(255,255,255,0.7);
+          border: 1px solid rgba(255,255,255,0.05);
+        }
+
         .sx-links-row { display: flex; justify-content: center; gap: 22px; }
         .sx-icon-link { transition: 0.3s ease; opacity: 0.8; }
         .sx-icon-link:hover { opacity: 1; transform: translateY(-3px); }
@@ -369,13 +385,12 @@ export default function SoftcardDashboard() {
             background: linear-gradient(90deg, #ff008c, #ff4df0); color: white; cursor: pointer;
             box-shadow: 0 10px 20px rgba(255, 0, 128, 0.3); margin-bottom: 20px;
         }
-        .sx-tabs-row { display: flex; gap: 8px; margin-bottom: 20px; }
-        .sx-tab { flex: 1; padding: 10px; border-radius: 10px; cursor: pointer; opacity: 0.6; background: rgba(255,255,255,0.03); text-align: center; transition: 0.2s; font-size: 13px; }
+        .sx-tabs-row { display: flex; gap: 6px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .sx-tab { flex: 1; padding: 10px; border-radius: 10px; cursor: pointer; opacity: 0.6; background: rgba(255,255,255,0.03); text-align: center; transition: 0.2s; font-size: 12px; white-space: nowrap; }
         .sx-tab-active { background: rgba(255,0,200,0.2); opacity: 1; border: 1px solid rgba(255,0,200,0.4); }
         .sx-input-group { margin-bottom: 15px; }
         .sx-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; margin-bottom: 5px; display: block; }
         
-        /* FIX FOR DROPDOWNS */
         .sx-input {
             width: 100%; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.08); color: white; outline: none; transition: 0.2s; font-size: 14px;
@@ -391,7 +406,7 @@ export default function SoftcardDashboard() {
         }
         
         select.sx-input option {
-          background-color: #1a0b1a; /* Dark background for the dropdown list */
+          background-color: #1a0b1a;
           color: white;
           padding: 10px;
         }
@@ -427,6 +442,7 @@ export default function SoftcardDashboard() {
 
         <div className="sx-tabs-row">
           <div className={`sx-tab ${tab === "profile" ? "sx-tab-active" : ""}`} onClick={() => setTab("profile")}>Profile</div>
+          <div className={`sx-tab ${tab === "tags" ? "sx-tab-active" : ""}`} onClick={() => setTab("tags")}>Tags</div>
           <div className={`sx-tab ${tab === "appearance" ? "sx-tab-active" : ""}`} onClick={() => setTab("appearance")}>Style</div>
           <div className={`sx-tab ${tab === "badges" ? "sx-tab-active" : ""}`} onClick={() => setTab("badges")}>Badges</div>
         </div>
@@ -436,11 +452,6 @@ export default function SoftcardDashboard() {
             <div className="sx-input-group"><label className="sx-label">Avatar URL</label><input className="sx-input" value={avatar} onChange={e => setAvatar(e.target.value)} /></div>
             <div className="sx-input-group"><label className="sx-label">Display Name</label><input className="sx-input" value={name} onChange={e => setName(e.target.value)} /></div>
             <div className="sx-input-group"><label className="sx-label">Bio</label><input className="sx-input" value={bio} onChange={e => setBio(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Age</label><input className="sx-input" value={age} onChange={e => setAge(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Gender</label><input className="sx-input" value={gender} onChange={e => setGender(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Sexuality</label><input className="sx-input" value={sexuality} onChange={e => setSexuality(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Birthday</label><input className="sx-input" value={birthday} onChange={e => setBirthday(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Timezone</label><input className="sx-input" value={timezone} onChange={e => setTimezone(e.target.value)} /></div>
 
             <label className="sx-label">Social Links</label>
             <button className="sx-publish-btn" onClick={addLink} style={{background: 'rgba(255,255,255,0.05)', boxShadow: 'none', border: '1px dashed rgba(255,255,255,0.2)'}}>+ Add Social</button>
@@ -477,6 +488,36 @@ export default function SoftcardDashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAGS TAB INTEGRATION */}
+        {tab === "tags" && (
+          <div className="sx-pane">
+            <div className="sx-input-group">
+                <label className="sx-label">Age</label>
+                <input className="sx-input" placeholder="e.g. 19" value={age} onChange={e => setAge(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Gender</label>
+                <input className="sx-input" placeholder="e.g. Male" value={gender} onChange={e => setGender(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Sexuality</label>
+                <input className="sx-input" placeholder="e.g. Straight" value={sexuality} onChange={e => setSexuality(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Birthday</label>
+                <input className="sx-input" placeholder="e.g. Oct 12" value={birthday} onChange={e => setBirthday(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Location</label>
+                <input className="sx-input" placeholder="e.g. London" value={location} onChange={e => setLocation(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Timezone</label>
+                <input className="sx-input" placeholder="e.g. GMT+1" value={timezone} onChange={e => setTimezone(e.target.value)} />
             </div>
           </div>
         )}
@@ -561,9 +602,13 @@ export default function SoftcardDashboard() {
 
           <div className="sx-bio" style={{ color: bioColor }}>{bio}</div>
 
+          {/* DYNAMIC TAGS PREVIEW */}
           <div className="sx-tags-row">
             {age && <div className="sx-tag">🎂 {age}</div>}
             {gender && <div className="sx-tag">⚥ {gender}</div>}
+            {sexuality && <div className="sx-tag">⚧ {sexuality}</div>}
+            {birthday && <div className="sx-tag">🎈 {birthday}</div>}
+            {location && <div className="sx-tag">📍 {location}</div>}
             {timezone && <div className="sx-tag">🌍 {timezone}</div>}
           </div>
           
