@@ -48,102 +48,111 @@ export default function PublicProfile({ params }: { params: { username: string }
   if (!profile) return null
 
   const socials = profile.links?.filter((l: any) => !l.url.includes('title') && (!l.title || l.title === "New Link")) || []
-  const accent = profile.accent_color || '#7000ff';
+  const accent = profile.accent_color || '#ff0000';
 
   return (
     <div className="container">
       <style jsx>{`
         .container {
-          height: 100vh; width: 100vw; background: #080808;
+          height: 100vh; width: 100vw; background: #000;
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${profile.font_family || 'Inter'}, sans-serif;
           overflow: hidden;
         }
 
-        /* --- VIBRANT MOVING BG --- */
+        /* --- SWEEPING LIGHT TRAILS BG --- */
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
         .animated-bg { width: 100%; height: 100%; background: #000; position: relative; }
         
-        .blob {
-          position: absolute; width: 60vw; height: 60vw;
-          background: radial-gradient(circle, ${accent}44 0%, transparent 70%);
-          filter: blur(80px); border-radius: 50%;
-          top: -10%; left: -10%; animation: float 15s infinite alternate ease-in-out;
-        }
-        .blob-2 {
-          position: absolute; width: 50vw; height: 50vw;
-          background: radial-gradient(circle, ${accent}33 0%, transparent 70%);
-          filter: blur(100px); border-radius: 50%;
-          bottom: -10%; right: -10%; animation: float 20s infinite alternate-reverse ease-in-out;
+        .trail {
+          position: absolute;
+          width: 150%; height: 150%;
+          top: -25%; left: -25%;
+          background: radial-gradient(ellipse at center, ${accent}22 0%, transparent 70%);
+          filter: blur(60px);
+          border-radius: 40%;
+          animation: sweep 25s infinite linear;
         }
 
-        @keyframes float {
-          from { transform: translate(0, 0) scale(1); }
-          to { transform: translate(10%, 10%) scale(1.1); }
+        .trail-2 {
+          position: absolute;
+          width: 120%; height: 120%;
+          bottom: -10%; right: -10%;
+          background: radial-gradient(ellipse at center, ${accent}15 0%, transparent 60%);
+          filter: blur(80px);
+          border-radius: 35%;
+          animation: sweep 30s infinite linear reverse;
         }
 
-        /* --- PROFILE CARD --- */
+        @keyframes sweep {
+          from { transform: rotate(0deg) scale(1); }
+          to { transform: rotate(360deg) scale(1.1); }
+        }
+
+        /* --- PROFILE CARD (SHRUNK FOR SCALE) --- */
         .profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
-          width: 90%; max-width: 440px;
+          width: 100%;
         }
 
-        /* --- THE INTENSE GLOW (Matches Ref) --- */
+        /* --- THE VIBRANT GLOW --- */
         .pfp-container {
-          position: relative; margin-bottom: 28px;
+          position: relative; margin-bottom: 20px;
         }
         .pfp-glow {
-          position: absolute; inset: -5px;
+          position: absolute; inset: -4px;
           background: ${accent};
           border-radius: 50%;
-          filter: blur(25px);
-          opacity: 0.6;
+          filter: blur(20px);
+          opacity: 0.5;
           z-index: -1;
         }
         .pfp {
-          width: 120px; height: 120px; 
+          width: 90px; height: 90px; 
           object-fit: cover; border-radius: 50%;
-          border: 2px solid rgba(255,255,255,0.1);
+          border: 1.5px solid rgba(255,255,255,0.1);
           position: relative; z-index: 2;
         }
 
         .display-name { 
-          font-size: 34px; font-weight: 800; margin-bottom: 8px;
+          font-size: 26px; font-weight: 700; margin-bottom: 6px;
           color: ${profile.name_color || '#ffffff'};
-          text-shadow: 0 0 20px ${accent}44;
+          letter-spacing: -0.5px;
         }
 
         .bio { 
-          font-size: 16px; margin-bottom: 24px; opacity: 0.8;
-          color: ${profile.bio_color || '#fff'}; line-height: 1.5;
+          font-size: 14px; margin-bottom: 20px; opacity: 0.8;
+          color: ${profile.bio_color || '#fff'}; line-height: 1.4;
+          max-width: 250px;
         }
 
-        /* --- FLOATING BADGES (TOP RIGHT) --- */
+        /* --- BADGES HELD AT TOP RIGHT --- */
         .floating-badges {
-          position: absolute; top: 25px; right: 25px;
-          display: flex; gap: 10px; padding: 10px;
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(10px); border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          position: absolute; top: 30px; right: 30px;
+          display: flex; gap: 8px; padding: 10px;
+          background: rgba(255, 255, 255, 0.03);
+          backdrop-filter: blur(8px); border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
           z-index: 10;
         }
 
-        .social-row { display: flex; gap: 24px; margin-top: 10px; }
-        .social-icon { width: 22px; height: 22px; opacity: 0.7; transition: 0.2s; }
-        .social-icon:hover { opacity: 1; transform: translateY(-2px); }
+        .social-row { display: flex; gap: 18px; }
+        .social-icon { width: 18px; height: 18px; opacity: 0.6; transition: 0.3s; }
+        .social-icon:hover { opacity: 1; transform: scale(1.1); }
 
-        .tag { font-size: 13px; opacity: 0.5; margin: 0 8px; }
+        .tag { font-size: 11px; opacity: 0.4; margin: 0 6px; font-weight: 500; }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
           display: ${hasEntered ? 'none' : 'flex'};
           align-items: center; justify-content: center; cursor: pointer;
-          font-size: 12px; letter-spacing: 5px; text-transform: uppercase;
+          font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+          color: rgba(255,255,255,0.4);
         }
       `}</style>
 
-      {!hasEntered && <div className="overlay" onClick={handleEnter}>[ Click to Enter ]</div>}
+      {!hasEntered && <div className="overlay" onClick={handleEnter}>[ ENTER ]</div>}
 
       <div className="bg-wrapper">
         {profile.background_type === "video" ? (
@@ -152,8 +161,8 @@ export default function PublicProfile({ params }: { params: { username: string }
           <img src={profile.background_value} className="bg-content" alt="bg" />
         ) : (
           <div className="animated-bg">
-            <div className="blob"></div>
-            <div className="blob-2"></div>
+            <div className="trail"></div>
+            <div className="trail-2"></div>
           </div>
         )}
       </div>
@@ -163,8 +172,8 @@ export default function PublicProfile({ params }: { params: { username: string }
       <div className="profile-card">
         {(profile.badges?.user || profile.badges?.dev) && (
           <div className="floating-badges">
-            {profile.badges?.user && <User size={18} strokeWidth={2.5} />}
-            {profile.badges?.dev && <Code size={18} strokeWidth={2.5} style={{ color: accent }} />}
+            {profile.badges?.user && <User size={16} strokeWidth={2} />}
+            {profile.badges?.dev && <Code size={16} strokeWidth={2} style={{ color: accent }} />}
           </div>
         )}
 
@@ -176,7 +185,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         <h1 className="display-name">{profile.display_name}</h1>
         <p className="bio">{profile.bio}</p>
 
-        <div style={{ marginBottom: '30px' }}>
+        <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
           {profile.age && <span className="tag">{profile.age}</span>}
           {profile.gender && <span className="tag">{profile.gender}</span>}
           {profile.timezone && <span className="tag">{profile.timezone}</span>}
