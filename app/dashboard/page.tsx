@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { Pencil, BarChart3, LogOut, ShieldCheck, Code, Star } from "lucide-react"
+import { Pencil, BarChart3, LogOut, ShieldCheck, Code, Star, Trash2, Globe } from "lucide-react"
 
 // Social Icon Mapping
 const iconMap: any = {
@@ -15,22 +15,16 @@ const iconMap: any = {
   discord: "https://cdn.simpleicons.org/discord/ffffff",
   github: "https://cdn.simpleicons.org/github/ffffff",
   threads: "https://cdn.simpleicons.org/threads/ffffff",
-  linkedin: "https://cdn.simpleicons.org/linkedin/ffffff"
+  linkedin: "https://cdn.simpleicons.org/linkedin/ffffff",
+  website: "https://cdn.simpleicons.org/pwa/ffffff"
 }
 
-function getIcon(url: string) {
-  const lowerUrl = url.toLowerCase();
-  if (lowerUrl.includes("tiktok")) return iconMap.tiktok
-  if (lowerUrl.includes("instagram")) return iconMap.instagram
-  if (lowerUrl.includes("twitter") || lowerUrl.includes("x.com")) return iconMap.x
-  if (lowerUrl.includes("youtube")) return iconMap.youtube
-  if (lowerUrl.includes("twitch")) return iconMap.twitch
-  if (lowerUrl.includes("spotify")) return iconMap.spotify
-  if (lowerUrl.includes("discord")) return iconMap.discord
-  if (lowerUrl.includes("github")) return iconMap.github
-  if (lowerUrl.includes("threads")) return iconMap.threads
-  if (lowerUrl.includes("linkedin")) return iconMap.linkedin
-  return "https://cdn.simpleicons.org/pwa/ffffff"
+// Updated getIcon to handle the new link object structure
+function getIcon(linkObj: any) {
+  if (linkObj.type && iconMap[linkObj.type]) {
+    return iconMap[linkObj.type]
+  }
+  return iconMap.website
 }
 
 export default function SoftcardDashboard() {
@@ -43,7 +37,6 @@ export default function SoftcardDashboard() {
 
   const [view, setView] = useState<"hub" | "editor">("hub")
   const [copied, setCopied] = useState(false)
-
   const [tab, setTab] = useState("profile")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -52,7 +45,6 @@ export default function SoftcardDashboard() {
   const [name, setName] = useState("akuryō")
   const [username, setUsername] = useState("") 
   const [bio, setBio] = useState("")
-  
   const [age, setAge] = useState("")
   const [gender, setGender] = useState("")
   const [sexuality, setSexuality] = useState("")
@@ -68,7 +60,6 @@ export default function SoftcardDashboard() {
   const [bioColor, setBioColor] = useState("rgba(255,255,255,0.7)")
   const [font, setFont] = useState("Inter")
   const [bgType, setBgType] = useState("gradient")
-  
   const [gradient, setGradient] = useState("linear-gradient(135deg, #1a0b1a 0%, #050106 100%)")
   const [gradientStart, setGradientStart] = useState("#1a0b1a")
   const [gradientEnd, setGradientEnd] = useState("#050106")
@@ -120,7 +111,7 @@ export default function SoftcardDashboard() {
       setLoading(false)
     }
     loadData()
-  }, [supabase, avatar, name, gradient])
+  }, [supabase])
 
   async function saveChanges() {
     if (!supabase) return;
@@ -162,7 +153,12 @@ export default function SoftcardDashboard() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const addLink = () => setLinks([...links, { id: Date.now(), title: "New Link", url: "" }])
+  // Updated link handlers
+  const addLink = () => setLinks([...links, { id: Date.now(), type: "website", url: "" }])
+  
+  const removeLink = (id: number) => {
+    setLinks(links.filter(l => l.id !== id))
+  }
 
   const updateLink = (i: number, key: string, val: string) => {
     const copy = [...links]
@@ -280,7 +276,6 @@ export default function SoftcardDashboard() {
           .hx-logout:hover { opacity: 1; color: #f472b6; }
         `}</style>
 
-        {/* FIXED: size={20} instead of size(20) */}
         <div className="hx-logout" onClick={() => supabase?.auth.signOut()}>
           <LogOut size={20} />
         </div>
@@ -336,11 +331,8 @@ export default function SoftcardDashboard() {
     <div className="softcardx-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
       <style>{`
         .softcardx-dashboard { display: flex; height: 100vh; background: #050106; color: white; overflow: hidden; }
-        
         .sx-sidebar { width: 380px; background: rgba(10, 0, 15, 0.7); backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 0, 128, 0.15); padding: 25px; overflow-y: auto; }
-        
         .sx-preview-pane { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #020002; }
-
         .sx-profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
@@ -353,69 +345,35 @@ export default function SoftcardDashboard() {
           border: ${showGlass ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
           box-shadow: ${showGlass ? '0 20px 50px rgba(0,0,0,0.5)' : 'none'};
         }
-
         .sx-pfp { 
           width: 95px; height: 95px; border-radius: 50%; object-fit: cover; margin-bottom: 18px;
           border: 3px solid ${accent};
           box-shadow: 0 0 25px ${accent}44; 
         }
-
         .sx-name-wrapper {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          gap: 10px;
-          margin-bottom: 6px;
+          display: flex; align-items: center; justify-content: center; width: 100%; gap: 10px; margin-bottom: 6px;
         }
-
         .sx-spacer { flex: 1; visibility: hidden; }
-
-        .sx-name { 
-          font-size: 28px; font-weight: 800; letter-spacing: -0.02em; 
-          white-space: nowrap; flex: 0 0 auto;
-        }
-
-        .sx-badges-container {
-          flex: 1;
-          display: flex; 
-          gap: 6px;
-          justify-content: flex-start;
-          align-items: center;
-        }
-
-        .sx-badge-pill {
-            display: flex;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.08);
-            padding: 4px 8px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
+        .sx-name { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; flex: 0 0 auto; }
+        .sx-badges-container { flex: 1; display: flex; gap: 6px; justify-content: flex-start; align-items: center; }
+        .sx-badge-pill { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.08); padding: 4px 8px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
         .sx-bio { font-size: 15px; margin-bottom: 20px; max-width: 90%; line-height: 1.5; }
-
         .sx-tags-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 25px; opacity: 0.6; }
         .sx-tag { font-size: 13px; font-weight: 500; }
-
         .sx-links-row { display: flex; justify-content: center; gap: 22px; }
         .sx-icon-link { transition: 0.3s ease; opacity: 0.8; }
         .sx-icon-link:hover { opacity: 1; transform: translateY(-3px); }
         .sx-icon-link img { width: 22px; height: 22px; }
-
         .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-block; opacity: 0.5; font-size: 13px; }
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
-
         .sx-publish-btn {
             width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700;
             background: linear-gradient(90deg, #ff008c, #ff4df0); color: white; cursor: pointer;
             box-shadow: 0 10px 20px rgba(255, 0, 128, 0.3); margin-bottom: 20px;
         }
-
         .sx-tabs-row { display: flex; gap: 8px; margin-bottom: 20px; }
         .sx-tab { flex: 1; padding: 10px; border-radius: 10px; cursor: pointer; opacity: 0.6; background: rgba(255,255,255,0.03); text-align: center; transition: 0.2s; font-size: 13px; }
         .sx-tab-active { background: rgba(255,0,200,0.2); opacity: 1; border: 1px solid rgba(255,0,200,0.4); }
-
         .sx-input-group { margin-bottom: 15px; }
         .sx-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; margin-bottom: 5px; display: block; }
         .sx-input {
@@ -423,8 +381,27 @@ export default function SoftcardDashboard() {
             border: 1px solid rgba(255,255,255,0.08); color: white; outline: none; transition: 0.2s; font-size: 14px;
         }
         .sx-input:focus { border-color: #ff2a8a; }
-
         .sx-bg-layer { position: absolute; inset: 0; z-index: 1; object-fit: cover; width: 100%; height: 100%; }
+
+        /* New Link Editor Styles */
+        .sx-link-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .sx-remove-link {
+            position: absolute; top: -8px; right: -8px;
+            background: #ef4444; color: white; border: none;
+            width: 22px; height: 22px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: 0.2s;
+        }
+        .sx-remove-link:hover { transform: scale(1.1); background: #f87171; }
       `}</style>
 
       <div className="sx-sidebar">
@@ -451,12 +428,42 @@ export default function SoftcardDashboard() {
             <div className="sx-input-group"><label className="sx-label">Birthday</label><input className="sx-input" value={birthday} onChange={e => setBirthday(e.target.value)} /></div>
             <div className="sx-input-group"><label className="sx-label">Timezone</label><input className="sx-input" value={timezone} onChange={e => setTimezone(e.target.value)} /></div>
 
-            <button className="sx-publish-btn" onClick={addLink} style={{background: 'rgba(255,255,255,0.05)', boxShadow: 'none'}}>+ Add Link</button>
-            {links.map((l, i) => (
-              <div key={l.id} className="sx-input-group">
-                <input className="sx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. tiktok.com/user)" />
-              </div>
-            ))}
+            <label className="sx-label">Social Links</label>
+            <button className="sx-publish-btn" onClick={addLink} style={{background: 'rgba(255,255,255,0.05)', boxShadow: 'none', border: '1px dashed rgba(255,255,255,0.2)'}}>+ Add Social</button>
+            
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {links.map((l, i) => (
+                <div key={l.id} className="sx-link-card">
+                  <button className="sx-remove-link" onClick={() => removeLink(l.id)}>×</button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select 
+                      className="sx-input" 
+                      style={{ flex: '0 0 110px', fontSize: '12px' }} 
+                      value={l.type} 
+                      onChange={e => updateLink(i, "type", e.target.value)}
+                    >
+                      <option value="website">Website</option>
+                      <option value="tiktok">TikTok</option>
+                      <option value="instagram">Instagram</option>
+                      <option value="x">X / Twitter</option>
+                      <option value="youtube">YouTube</option>
+                      <option value="twitch">Twitch</option>
+                      <option value="spotify">Spotify</option>
+                      <option value="discord">Discord</option>
+                      <option value="github">GitHub</option>
+                      <option value="threads">Threads</option>
+                      <option value="linkedin">LinkedIn</option>
+                    </select>
+                    <input 
+                      className="sx-input" 
+                      value={l.url} 
+                      onChange={e => updateLink(i, "url", e.target.value)} 
+                      placeholder="URL (e.g. tiktok.com/@user)" 
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -551,7 +558,7 @@ export default function SoftcardDashboard() {
               if (!l.url) return null;
               return (
                 <div key={l.id} className="sx-icon-link">
-                  <img src={getIcon(l.url)} alt="" />
+                  <img src={getIcon(l)} alt="" />
                 </div>
               )
             })}
