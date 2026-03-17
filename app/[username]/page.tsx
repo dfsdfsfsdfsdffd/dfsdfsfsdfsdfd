@@ -71,28 +71,28 @@ export default function PublicProfile({ params }: { params: { username: string }
         
         .blob {
           position: absolute;
-          width: 500px; height: 500px;
+          width: 450px; height: 450px;
           background: ${accent};
-          filter: blur(120px);
+          filter: blur(100px);
           border-radius: 50%;
-          opacity: 0.35;
-          animation: move 20s infinite alternate;
+          opacity: 0.3;
+          animation: move 18s infinite alternate;
         }
 
         .blob-2 {
           position: absolute;
-          bottom: -100px; right: -100px;
-          width: 600px; height: 600px;
+          bottom: -50px; right: -50px;
+          width: 500px; height: 500px;
           background: ${accent};
-          filter: blur(150px);
+          filter: blur(130px);
           border-radius: 50%;
-          opacity: 0.25;
-          animation: move 25s infinite alternate-reverse;
+          opacity: 0.2;
+          animation: move 22s infinite alternate-reverse;
         }
 
         @keyframes move {
-          from { transform: translate(-10%, -10%) scale(1); }
-          to { transform: translate(20%, 20%) scale(1.2); }
+          from { transform: translate(-15%, -15%) scale(1); }
+          to { transform: translate(15%, 15%) scale(1.1); }
         }
 
         .bg-content { width: 100%; height: 100%; object-fit: cover; }
@@ -101,71 +101,68 @@ export default function PublicProfile({ params }: { params: { username: string }
         .profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
-          width: 100%; max-width: 550px;
-          padding: 60px 40px;
+          width: 100%; max-width: 480px;
+          padding: 40px;
           background: transparent;
         }
 
         /* --- FLOATING BADGES (TOP RIGHT) --- */
         .floating-badges {
           position: absolute;
-          top: 25px;
-          right: 25px;
+          top: 20px;
+          right: 20px;
           display: flex;
-          gap: 12px;
-          padding: 10px 14px;
-          background: rgba(255, 255, 255, 0.04);
-          backdrop-filter: blur(12px);
-          border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+          gap: 10px;
+          padding: 8px 12px;
+          background: rgba(255, 255, 255, 0.03);
+          backdrop-filter: blur(10px);
+          border-radius: 14px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .badge-icon {
-          opacity: 0.75;
-          transition: 0.3s;
+          opacity: 0.7;
+          transition: 0.3s ease;
           cursor: help;
         }
-        .badge-icon:hover { opacity: 1; transform: scale(1.15); }
+        .badge-icon:hover { opacity: 1; transform: scale(1.1); }
 
         .pfp {
-          width: 130px; height: 130px; 
-          object-fit: cover; margin-bottom: 30px;
+          width: 115px; height: 115px; 
+          object-fit: cover; margin-bottom: 25px;
           border-radius: 50%;
-          border: 3px solid ${accent};
-          box-shadow: 0 0 40px ${accent}44;
+          border: 2px solid ${accent};
+          box-shadow: 0 0 30px ${accent}33;
         }
 
         .display-name { 
-          font-size: 42px; font-weight: 800; margin-bottom: 12px;
+          font-size: 34px; font-weight: 700; margin-bottom: 10px;
           color: ${profile.name_color || '#ffffff'};
-          letter-spacing: -1px;
-          text-shadow: 0 0 20px rgba(0,0,0,0.6);
+          letter-spacing: -0.5px;
         }
 
         .bio { 
-          font-size: 20px; margin-bottom: 35px; 
-          color: ${profile.bio_color || 'rgba(255,255,255,0.9)'}; 
-          max-width: 90%; line-height: 1.5;
-          text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+          font-size: 17px; margin-bottom: 25px; 
+          color: ${profile.bio_color || 'rgba(255,255,255,0.85)'}; 
+          max-width: 85%; line-height: 1.45;
         }
 
         .tags-row { 
           display: flex; flex-wrap: wrap; justify-content: center; 
-          gap: 20px; margin-bottom: 45px; opacity: 0.6;
+          gap: 16px; margin-bottom: 35px; opacity: 0.55;
         }
-        .tag { font-size: 16px; font-weight: 500; }
+        .tag { font-size: 14px; font-weight: 500; }
 
-        .social-row { display: flex; justify-content: center; gap: 32px; }
-        .social-link { transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0.8; }
-        .social-link:hover { opacity: 1; transform: translateY(-6px) scale(1.1); }
-        .social-icon { width: 28px; height: 28px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+        .social-row { display: flex; justify-content: center; gap: 26px; }
+        .social-link { transition: 0.3s ease; opacity: 0.75; }
+        .social-link:hover { opacity: 1; transform: translateY(-4px); }
+        .social-icon { width: 24px; height: 24px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
           display: ${hasEntered ? 'none' : 'flex'};
           align-items: center; justify-content: center; cursor: pointer;
-          font-weight: 800; letter-spacing: 6px; font-size: 14px;
+          font-weight: 700; letter-spacing: 5px; font-size: 13px;
         }
       `}</style>
 
@@ -192,12 +189,12 @@ export default function PublicProfile({ params }: { params: { username: string }
           <div className="floating-badges">
             {profile.badges?.user && (
               <div className="badge-icon" title="Verified User">
-                <User size={20} strokeWidth={2.5} />
+                <User size={18} strokeWidth={2} />
               </div>
             )}
             {profile.badges?.dev && (
               <div className="badge-icon" title="Developer" style={{ color: accent }}>
-                <Code size={20} strokeWidth={2.5} />
+                <Code size={18} strokeWidth={2} />
               </div>
             )}
           </div>
