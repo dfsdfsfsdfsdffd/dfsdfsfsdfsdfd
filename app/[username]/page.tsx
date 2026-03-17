@@ -77,52 +77,60 @@ export default function PublicProfile({ params }: { params: { username: string }
           padding: 40px; border-radius: 24px;
           width: 90%; max-width: 420px;
         }
+
+        /* --- NEW BADGE PLACEMENT --- */
+        .floating-badges {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          display: flex;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.03);
+          padding: 6px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(10px);
+        }
+        
+        .badge-icon {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: help;
+          opacity: 0.7;
+          transition: 0.2s;
+        }
+        .badge-icon:hover { opacity: 1; transform: scale(1.1); }
+
+        /* Tooltip Style */
+        .badge-icon::after {
+          content: attr(data-tooltip);
+          position: absolute;
+          bottom: 130%;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #111;
+          color: white;
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: 600;
+          white-space: nowrap;
+          opacity: 0;
+          pointer-events: none;
+          transition: 0.2s;
+          border: 1px solid rgba(255,255,255,0.1);
+        }
+        .badge-icon:hover::after { opacity: 1; bottom: 150%; }
+
         .pfp {
           width: 110px; height: 110px; 
           object-fit: cover; margin-bottom: 10px;
           border-radius: ${profile.avatar_shape === 'circle' ? '50%' : profile.avatar_shape === 'squircle' ? '25%' : '12px'};
           box-shadow: ${profile.accent_glow ? `0 0 40px ${profile.accent_color}` : 'none'};
         }
-
-        /* --- NAME & ICON STYLING --- */
-        .name-container { 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          gap: 8px; 
-          margin-bottom: 5px;
-        }
         .display-name { font-size: 32px; font-weight: 600; color: ${profile.name_color || '#ffffff'}; }
-        
-        .badge-icon {
-          opacity: 0.6;
-          transition: 0.2s;
-          cursor: help;
-          position: relative;
-          display: flex;
-          align-items: center;
-        }
-        .badge-icon:hover { opacity: 1; transform: scale(1.1); }
-
-        /* Tooltip Logic */
-        .badge-icon::after {
-          content: attr(data-tooltip);
-          position: absolute;
-          bottom: 120%;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(0,0,0,0.8);
-          color: white;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 10px;
-          white-space: nowrap;
-          opacity: 0;
-          pointer-events: none;
-          transition: 0.2s;
-        }
-        .badge-icon:hover::after { opacity: 1; bottom: 140%; }
-
         .bio { font-size: 15px; margin-top: 5px; margin-bottom: 15px; color: ${profile.bio_color || 'rgba(255,255,255,0.7)'}; }
         .tags-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; }
         .tag {
@@ -137,8 +145,13 @@ export default function PublicProfile({ params }: { params: { username: string }
         .social-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
         .social-icon { width: 22px; height: 22px; }
 
-        /* Blossom Preset Adjustments */
-        .blossom-card .name-container { margin-bottom: 15px; }
+        /* Blossom Theme overrides */
+        .blossom-card { 
+            position: relative; z-index: 5;
+            background: rgba(255, 192, 203, 0.15); backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3); padding: 40px; border-radius: 40px;
+            width: 90%; max-width: 380px; text-align: center; color: white;
+        }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
@@ -152,32 +165,32 @@ export default function PublicProfile({ params }: { params: { username: string }
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className={profile.preset === "blossom" ? "blossom-card" : "profile-card"}>
-        <img src={profile.avatar_url} className={profile.preset === "blossom" ? "blossom-avatar" : "pfp"} alt="profile" />
-        
-        <div className="name-container">
-          <span className={profile.preset === "blossom" ? "blossom-name" : "display-name"}>
-            {profile.display_name}
-          </span>
-          {profile.badges?.user && (
-            <div className="badge-icon" data-tooltip="User">
-              <User size={18} />
-            </div>
-          )}
-          {profile.badges?.dev && (
-            <div className="badge-icon" data-tooltip="Developer" style={{ color: profile.accent_color }}>
-              <Code size={18} />
-            </div>
-          )}
-        </div>
+        {/* Floating Badges */}
+        {(profile.badges?.user || profile.badges?.dev) && (
+          <div className="floating-badges">
+            {profile.badges?.user && (
+              <div className="badge-icon" data-tooltip="Verified User">
+                <User size={16} />
+              </div>
+            )}
+            {profile.badges?.dev && (
+              <div className="badge-icon" data-tooltip="Developer" style={{ color: profile.accent_color }}>
+                <Code size={16} />
+              </div>
+            )}
+          </div>
+        )}
 
-        <div className={profile.preset === "blossom" ? "blossom-bio" : "bio"}>{profile.bio}</div>
+        <img src={profile.avatar_url} className={profile.preset === "blossom" ? "blossom-avatar" : "pfp"} alt="profile" />
+        <h2 className={profile.preset === "blossom" ? "blossom-name" : "display-name"}>{profile.display_name}</h2>
+        <p className={profile.preset === "blossom" ? "blossom-bio" : "bio"}>{profile.bio}</p>
 
         <div className={profile.preset === "blossom" ? "blossom-tags" : "tags-row"}>
-          {profile.age && <div className={profile.preset === "blossom" ? "blossom-tag" : "tag"}><span>🎂</span>{profile.age}</div>}
-          {profile.gender && <div className={profile.preset === "blossom" ? "blossom-tag" : "tag"}><span>⚥</span>{profile.gender}</div>}
-          {profile.sexuality && <div className={profile.preset === "blossom" ? "blossom-tag" : "tag"}><span>❤</span>{profile.sexuality}</div>}
-          {profile.birthday && <div className={profile.preset === "blossom" ? "blossom-tag" : "tag"}><span>🎉</span>{profile.birthday}</div>}
-          {profile.timezone && <div className={profile.preset === "blossom" ? "blossom-tag" : "tag"}><span>🌍</span>{profile.timezone}</div>}
+          {profile.age && <div className={profile.preset === "blossom" ? "blossom-tag" : "tag"}>🎂 {profile.age}</div>}
+          {profile.gender && <div className={profile.preset === "blossom" ? "blossom-tag" : "tag"}>⚥ {profile.gender}</div>}
+          {profile.sexuality && <div className={profile.preset === "blossom" ? "blossom-tag" : "tag"}>❤ {profile.sexuality}</div>}
+          {profile.birthday && <div className={profile.preset === "blossom" ? "blossom-tag" : "tag"}>🎉 {profile.birthday}</div>}
+          {profile.timezone && <div className={profile.preset === "blossom" ? "blossom-tag" : "tag"}>🌍 {profile.timezone}</div>}
         </div>
 
         {profile.preset === "blossom" ? (
