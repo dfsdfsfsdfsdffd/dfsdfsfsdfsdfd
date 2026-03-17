@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
 import { createBrowserClient } from '@supabase/ssr'
-import { User, Code } from "lucide-react"
+import { User, Code, ShieldCheck, Star } from "lucide-react"
 
 const iconMap: any = {
   tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
@@ -54,100 +54,117 @@ export default function PublicProfile({ params }: { params: { username: string }
     <div className="container">
       <style jsx>{`
         .container {
-          height: 100vh; width: 100vw; background: #050505;
+          height: 100vh; width: 100vw; background: #000;
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${profile.font_family || 'Inter'}, sans-serif;
           overflow: hidden;
         }
 
-        /* --- DYNAMIC GRADIENT BG --- */
+        /* --- BACKGROUND --- */
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
+        .bg-content { width: 100%; height: 100%; object-fit: cover; }
         
         .animated-bg {
           width: 100%; height: 100%;
-          background: radial-gradient(circle at 50% 50%, ${accent}33 0%, #000 70%);
+          background: radial-gradient(circle at 50% 50%, ${accent}22 0%, #000 80%);
           position: relative;
         }
-        
-        .animated-bg::before {
-          content: "";
-          position: absolute;
-          top: -50%; left: -50%; width: 200%; height: 200%;
-          background: radial-gradient(circle at center, ${accent}22 0%, transparent 50%);
-          animation: rotate 15s linear infinite;
-          filter: blur(80px);
-        }
 
-        @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        .bg-content { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* --- CARD --- */
+        /* --- CLEAN GLASS CARD --- */
         .profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
-          width: 100%; max-width: 500px;
-          padding: 40px;
+          width: 90%; max-width: 400px;
+          padding: 35px 25px;
+          background: rgba(255, 255, 255, 0.03);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 24px;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* --- BADGES IN TOP RIGHT --- */
+        .badges-container {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          display: flex;
+          gap: 8px;
+          padding: 6px 10px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .badge-item {
+          position: relative;
+          display: flex;
+          align-items: center;
+          cursor: help;
+          color: rgba(255, 255, 255, 0.6);
+          transition: 0.2s;
+        }
+
+        .badge-item:hover { color: #fff; transform: scale(1.1); }
+
+        /* Tooltip logic */
+        .badge-item:hover::after {
+          content: attr(data-tooltip);
+          position: absolute;
+          bottom: 130%;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #fff;
+          color: #000;
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: 700;
+          white-space: nowrap;
+          z-index: 20;
         }
 
         .pfp {
-          width: 110px; height: 110px; 
-          object-fit: cover; margin-bottom: 25px;
+          width: 95px; height: 95px; 
+          object-fit: cover; margin-bottom: 18px;
           border-radius: 50%;
-          border: 2px solid rgba(255,255,255,0.1);
-          box-shadow: ${profile.accent_glow ? `0 0 40px ${accent}66` : '0 10px 30px rgba(0,0,0,0.5)'};
+          border: 2px solid ${accent};
+          box-shadow: 0 0 25px ${accent}44;
         }
 
         .display-name { 
-          font-size: 36px; font-weight: 800; margin-bottom: 15px;
+          font-size: 28px; font-weight: 800; margin-bottom: 6px;
           color: ${profile.name_color || '#ffffff'};
-          letter-spacing: -0.5px;
+          letter-spacing: -0.02em;
         }
 
         .bio { 
-          font-size: 18px; margin-bottom: 25px; 
-          color: ${profile.bio_color || 'rgba(255,255,255,0.8)'}; 
-          max-width: 85%; line-height: 1.4;
+          font-size: 15px; margin-bottom: 20px; 
+          color: ${profile.bio_color || 'rgba(255,255,255,0.7)'}; 
+          max-width: 90%; line-height: 1.5;
         }
-
-        /* --- BADGES (Back where they were) --- */
-        .badge-row {
-          display: flex; justify-content: center; gap: 10px; margin-bottom: 25px;
-        }
-        
-        .badge {
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.1);
-          padding: 6px 14px; border-radius: 8px;
-          font-size: 11px; font-weight: 800; letter-spacing: 1px;
-          text-transform: uppercase;
-          transition: 0.3s;
-        }
-        .badge:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
 
         .tags-row { 
           display: flex; flex-wrap: wrap; justify-content: center; 
-          gap: 15px; margin-bottom: 35px; opacity: 0.6;
+          gap: 12px; margin-bottom: 25px; opacity: 0.5;
         }
-        .tag { font-size: 14px; font-weight: 500; }
+        .tag { font-size: 13px; font-weight: 500; }
 
-        .social-row { display: flex; justify-content: center; gap: 28px; }
-        .social-link { transition: 0.3s; opacity: 0.7; }
-        .social-link:hover { opacity: 1; transform: scale(1.15); }
-        .social-icon { width: 24px; height: 24px; }
+        .social-row { display: flex; justify-content: center; gap: 22px; }
+        .social-link { transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.6; }
+        .social-link:hover { opacity: 1; transform: translateY(-3px); }
+        .social-icon { width: 20px; height: 20px; }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
           display: ${hasEntered ? 'none' : 'flex'};
           align-items: center; justify-content: center; cursor: pointer;
-          font-weight: bold; letter-spacing: 4px; font-size: 12px;
+          font-weight: 700; letter-spacing: 5px; font-size: 11px;
+          text-transform: uppercase;
         }
       `}</style>
 
-      {!hasEntered && <div className="overlay" onClick={handleEnter}>[ ENTER ]</div>}
+      {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
 
       <div className="bg-wrapper">
         {profile.background_type === "video" ? (
@@ -162,17 +179,32 @@ export default function PublicProfile({ params }: { params: { username: string }
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className="profile-card">
+        {/* Badges in Top Right */}
+        {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
+          <div className="badges-container">
+            {profile.badges?.user && (
+              <div className="badge-item" data-tooltip="Verified User">
+                <ShieldCheck size={16} />
+              </div>
+            )}
+            {profile.badges?.dev && (
+              <div className="badge-item" data-tooltip="Developer" style={{ color: accent }}>
+                <Code size={16} />
+              </div>
+            )}
+            {profile.badges?.staff && (
+              <div className="badge-item" data-tooltip="Staff Member">
+                <Star size={16} />
+              </div>
+            )}
+          </div>
+        )}
+
         <img src={profile.avatar_url} className="pfp" alt="profile" />
+        
         <div className="display-name">{profile.display_name}</div>
         
         <div className="bio">{profile.bio}</div>
-
-        <div className="badge-row">
-          {profile.badges?.user && <div className="badge">USER</div>}
-          {profile.badges?.dev && (
-            <div className="badge" style={{ borderColor: accent, color: accent }}>DEV</div>
-          )}
-        </div>
 
         <div className="tags-row">
           {profile.age && <span className="tag">🎂 {profile.age}</span>}
