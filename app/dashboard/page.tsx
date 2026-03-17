@@ -329,13 +329,19 @@ export default function SoftcardDashboard() {
   }
 
   return (
-    <div className="scdb-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
+    <div className="softcardx-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
       <style>{`
-        .scdb-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
-        .scdb-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
-        .scdb-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
+        .softcardx-dashboard { display: flex; height: 100vh; background: #050106; color: white; overflow: hidden; }
+        
+        .sx-sidebar { width: 380px; background: rgba(10, 0, 15, 0.7); backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 0, 128, 0.15); padding: 25px; overflow-y: auto; }
+        
+        .sx-preview-pane { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #020002; }
 
-        .name-container { 
+        .sx-links-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 18px; margin-top: 25px; }
+        .sx-icon-link img { width: 30px; height: 30px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transition: all 0.2s ease; opacity: 0.9; }
+        .sx-icon-link:hover img { transform: translateY(-2px); opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
+
+        .sx-name-container { 
           display: flex; 
           align-items: center; 
           justify-content: center; 
@@ -343,8 +349,8 @@ export default function SoftcardDashboard() {
           margin-bottom: 5px;
         }
 
-        .scdb-badges { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
-        .badge { 
+        .sx-badges-row { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+        .sx-badge { 
           padding: 3px 10px; 
           border-radius: 6px; 
           background: rgba(255, 255, 255, 0.06); 
@@ -357,15 +363,14 @@ export default function SoftcardDashboard() {
           text-transform: uppercase;
         }
 
-        /* Tags Styling */
-        .scdb-tags {
+        .sx-tags-row {
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
           gap: 8px;
           margin-top: 15px;
         }
-        .tag {
+        .sx-tag {
           display: flex;
           align-items: center;
           gap: 5px;
@@ -376,14 +381,14 @@ export default function SoftcardDashboard() {
           border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .scdb-profile-card {
+        .sx-profile-card {
           ${showGlass ? `
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            background: rgba(15, 0, 25, 0.6);
+            backdrop-filter: blur(25px);
             padding: 40px 30px;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            border: 1px solid rgba(255, 0, 128, 0.2);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
           ` : 'background: transparent; border: none; padding: 40px 30px;'}
           width: 100%;
           max-width: 420px;
@@ -392,157 +397,176 @@ export default function SoftcardDashboard() {
           z-index: 5;
           transition: all 0.3s ease;
         }
-        .editor-back-link { cursor: pointer; margin-bottom: 20px; display: inline-block; opacity: 0.5; font-size: 13px; }
-        .editor-back-link:hover { opacity: 1; color: #ec4899; }
+
+        .sx-pfp { width: 105px; height: 105px; border-radius: 50%; object-fit: cover; margin: 0 auto 20px; display: block; }
+
+        .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-block; opacity: 0.5; font-size: 13px; }
+        .sx-editor-link:hover { opacity: 1; color: #ec4899; }
+
+        .sx-publish-btn {
+            width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700;
+            background: linear-gradient(90deg, #ff008c, #ff4df0); color: white; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(255, 0, 128, 0.3); margin-bottom: 20px;
+        }
+
+        .sx-tabs-row { display: flex; gap: 8px; margin-bottom: 20px; }
+        .sx-tab { flex: 1; padding: 10px; border-radius: 10px; cursor: pointer; opacity: 0.6; background: rgba(255,255,255,0.03); text-align: center; transition: 0.2s; font-size: 13px; }
+        .sx-tab-active { background: rgba(255,0,200,0.2); opacity: 1; border: 1px solid rgba(255,0,200,0.4); }
+
+        .sx-input-group { margin-bottom: 15px; }
+        .sx-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; margin-bottom: 5px; display: block; }
+        .sx-input {
+            width: 100%; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08); color: white; outline: none; transition: 0.2s; font-size: 14px;
+        }
+        .sx-input:focus { border-color: #ff2a8a; }
+
+        .sx-bg-layer { position: absolute; inset: 0; z-index: 1; object-fit: cover; width: 100%; height: 100%; }
       `}</style>
 
-      <div className="scdb-sidebar">
-        <div className="editor-back-link" onClick={() => setView("hub")}>← Back to Hub</div>
-        <div className="scdb-back" onClick={saveChanges} style={{ cursor: 'pointer' }}>
-          {saving ? "Saving..." : "← Save & Publish"}
-        </div>
+      <div className="sx-sidebar">
+        <div className="sx-editor-link" onClick={() => setView("hub")}>← Back to Hub</div>
+        
+        <button className="sx-publish-btn" onClick={saveChanges}>
+          {saving ? "Saving..." : "Save & Publish"}
+        </button>
 
-        <div className="scdb-tabs">
-          <div className={`scdb-tab ${tab === "profile" ? "scdb-tab-active" : ""}`} onClick={() => setTab("profile")}>Profile</div>
-          <div className={`scdb-tab ${tab === "appearance" ? "scdb-tab-active" : ""}`} onClick={() => setTab("appearance")}>Appearance</div>
-          <div className={`scdb-tab ${tab === "badges" ? "scdb-tab-active" : ""}`} onClick={() => setTab("badges")}>Badges</div>
+        <div className="sx-tabs-row">
+          <div className={`sx-tab ${tab === "profile" ? "sx-tab-active" : ""}`} onClick={() => setTab("profile")}>Profile</div>
+          <div className={`sx-tab ${tab === "appearance" ? "sx-tab-active" : ""}`} onClick={() => setTab("appearance")}>Style</div>
+          <div className={`sx-tab ${tab === "badges" ? "sx-tab-active" : ""}`} onClick={() => setTab("badges")}>Badges</div>
         </div>
 
         {tab === "profile" && (
-          <div className="scdb-card">
-            <label className="scdb-label">Avatar URL</label>
-            <input className="scdb-input" value={avatar} onChange={e => setAvatar(e.target.value)} />
-            <label className="scdb-label">Display Name</label>
-            <input className="scdb-input" value={name} onChange={e => setName(e.target.value)} />
-            <label className="scdb-label">Bio</label>
-            <input className="scdb-input" value={bio} onChange={e => setBio(e.target.value)} />
-            
-            <label className="scdb-label">Age</label>
-            <input className="scdb-input" value={age} onChange={e => setAge(e.target.value)} />
+          <div className="sx-pane">
+            <div className="sx-input-group">
+                <label className="sx-label">Avatar URL</label>
+                <input className="sx-input" value={avatar} onChange={e => setAvatar(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Display Name</label>
+                <input className="sx-input" value={name} onChange={e => setName(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Bio</label>
+                <input className="sx-input" value={bio} onChange={e => setBio(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Age</label>
+                <input className="sx-input" value={age} onChange={e => setAge(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Gender</label>
+                <input className="sx-input" value={gender} onChange={e => setGender(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Sexuality</label>
+                <input className="sx-input" value={sexuality} onChange={e => setSexuality(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Birthday</label>
+                <input className="sx-input" value={birthday} onChange={e => setBirthday(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Timezone</label>
+                <input className="sx-input" value={timezone} onChange={e => setTimezone(e.target.value)} />
+            </div>
 
-            <label className="scdb-label">Gender</label>
-            <input className="scdb-input" value={gender} onChange={e => setGender(e.target.value)} />
-
-            <label className="scdb-label">Sexuality</label>
-            <input className="scdb-input" value={sexuality} onChange={e => setSexuality(e.target.value)} />
-
-            <label className="scdb-label">Birthday</label>
-            <input className="scdb-input" value={birthday} onChange={e => setBirthday(e.target.value)} />
-
-            <label className="scdb-label">Timezone</label>
-            <input className="scdb-input" value={timezone} onChange={e => setTimezone(e.target.value)} />
-
-            <button className="scdb-btn" onClick={addLink} style={{marginTop: '15px'}}>+ Add Link</button>
+            <button className="sx-publish-btn" onClick={addLink} style={{background: 'rgba(255,255,255,0.05)', boxShadow: 'none'}}>+ Add Link</button>
             {links.map((l, i) => (
-              <div key={l.id} style={{ marginTop: '10px' }}>
-                <input className="scdb-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. google.com)" />
+              <div key={l.id} className="sx-input-group">
+                <input className="sx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="URL (e.g. google.com)" />
               </div>
             ))}
           </div>
         )}
 
         {tab === "appearance" && (
-          <div className="scdb-card">
-            <label className="scdb-label" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '15px' }}>
+          <div className="sx-pane">
+            <label className="sx-label" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '15px', textTransform: 'none', opacity: 1 }}>
                 <input type="checkbox" checked={showGlass} onChange={e => setShowGlass(e.target.checked)} />
                 Show Transparent Card
             </label>
-            <label className="scdb-label">Background Type</label>
-            <select className="scdb-input" value={bgType} onChange={e => setBgType(e.target.value)}>
-              <option value="gradient">Gradient</option>
-              <option value="video">Video</option>
-              <option value="image">Image</option>
-            </select>
-            {bgType === "gradient" && <input className="scdb-input" value={gradient} onChange={e => setGradient(e.target.value)} />}
-            {bgType === "video" && <input className="scdb-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" />}
-            {bgType === "image" && <input className="scdb-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" />}
-            <label className="scdb-label" style={{ marginTop: '20px' }}>Audio URL (.mp3)</label>
-            <input className="scdb-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} />
-            <label className="scdb-label" style={{ marginTop: '20px' }}>Name Color</label>
-            <input type="color" className="scdb-input" value={nameColor} onChange={e => setNameColor(e.target.value)} />
-            <label className="scdb-label" style={{ marginTop: '10px' }}>Bio Color</label>
-            <input type="color" className="scdb-input" value={bioColor} onChange={e => setBioColor(e.target.value)} />
-            <label className="scdb-label" style={{ marginTop: '10px' }}>Accent Color</label>
-            <input type="color" className="scdb-input" value={accent} onChange={e => setAccent(e.target.value)} />
+            <div className="sx-input-group">
+                <label className="sx-label">Background Type</label>
+                <select className="sx-input" value={bgType} onChange={e => setBgType(e.target.value)}>
+                  <option value="gradient">Gradient</option>
+                  <option value="video">Video</option>
+                  <option value="image">Image</option>
+                </select>
+            </div>
+            {bgType === "gradient" && <div className="sx-input-group"><input className="sx-input" value={gradient} onChange={e => setGradient(e.target.value)} /></div>}
+            {bgType === "video" && <div className="sx-input-group"><input className="sx-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Video URL" /></div>}
+            {bgType === "image" && <div className="sx-input-group"><input className="sx-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Image URL" /></div>}
+            
+            <div className="sx-input-group">
+                <label className="sx-label">Audio URL (.mp3)</label>
+                <input className="sx-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Name Color</label>
+                <input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={nameColor} onChange={e => setNameColor(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Bio Color</label>
+                <input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={bioColor} onChange={e => setBioColor(e.target.value)} />
+            </div>
+            <div className="sx-input-group">
+                <label className="sx-label">Accent Color</label>
+                <input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={accent} onChange={e => setAccent(e.target.value)} />
+            </div>
           </div>
         )}
 
         {tab === "badges" && (
-          <div className="scdb-card">
-            <label style={{ display: "flex", gap: 10, alignItems: 'center' }}>
+          <div className="sx-pane">
+            <label className="sx-label" style={{ display: "flex", gap: 10, alignItems: 'center', textTransform: 'none', opacity: 1 }}>
               <input type="checkbox" checked={badges.user} onChange={() => setBadges({ ...badges, user: !badges.user })} />
               User Badge
             </label>
-            <div style={{ marginTop: 20 }}>Unlock Dev Badge</div>
-            <input className="scdb-input" placeholder="Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
-            <button className="scdb-btn" onClick={unlockDev}>Unlock</button>
+            <div className="sx-input-group" style={{ marginTop: 20 }}>
+                <label className="sx-label">Unlock Dev Badge</label>
+                <input className="sx-input" placeholder="Password" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
+            </div>
+            <button className="sx-publish-btn" onClick={unlockDev}>Unlock</button>
           </div>
         )}
       </div>
 
-      <div className="scdb-preview">
-        {bgType === "gradient" && <div className="scdb-bg" style={{ background: gradient }} />}
-        {bgType === "video" && bgVideo && <video className="scdb-video" src={bgVideo} autoPlay loop muted playsInline />}
-        {bgType === "image" && bgImage && <img className="scdb-image" src={bgImage} />}
+      <div className="sx-preview-pane">
+        {bgType === "gradient" && <div className="sx-bg-layer" style={{ background: gradient }} />}
+        {bgType === "video" && bgVideo && <video className="sx-bg-layer" src={bgVideo} autoPlay loop muted playsInline />}
+        {bgType === "image" && bgImage && <img className="sx-bg-layer" src={bgImage} />}
         {bgAudio && <audio src={bgAudio} autoPlay loop />}
         
-        <div className="scdb-profile-card">
-          <img src={avatar} className="scdb-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
+        <div className="sx-profile-card">
+          <img src={avatar} className="sx-pfp" style={{ boxShadow: `0 0 40px ${accent}` }} />
           
-          <div className="name-container">
-            <div className="scdb-name" style={{ color: nameColor, fontSize: '24px', fontWeight: '600' }}>{name}</div>
+          <div className="sx-name-container">
+            <div className="sx-name" style={{ color: nameColor, fontSize: '24px', fontWeight: '600' }}>{name}</div>
           </div>
 
-          <div className="scdb-bio" style={{ color: bioColor }}>{bio}</div>
+          <div className="sx-bio" style={{ color: bioColor }}>{bio}</div>
 
-          <div className="scdb-tags">
-            {age && (
-              <div className="tag">
-                <span>🎂</span>
-                {age}
-              </div>
-            )}
-
-            {gender && (
-              <div className="tag">
-                <span>⚥</span>
-                {gender}
-              </div>
-            )}
-
-            {sexuality && (
-              <div className="tag">
-                <span>❤</span>
-                {sexuality}
-              </div>
-            )}
-
-            {birthday && (
-              <div className="tag">
-                <span>🎉</span>
-                {birthday}
-              </div>
-            )}
-
-            {timezone && (
-              <div className="tag">
-                <span>🌍</span>
-                {timezone}
-              </div>
-            )}
+          <div className="sx-tags-row">
+            {age && <div className="sx-tag"><span>🎂</span>{age}</div>}
+            {gender && <div className="sx-tag"><span>⚥</span>{gender}</div>}
+            {sexuality && <div className="sx-tag"><span>❤</span>{sexuality}</div>}
+            {birthday && <div className="sx-tag"><span>🎉</span>{birthday}</div>}
+            {timezone && <div className="sx-tag"><span>🌍</span>{timezone}</div>}
           </div>
           
-          <div className="scdb-badges">
-            {badges.user && <div className="badge">User</div>}
-            {badges.dev && <div className="badge dev" style={{ borderColor: accent, color: accent }}>Dev</div>}
+          <div className="sx-badges-row">
+            {badges.user && <div className="sx-badge">User</div>}
+            {badges.dev && <div className="sx-badge dev" style={{ borderColor: accent, color: accent }}>Dev</div>}
           </div>
 
-          <div className="scdb-links-row">
+          <div className="sx-links-row">
             {links.map(l => {
               if (!l.url) return null;
               const icon = getIcon(l.url)
               return (
-                <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="scdb-icon-link">
+                <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="sx-icon-link">
                   <img src={icon} alt="" />
                 </a>
               )
