@@ -50,133 +50,139 @@ export default function PublicProfile({ params }: { params: { username: string }
   const socials = profile.links?.filter((l: any) => !l.url.includes('title') && (!l.title || l.title === "New Link")) || []
   const accent = profile.accent_color || '#7000ff';
 
-  // Check if user has a custom background set
-  const hasCustomBg = profile.background_value && profile.background_value !== "";
-
   return (
     <div className="container">
       <style jsx>{`
         .container {
-          height: 100vh; width: 100vw; background: #000;
+          height: 100vh; width: 100vw; background: #050505;
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${profile.font_family || 'Inter'}, sans-serif;
           overflow: hidden;
         }
 
-        /* --- BACKGROUND LOGIC --- */
+        /* --- DYNAMIC GRADIENT BG --- */
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
-        .bg-content { width: 100%; height: 100%; object-fit: cover; }
         
-        .default-animated-bg {
-          width: 100%; height: 100%; background: #000; position: relative;
+        .animated-bg {
+          width: 100%; height: 100%;
+          background: radial-gradient(circle at 50% 50%, ${accent}33 0%, #000 70%);
+          position: relative;
         }
-        .trail {
-          position: absolute; width: 150%; height: 150%; top: -25%; left: -25%;
-          background: radial-gradient(ellipse at center, ${accent}22 0%, transparent 70%);
-          filter: blur(60px); border-radius: 40%; animation: sweep 25s infinite linear;
-        }
-        @keyframes sweep {
-          from { transform: rotate(0deg) scale(1); }
-          to { transform: rotate(360deg) scale(1.1); }
+        
+        .animated-bg::before {
+          content: "";
+          position: absolute;
+          top: -50%; left: -50%; width: 200%; height: 200%;
+          background: radial-gradient(circle at center, ${accent}22 0%, transparent 50%);
+          animation: rotate 15s linear infinite;
+          filter: blur(80px);
         }
 
-        /* --- PROFILE CARD --- */
+        @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .bg-content { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* --- CARD --- */
         .profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
           width: 100%; max-width: 500px;
+          padding: 40px;
         }
 
-        /* --- BADGES (Moved closer to the content) --- */
-        .floating-badges {
-          position: absolute; top: -20px; right: -40px;
-          display: flex; gap: 10px; padding: 10px;
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(12px); border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* --- PFP WITH ACTUAL BORDER + GLOW --- */
-        .pfp-container { position: relative; margin-bottom: 25px; }
-        .pfp-glow {
-          position: absolute; inset: -10px; background: ${accent};
-          border-radius: 50%; filter: blur(30px); opacity: 0.5; z-index: -1;
-        }
         .pfp {
-          width: 125px; height: 125px; object-fit: cover; border-radius: 50%;
-          border: 3px solid ${accent}; /* ACTUAL BORDER */
-          position: relative; z-index: 2;
+          width: 110px; height: 110px; 
+          object-fit: cover; margin-bottom: 25px;
+          border-radius: 50%;
+          border: 2px solid rgba(255,255,255,0.1);
+          box-shadow: ${profile.accent_glow ? `0 0 40px ${accent}66` : '0 10px 30px rgba(0,0,0,0.5)'};
         }
 
         .display-name { 
-          font-size: 38px; font-weight: 800; margin-bottom: 10px;
+          font-size: 36px; font-weight: 800; margin-bottom: 15px;
           color: ${profile.name_color || '#ffffff'};
+          letter-spacing: -0.5px;
         }
 
         .bio { 
-          font-size: 18px; margin-bottom: 30px; opacity: 0.9;
-          color: ${profile.bio_color || '#fff'}; max-width: 90%;
+          font-size: 18px; margin-bottom: 25px; 
+          color: ${profile.bio_color || 'rgba(255,255,255,0.8)'}; 
+          max-width: 85%; line-height: 1.4;
         }
 
-        .social-row { display: flex; gap: 28px; }
-        .social-icon { width: 26px; height: 26px; opacity: 0.8; transition: 0.2s; }
-        .social-icon:hover { opacity: 1; transform: translateY(-3px); }
+        /* --- BADGES (Back where they were) --- */
+        .badge-row {
+          display: flex; justify-content: center; gap: 10px; margin-bottom: 25px;
+        }
+        
+        .badge {
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.1);
+          padding: 6px 14px; border-radius: 8px;
+          font-size: 11px; font-weight: 800; letter-spacing: 1px;
+          text-transform: uppercase;
+          transition: 0.3s;
+        }
+        .badge:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
 
-        .tag { font-size: 14px; opacity: 0.6; margin: 0 10px; }
+        .tags-row { 
+          display: flex; flex-wrap: wrap; justify-content: center; 
+          gap: 15px; margin-bottom: 35px; opacity: 0.6;
+        }
+        .tag { font-size: 14px; font-weight: 500; }
+
+        .social-row { display: flex; justify-content: center; gap: 28px; }
+        .social-link { transition: 0.3s; opacity: 0.7; }
+        .social-link:hover { opacity: 1; transform: scale(1.15); }
+        .social-icon { width: 24px; height: 24px; }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
           display: ${hasEntered ? 'none' : 'flex'};
           align-items: center; justify-content: center; cursor: pointer;
-          font-weight: 800; letter-spacing: 5px;
+          font-weight: bold; letter-spacing: 4px; font-size: 12px;
         }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ ENTER ]</div>}
 
       <div className="bg-wrapper">
-        {hasCustomBg ? (
-          profile.background_type === "video" ? (
-            <video ref={videoRef} src={profile.background_value} className="bg-content" loop muted playsInline />
-          ) : (
-            <img src={profile.background_value} className="bg-content" alt="custom-bg" />
-          )
+        {profile.background_type === "video" ? (
+          <video ref={videoRef} src={profile.background_value} className="bg-content" loop muted playsInline />
+        ) : profile.background_type === "image" ? (
+          <img src={profile.background_value} className="bg-content" alt="bg" />
         ) : (
-          <div className="default-animated-bg">
-            <div className="trail"></div>
-            <div className="trail" style={{ animationDirection: 'reverse', opacity: 0.5 }}></div>
-          </div>
+          <div className="animated-bg" />
         )}
       </div>
 
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className="profile-card">
-        {/* Badges positioned relative to the card, not the whole screen */}
-        {(profile.badges?.user || profile.badges?.dev) && (
-          <div className="floating-badges">
-            {profile.badges?.user && <User size={20} strokeWidth={2.5} />}
-            {profile.badges?.dev && <Code size={20} strokeWidth={2.5} style={{ color: accent }} />}
-          </div>
-        )}
+        <img src={profile.avatar_url} className="pfp" alt="profile" />
+        <div className="display-name">{profile.display_name}</div>
+        
+        <div className="bio">{profile.bio}</div>
 
-        <div className="pfp-container">
-          <div className="pfp-glow" />
-          <img src={profile.avatar_url} className="pfp" alt="profile" />
+        <div className="badge-row">
+          {profile.badges?.user && <div className="badge">USER</div>}
+          {profile.badges?.dev && (
+            <div className="badge" style={{ borderColor: accent, color: accent }}>DEV</div>
+          )}
         </div>
 
-        <h1 className="display-name">{profile.display_name}</h1>
-        <p className="bio">{profile.bio}</p>
-
-        <div style={{ marginBottom: '35px' }}>
-          {profile.age && <span className="tag">{profile.age}</span>}
-          {profile.gender && <span className="tag">{profile.gender}</span>}
-          {profile.timezone && <span className="tag">{profile.timezone}</span>}
+        <div className="tags-row">
+          {profile.age && <span className="tag">🎂 {profile.age}</span>}
+          {profile.gender && <span className="tag">⚥ {profile.gender}</span>}
+          {profile.timezone && <span className="tag">🌍 {profile.timezone}</span>}
         </div>
 
         <div className="social-row">
           {socials.map((l: any) => (
-            <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer">
+            <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" className="social-link">
               <img src={getIcon(l.url)} className="social-icon" alt="icon" />
             </a>
           ))}
