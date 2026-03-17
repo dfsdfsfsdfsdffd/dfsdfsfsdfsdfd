@@ -26,6 +26,7 @@ export default function PublicProfile({ params }: { params: { username: string }
   const [entered, setEntered] = useState(false)
 
   const audioRef = useRef<HTMLAudioElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -49,6 +50,7 @@ export default function PublicProfile({ params }: { params: { username: string }
   const enterSite = () => {
     setEntered(true)
     if (audioRef.current) audioRef.current.play().catch(() => {})
+    if (videoRef.current) videoRef.current.play().catch(() => {})
   }
 
   if (!profile) return null
@@ -61,20 +63,19 @@ export default function PublicProfile({ params }: { params: { username: string }
   return (
     <div className="sc-root">
       <style jsx>{`
-        /* ROOT */
         .sc-root {
           height: 100vh;
           width: 100vw;
-          background: #000;
           display: flex;
           align-items: center;
           justify-content: center;
           overflow: hidden;
           font-family: ${profile.font_family || "Inter"}, sans-serif;
-          color: white;
+          color: ${profile.name_color || "#fff"};
+          background: #000;
         }
 
-        /* CLICK OVERLAY */
+        /* ENTER SCREEN */
         .sc-enter {
           position: fixed;
           inset: 0;
@@ -84,43 +85,41 @@ export default function PublicProfile({ params }: { params: { username: string }
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          font-weight: 600;
           letter-spacing: 2px;
         }
 
-        /* BACKGROUND BLOBS */
+        /* BACKGROUND */
         .sc-bg {
           position: absolute;
           inset: 0;
-          overflow: hidden;
           z-index: 1;
+          overflow: hidden;
         }
 
+        .sc-bg-media {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        /* fallback animated blobs */
         .sc-blob {
           position: absolute;
           width: 900px;
           height: 900px;
-          background: radial-gradient(circle, rgba(255, 0, 0, 0.6) 0%, transparent 60%);
+          background: radial-gradient(circle, ${profile.accent_color || "red"} 0%, transparent 60%);
           filter: blur(120px);
-          opacity: 0.7;
+          opacity: 0.5;
           animation: scFloat 12s infinite ease-in-out;
         }
 
-        .sc-blob-a {
-          top: -200px;
-          left: -200px;
-        }
-
-        .sc-blob-b {
-          bottom: -200px;
-          right: -200px;
-          animation-delay: 4s;
-        }
+        .sc-blob-a { top: -200px; left: -200px; }
+        .sc-blob-b { bottom: -200px; right: -200px; animation-delay: 4s; }
 
         @keyframes scFloat {
-          0% { transform: scale(1) translate(0, 0); }
-          50% { transform: scale(1.2) translate(50px, -50px); }
-          100% { transform: scale(1) translate(0, 0); }
+          0% { transform: scale(1) }
+          50% { transform: scale(1.2) translate(50px, -50px) }
+          100% { transform: scale(1) }
         }
 
         /* CARD */
@@ -131,6 +130,10 @@ export default function PublicProfile({ params }: { params: { username: string }
           padding: 20px;
           border-radius: 20px;
           max-width: 260px;
+
+          background: ${profile.show_glass_card ? "rgba(0,0,0,0.3)" : "transparent"};
+          backdrop-filter: ${profile.show_glass_card ? "blur(20px)" : "none"};
+          border: ${profile.show_glass_card ? "1px solid rgba(255,255,255,0.08)" : "none"};
         }
 
         /* BADGES */
@@ -156,9 +159,9 @@ export default function PublicProfile({ params }: { params: { username: string }
         .sc-avatar {
           width: 60px;
           height: 60px;
-          border-radius: 50%;
           object-fit: cover;
-          margin-bottom: 6px;
+          border-radius: ${profile.avatar_shape === "circle" ? "50%" : "16px"};
+          box-shadow: ${profile.accent_glow ? `0 0 25px ${profile.accent_color}` : "none"};
         }
 
         /* NAME */
@@ -166,6 +169,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           font-size: 20px;
           font-weight: 600;
           margin-top: 6px;
+          color: ${profile.name_color || "#fff"};
         }
 
         /* BIO */
@@ -173,6 +177,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           font-size: 12px;
           opacity: 0.7;
           margin-top: 4px;
+          color: ${profile.bio_color || "rgba(255,255,255,0.7)"};
         }
 
         /* SOCIALS */
@@ -181,14 +186,6 @@ export default function PublicProfile({ params }: { params: { username: string }
           justify-content: center;
           gap: 12px;
           margin-top: 12px;
-        }
-
-        .sc-social {
-          width: 28px;
-          height: 28px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
         }
 
         .sc-social img {
@@ -200,6 +197,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         .sc-social:hover img {
           opacity: 1;
+          transform: scale(1.1);
         }
       `}</style>
 
@@ -209,9 +207,27 @@ export default function PublicProfile({ params }: { params: { username: string }
         </div>
       )}
 
+      {/* BACKGROUND SYSTEM */}
       <div className="sc-bg">
-        <div className="sc-blob sc-blob-a"></div>
-        <div className="sc-blob sc-blob-b"></div>
+        {profile.background_type === "video" && (
+          <video ref={videoRef} src={profile.background_value} className="sc-bg-media" loop muted playsInline />
+        )}
+
+        {profile.background_type === "image" && (
+          <img src={profile.background_value} className="sc-bg-media" />
+        )}
+
+        {profile.background_type === "gradient" && (
+          <div className="sc-bg-media" style={{ background: profile.background_value }} />
+        )}
+
+        {/* fallback blobs */}
+        {!profile.background_type && (
+          <>
+            <div className="sc-blob sc-blob-a"></div>
+            <div className="sc-blob sc-blob-b"></div>
+          </>
+        )}
       </div>
 
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
@@ -219,15 +235,9 @@ export default function PublicProfile({ params }: { params: { username: string }
       <div className="sc-card">
         {(profile.badges?.user || profile.badges?.dev) && (
           <div className="sc-badges">
-            {profile.badges?.user && (
-              <div className="sc-badge">
-                <User size={14} />
-              </div>
-            )}
+            {profile.badges?.user && <User size={14} className="sc-badge" />}
             {profile.badges?.dev && (
-              <div className="sc-badge" style={{ color: profile.accent_color }}>
-                <Code size={14} />
-              </div>
+              <Code size={14} className="sc-badge" style={{ color: profile.accent_color }} />
             )}
           </div>
         )}
@@ -235,7 +245,6 @@ export default function PublicProfile({ params }: { params: { username: string }
         <img src={profile.avatar_url} className="sc-avatar" />
 
         <div className="sc-name">{profile.display_name}</div>
-
         <div className="sc-bio">{profile.bio}</div>
 
         <div className="sc-socials">
