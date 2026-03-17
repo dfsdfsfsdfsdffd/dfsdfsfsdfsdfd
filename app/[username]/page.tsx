@@ -54,100 +54,122 @@ export default function PublicProfile({ params }: { params: { username: string }
     <div className="container">
       <style jsx>{`
         .container {
-          height: 100vh; width: 100vw; background: #050505;
+          height: 100vh; width: 100vw; background: #000;
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${profile.font_family || 'Inter'}, sans-serif;
           overflow: hidden;
         }
 
-        /* --- DYNAMIC GRADIENT BG --- */
+        /* --- DYNAMIC BLURRED GRADIENT BACKGROUND --- */
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
         
         .animated-bg {
           width: 100%; height: 100%;
-          background: radial-gradient(circle at 50% 50%, ${accent}33 0%, #000 70%);
+          background: #000;
           position: relative;
         }
         
-        .animated-bg::before {
-          content: "";
+        .blob {
           position: absolute;
-          top: -50%; left: -50%; width: 200%; height: 200%;
-          background: radial-gradient(circle at center, ${accent}22 0%, transparent 50%);
-          animation: rotate 15s linear infinite;
-          filter: blur(80px);
+          width: 500px; height: 500px;
+          background: ${accent};
+          filter: blur(120px);
+          border-radius: 50%;
+          opacity: 0.35;
+          animation: move 20s infinite alternate;
         }
 
-        @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+        .blob-2 {
+          position: absolute;
+          bottom: -100px; right: -100px;
+          width: 600px; height: 600px;
+          background: ${accent};
+          filter: blur(150px);
+          border-radius: 50%;
+          opacity: 0.25;
+          animation: move 25s infinite alternate-reverse;
+        }
+
+        @keyframes move {
+          from { transform: translate(-10%, -10%) scale(1); }
+          to { transform: translate(20%, 20%) scale(1.2); }
         }
 
         .bg-content { width: 100%; height: 100%; object-fit: cover; }
         
-        /* --- CARD --- */
+        /* --- MAIN CARD --- */
         .profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
-          width: 100%; max-width: 500px;
-          padding: 40px;
+          width: 100%; max-width: 550px;
+          padding: 60px 40px;
+          background: transparent;
         }
 
+        /* --- FLOATING BADGES (TOP RIGHT) --- */
+        .floating-badges {
+          position: absolute;
+          top: 25px;
+          right: 25px;
+          display: flex;
+          gap: 12px;
+          padding: 10px 14px;
+          background: rgba(255, 255, 255, 0.04);
+          backdrop-filter: blur(12px);
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .badge-icon {
+          opacity: 0.75;
+          transition: 0.3s;
+          cursor: help;
+        }
+        .badge-icon:hover { opacity: 1; transform: scale(1.15); }
+
         .pfp {
-          width: 110px; height: 110px; 
-          object-fit: cover; margin-bottom: 25px;
+          width: 130px; height: 130px; 
+          object-fit: cover; margin-bottom: 30px;
           border-radius: 50%;
-          border: 2px solid rgba(255,255,255,0.1);
-          box-shadow: ${profile.accent_glow ? `0 0 40px ${accent}66` : '0 10px 30px rgba(0,0,0,0.5)'};
+          border: 3px solid ${accent};
+          box-shadow: 0 0 40px ${accent}44;
         }
 
         .display-name { 
-          font-size: 36px; font-weight: 800; margin-bottom: 15px;
+          font-size: 42px; font-weight: 800; margin-bottom: 12px;
           color: ${profile.name_color || '#ffffff'};
-          letter-spacing: -0.5px;
+          letter-spacing: -1px;
+          text-shadow: 0 0 20px rgba(0,0,0,0.6);
         }
 
         .bio { 
-          font-size: 18px; margin-bottom: 25px; 
-          color: ${profile.bio_color || 'rgba(255,255,255,0.8)'}; 
-          max-width: 85%; line-height: 1.4;
+          font-size: 20px; margin-bottom: 35px; 
+          color: ${profile.bio_color || 'rgba(255,255,255,0.9)'}; 
+          max-width: 90%; line-height: 1.5;
+          text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
-
-        /* --- BADGES (Back where they were) --- */
-        .badge-row {
-          display: flex; justify-content: center; gap: 10px; margin-bottom: 25px;
-        }
-        
-        .badge {
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.1);
-          padding: 6px 14px; border-radius: 8px;
-          font-size: 11px; font-weight: 800; letter-spacing: 1px;
-          text-transform: uppercase;
-          transition: 0.3s;
-        }
-        .badge:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
 
         .tags-row { 
           display: flex; flex-wrap: wrap; justify-content: center; 
-          gap: 15px; margin-bottom: 35px; opacity: 0.6;
+          gap: 20px; margin-bottom: 45px; opacity: 0.6;
         }
-        .tag { font-size: 14px; font-weight: 500; }
+        .tag { font-size: 16px; font-weight: 500; }
 
-        .social-row { display: flex; justify-content: center; gap: 28px; }
-        .social-link { transition: 0.3s; opacity: 0.7; }
-        .social-link:hover { opacity: 1; transform: scale(1.15); }
-        .social-icon { width: 24px; height: 24px; }
+        .social-row { display: flex; justify-content: center; gap: 32px; }
+        .social-link { transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0.8; }
+        .social-link:hover { opacity: 1; transform: translateY(-6px) scale(1.1); }
+        .social-icon { width: 28px; height: 28px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
           display: ${hasEntered ? 'none' : 'flex'};
           align-items: center; justify-content: center; cursor: pointer;
-          font-weight: bold; letter-spacing: 4px; font-size: 12px;
+          font-weight: 800; letter-spacing: 6px; font-size: 14px;
         }
       `}</style>
 
-      {!hasEntered && <div className="overlay" onClick={handleEnter}>[ ENTER ]</div>}
+      {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
 
       <div className="bg-wrapper">
         {profile.background_type === "video" ? (
@@ -155,24 +177,37 @@ export default function PublicProfile({ params }: { params: { username: string }
         ) : profile.background_type === "image" ? (
           <img src={profile.background_value} className="bg-content" alt="bg" />
         ) : (
-          <div className="animated-bg" />
+          <div className="animated-bg">
+            <div className="blob"></div>
+            <div className="blob-2"></div>
+          </div>
         )}
       </div>
 
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className="profile-card">
+        {/* Badges in Top Right */}
+        {(profile.badges?.user || profile.badges?.dev) && (
+          <div className="floating-badges">
+            {profile.badges?.user && (
+              <div className="badge-icon" title="Verified User">
+                <User size={20} strokeWidth={2.5} />
+              </div>
+            )}
+            {profile.badges?.dev && (
+              <div className="badge-icon" title="Developer" style={{ color: accent }}>
+                <Code size={20} strokeWidth={2.5} />
+              </div>
+            )}
+          </div>
+        )}
+
         <img src={profile.avatar_url} className="pfp" alt="profile" />
+        
         <div className="display-name">{profile.display_name}</div>
         
         <div className="bio">{profile.bio}</div>
-
-        <div className="badge-row">
-          {profile.badges?.user && <div className="badge">USER</div>}
-          {profile.badges?.dev && (
-            <div className="badge" style={{ borderColor: accent, color: accent }}>DEV</div>
-          )}
-        </div>
 
         <div className="tags-row">
           {profile.age && <span className="tag">🎂 {profile.age}</span>}
