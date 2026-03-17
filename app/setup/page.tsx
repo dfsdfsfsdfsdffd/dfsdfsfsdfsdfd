@@ -83,45 +83,48 @@ export default function Setup() {
     setLoading(false);
   };
 
-  return (
-    <main className={`loginPage ${font.className}`}>
-      <div className="loginCard">
-        <h1>Claim your link</h1>
-        <p className="subtitle">This will be your unique Softcard URL</p>
+return (
+  <main className={`ux-root ${font.className}`}>
+    <div className="ux-card">
+      <h1 className="ux-title">Claim your link</h1>
+      <p className="ux-sub">This will be your unique Softcard URL</p>
 
-        <div className="loginForm">
-          <div style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', left: '14px', top: '14px', color: '#666' }}>
-              softcard.cc/
-            </span>
-            <input
-              style={{ paddingLeft: '105px' }}
-              type="text"
-              placeholder="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value.replace(/[^a-z0-9_]/gi, ''))}
-            />
-          </div>
-
-          {username.length > 0 && (
-            <p style={{ fontSize: '12px', color: (isTaken || isReserved) ? '#ff5cad' : '#00ffaa' }}>
-              {isReserved 
-                ? "✖ This username is reserved" 
-                : isTaken 
-                ? "✖ This link is already taken" 
-                : "✔ Link available!"}
-            </p>
-          )}
-
-          <button 
-            className="loginBtn" 
-            disabled={loading || isTaken || isReserved || username.length < 3}
-            onClick={handleSave}
-          >
-            {loading ? "Saving..." : "Create My Page"}
-          </button>
+      <div className="ux-form">
+        <div className="ux-input-wrap">
+          <span className="ux-prefix">softcard.cc/</span>
+          <input
+            className="ux-input"
+            type="text"
+            placeholder="username"
+            value={username}
+            onChange={(e) =>
+              setUsername(e.target.value.replace(/[^a-z0-9_]/gi, ""))
+            }
+          />
         </div>
+
+        {username.length > 0 && (
+          <p
+            className={`ux-status ${
+              isTaken || isReserved ? "ux-error" : "ux-success"
+            }`}
+          >
+            {isReserved
+              ? "✖ This username is reserved"
+              : isTaken
+              ? "✖ This link is already taken"
+              : "✔ Link available!"}
+          </p>
+        )}
+
+        <button
+          className="ux-btn"
+          disabled={loading || isTaken || isReserved || username.length < 3}
+          onClick={handleSave}
+        >
+          {loading ? "Saving..." : "Create My Page"}
+        </button>
       </div>
-    </main>
-  );
-}
+    </div>
+  </main>
+);
