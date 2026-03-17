@@ -108,7 +108,6 @@ export default function SoftcardDashboard() {
         setBgType(profile.background_type || "gradient")
         setBadges(profile.badges || { user: true })
         setBgAudio(profile.audio_url || "")
-        // Matches the "show_glass_card" column used in Public Profile
         setShowGlass(profile.show_glass_card ?? profile.show_transparent_card ?? true)
 
         const bgVal = profile.background_value || "";
@@ -147,7 +146,7 @@ export default function SoftcardDashboard() {
       background_value: bgType === "gradient" ? gradient : (bgType === "video" ? bgVideo : bgImage),
       audio_url: bgAudio,
       badges: badges,
-      show_glass_card: showGlass, // Standardized column
+      show_glass_card: showGlass,
       setup_completed: true
     }).eq('id', user.id)
 
@@ -347,7 +346,6 @@ export default function SoftcardDashboard() {
           padding: 35px 25px;
           border-radius: 24px;
           transition: all 0.3s ease;
-          /* Preview logic mirrors Public Profile */
           background: ${showGlass ? 'rgba(0, 0, 0, 0.4)' : 'transparent'};
           backdrop-filter: ${showGlass ? 'blur(20px)' : 'none'};
           border: ${showGlass ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
@@ -360,18 +358,31 @@ export default function SoftcardDashboard() {
           box-shadow: 0 0 25px ${accent}44; 
         }
 
-        .sx-name { font-size: 28px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em; }
+        /* FLEX WRAPPER FOR NAME AND BADGES */
+        .sx-name-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          gap: 10px;
+          margin-bottom: 6px;
+        }
+
+        .sx-spacer { flex: 1; }
+
+        .sx-name { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+
+        .sx-badges-container {
+          flex: 1;
+          display: flex; 
+          gap: 6px;
+          justify-content: flex-start;
+        }
+
         .sx-bio { font-size: 15px; margin-bottom: 20px; max-width: 90%; line-height: 1.5; }
 
         .sx-tags-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 25px; opacity: 0.6; }
         .sx-tag { font-size: 13px; font-weight: 500; }
-
-        .sx-badges-container {
-          position: absolute; top: 15px; right: 15px;
-          display: flex; gap: 8px; padding: 6px 10px;
-          background: rgba(255, 255, 255, 0.05); border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-        }
 
         .sx-links-row { display: flex; justify-content: center; gap: 22px; }
         .sx-icon-link { transition: 0.3s ease; opacity: 0.8; }
@@ -497,16 +508,19 @@ export default function SoftcardDashboard() {
         {bgType === "image" && bgImage && <img className="sx-bg-layer" src={bgImage} />}
         
         <div className="sx-profile-card">
-          {(badges.user || badges.dev || badges.staff) && (
-            <div className="sx-badges-container">
-              {badges.user && <ShieldCheck size={16} color="rgba(255,255,255,0.6)" />}
-              {badges.dev && <Code size={16} color={accent} />}
-              {badges.staff && <Star size={16} color="rgba(255,255,255,0.6)" />}
-            </div>
-          )}
-
           <img src={avatar} className="sx-pfp" />
-          <div className="sx-name" style={{ color: nameColor }}>{name}</div>
+          
+          <div className="sx-name-wrapper">
+             <div className="sx-spacer" />
+             <div className="sx-name" style={{ color: nameColor }}>{name}</div>
+             
+             <div className="sx-badges-container">
+                {badges.user && <ShieldCheck size={18} color="rgba(255,255,255,0.6)" />}
+                {badges.dev && <Code size={18} color={accent} />}
+                {badges.staff && <Star size={18} color="rgba(255,255,255,0.6)" />}
+             </div>
+          </div>
+
           <div className="sx-bio" style={{ color: bioColor }}>{bio}</div>
 
           <div className="sx-tags-row">
