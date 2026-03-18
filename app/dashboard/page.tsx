@@ -346,40 +346,43 @@ export default function SoftcardDashboard() {
           box-shadow: ${showGlass ? '0 20px 50px rgba(0,0,0,0.5)' : 'none'};
         }
         .sx-pfp { 
-          width: 95px; height: 95px; border-radius: 50%; object-fit: cover; margin-bottom: 18px;
-          border: 3px solid ${accent};
-          box-shadow: 0 0 25px ${accent}44; 
+          width: 105px; height: 105px; border-radius: 50%; object-fit: cover; margin-bottom: 22px;
+          border: 2px solid ${accent}; padding: 2px;
         }
         .sx-name-wrapper {
-          display: flex; align-items: center; justify-content: center; width: 100%; gap: 10px; margin-bottom: 6px;
+          display: flex; align-items: center; justify-content: center; width: 100%; gap: 10px; margin-bottom: 8px;
         }
-        .sx-name { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+        .sx-name { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
         
         .sx-badge-pill { 
-          display: flex; gap: 8px; background: rgba(255, 255, 255, 0.08); 
-          padding: 6px 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); 
+          display: flex; gap: 8px; background: rgba(255, 255, 255, 0.05); 
+          padding: 5px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); 
         }
         
-        .sx-bio { font-size: 15px; margin-bottom: 20px; max-width: 90%; line-height: 1.5; }
+        .sx-bio { font-size: 16px; margin-bottom: 25px; opacity: 0.8; }
         
-        /* UPDATED TAGS STYLING TO MATCH IMAGE_EA3436 */
+        /* FIX: INDIVIDUAL TAG PILLS */
         .sx-tags-row { 
-          display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; 
-          margin-bottom: 25px; width: 100%; max-width: 320px;
+          display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; 
+          margin-bottom: 30px; width: 100%;
         }
         .sx-tag { 
-          font-size: 13px; font-weight: 500; 
-          background: rgba(255,255,255,0.06); 
-          padding: 6px 14px; border-radius: 10px; 
-          color: white; border: 1px solid rgba(255,255,255,0.05);
-          display: flex; align-items: center; gap: 6px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          padding: 6px 14px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 14px;
+          color: white;
           white-space: nowrap;
         }
 
         .sx-links-row { display: flex; justify-content: center; gap: 24px; }
         .sx-icon-link { transition: 0.3s ease; opacity: 0.8; }
         .sx-icon-link:hover { opacity: 1; transform: translateY(-3px); }
-        .sx-icon-link img { width: 24px; height: 24px; }
+        .sx-icon-link img { width: 26px; height: 26px; }
 
         .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-block; opacity: 0.5; font-size: 13px; }
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
@@ -508,7 +511,6 @@ export default function SoftcardDashboard() {
 
           <div className="sx-bio" style={{ color: bioColor }}>{bio}</div>
 
-          {/* PREVIEW TAGS - MATCHING PILL STYLE IN IMAGE_EA3436 */}
           <div className="sx-tags-row">
             {age && <div className="sx-tag">🎂 {age}</div>}
             {gender && <div className="sx-tag">⚥ {gender}</div>}
