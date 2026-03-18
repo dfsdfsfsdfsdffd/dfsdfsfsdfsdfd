@@ -1,7 +1,8 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
 import { createBrowserClient } from '@supabase/ssr'
-import { ShieldCheck, Code, Star, Volume2, VolumeX } from "lucide-react"
+// Added Eye icon here
+import { ShieldCheck, Code, Star, Volume2, VolumeX, Eye } from "lucide-react"
 
 const iconMap: any = {
   tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
@@ -40,11 +41,13 @@ export default function PublicProfile({ params }: { params: { username: string }
     async function loadProfile() {
       const { data } = await supabase.from('profiles').select('*').eq('username', params.username).single()
       setProfile(data)
+      
+      // OPTIONAL: Increment view count in Supabase here if you have a 'views' column
+      // await supabase.rpc('increment_views', { profile_id: data.id })
     }
     loadProfile()
   }, [params.username])
 
-  // Sync volume to audio element
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume
@@ -78,7 +81,6 @@ export default function PublicProfile({ params }: { params: { username: string }
           overflow: hidden; position: relative;
         }
 
-        /* Volume Controls */
         .audio-controls {
           position: fixed; right: 30px; bottom: 30px;
           display: flex; flex-direction: column; align-items: center;
@@ -91,7 +93,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
         
         .volume-slider {
-          writing-mode: bt-lr; /* Vertical slider */
+          writing-mode: bt-lr;
           -webkit-appearance: slider-vertical;
           width: 4px; height: 80px;
           cursor: pointer; accent-color: ${accent};
@@ -110,12 +112,26 @@ export default function PublicProfile({ params }: { params: { username: string }
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
           width: 90%; max-width: 420px;
-          padding: 30px 20px;
+          padding: 35px 20px;
           border-radius: 28px;
           background: ${profile.show_glass_card ? 'rgba(0, 0, 0, 0.45)' : 'transparent'};
           backdrop-filter: ${profile.show_glass_card ? 'blur(25px)' : 'none'};
           border: ${profile.show_glass_card ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
           box-shadow: ${profile.show_glass_card ? '0 25px 50px rgba(0,0,0,0.6)' : 'none'};
+        }
+
+        /* NEW VIEW COUNTER STYLES */
+        .view-count {
+          position: absolute;
+          top: 15px;
+          right: 20px;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.4);
+          letter-spacing: 0.05em;
         }
 
         .pfp {
@@ -171,7 +187,6 @@ export default function PublicProfile({ params }: { params: { username: string }
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
 
-      {/* Audio Control UI */}
       {profile.audio_url && (
         <div className="audio-controls">
           <input 
@@ -201,6 +216,12 @@ export default function PublicProfile({ params }: { params: { username: string }
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className="profile-card">
+        {/* VIEW COUNTER ADDED HERE */}
+        <div className="view-count">
+          <Eye size={12} />
+          {profile.views?.toLocaleString() || 0}
+        </div>
+
         <img src={profile.avatar_url} className="pfp" alt="profile" />
         
         <div className="display-name">{profile.display_name}</div>
