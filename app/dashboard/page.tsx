@@ -51,7 +51,6 @@ export default function SoftcardDashboard() {
   const [sexuality, setSexuality] = useState("")
   const [birthday, setBirthday] = useState("")
   const [timezone, setTimezone] = useState("")
-  const [location, setLocation] = useState("")
 
   const [links, setLinks] = useState<any[]>([])
   const [badges, setBadges] = useState<any>({ user: true, dev: false, staff: false })
@@ -93,7 +92,6 @@ export default function SoftcardDashboard() {
         setSexuality(profile.sexuality || "")
         setBirthday(profile.birthday || "")
         setTimezone(profile.timezone || "")
-        setLocation(profile.location || "")
         setLinks(profile.links || [])
         setAccent(profile.accent_color || "#7000ff")
         setNameColor(profile.name_color || "#ffffff")
@@ -131,7 +129,6 @@ export default function SoftcardDashboard() {
       sexuality: sexuality,
       birthday: birthday,
       timezone: timezone,
-      location: location,
       links: links,
       accent_color: accent,
       name_color: nameColor,
@@ -458,7 +455,6 @@ export default function SoftcardDashboard() {
             <div className="sx-input-group"><label className="sx-label">Gender</label><input className="sx-input" placeholder="female" value={gender} onChange={e => setGender(e.target.value)} /></div>
             <div className="sx-input-group"><label className="sx-label">Sexuality</label><input className="sx-input" placeholder="gay" value={sexuality} onChange={e => setSexuality(e.target.value)} /></div>
             <div className="sx-input-group"><label className="sx-label">Birthday</label><input className="sx-input" placeholder="april 11th" value={birthday} onChange={e => setBirthday(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Location</label><input className="sx-input" placeholder="usa" value={location} onChange={e => setLocation(e.target.value)} /></div>
             <div className="sx-input-group"><label className="sx-label">Timezone</label><input className="sx-input" placeholder="est" value={timezone} onChange={e => setTimezone(e.target.value)} /></div>
           </div>
         )}
@@ -519,7 +515,6 @@ export default function SoftcardDashboard() {
             {gender && <div className="sx-tag">⚥ {gender}</div>}
             {sexuality && <div className="sx-tag">⚧ {sexuality}</div>}
             {birthday && <div className="sx-tag">🎈 {birthday}</div>}
-            {location && <div className="sx-tag">📍 {location}</div>}
             {timezone && <div className="sx-tag">🌍 {timezone}</div>}
           </div>
           
