@@ -104,7 +104,39 @@ export default function PublicProfile({ params }: { params: { username: string }
           align-items: center;
         }
 
-        /* NEW TAGS BAR - POSITIONED UNDER NAME */
+        /* TOOLTIP STYLES */
+        .badge-item {
+          position: relative;
+          display: flex;
+          align-items: center;
+          cursor: help;
+        }
+
+        .badge-item::before {
+          content: attr(data-tooltip);
+          position: absolute;
+          bottom: 125%;
+          left: 50%;
+          transform: translateX(-50%) translateY(10px);
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 10px;
+          white-space: nowrap;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.2s ease;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          z-index: 10;
+        }
+
+        .badge-item:hover::before {
+          opacity: 1;
+          visibility: visible;
+          transform: translateX(-50%) translateY(0);
+        }
+
         .tags-bar {
           display: flex; align-items: center; justify-content: center;
           flex-wrap: wrap; gap: 6px; margin-bottom: 16px;
@@ -153,14 +185,25 @@ export default function PublicProfile({ params }: { params: { username: string }
           
           {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
             <div className="badges-pill">
-                {profile.badges?.user && <ShieldCheck size={16} color="rgba(255,255,255,0.7)" />}
-                {profile.badges?.dev && <Code size={16} color={accent} />}
-                {profile.badges?.staff && <Star size={16} color="rgba(255,255,255,0.7)" />}
+                {profile.badges?.user && (
+                  <div className="badge-item" data-tooltip="Verified User">
+                    <ShieldCheck size={16} color="rgba(255,255,255,0.7)" />
+                  </div>
+                )}
+                {profile.badges?.dev && (
+                  <div className="badge-item" data-tooltip="Developer">
+                    <Code size={16} color={accent} />
+                  </div>
+                )}
+                {profile.badges?.staff && (
+                  <div className="badge-item" data-tooltip="Staff">
+                    <Star size={16} color="rgba(255,255,255,0.7)" />
+                  </div>
+                )}
             </div>
           )}
         </div>
 
-        {/* REPOSITIONED TAGS: Minimalist separator style */}
         <div className="tags-bar">
           {profile.age && <span className="tag-item">{profile.age}</span>}
           {profile.gender && <span className="tag-item">{profile.gender}</span>}
