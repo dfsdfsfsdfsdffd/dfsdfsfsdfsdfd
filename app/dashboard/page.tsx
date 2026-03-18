@@ -320,118 +320,94 @@ export default function SoftcardDashboard() {
   return (
     <div className="softcardx-dashboard" style={{ fontFamily: `${profileData.font}, system-ui, sans-serif` }}>
       <style>{`
-  .softcardx-dashboard { display: flex; height: 100vh; background: #050106; color: white; overflow: hidden; }
-  .sx-sidebar { width: 400px; background: rgba(10, 0, 15, 0.7); backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 0, 128, 0.15); padding: 25px; overflow-y: auto; }
-  .sx-preview-pane { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #020002; }
+        .softcardx-dashboard { display: flex; height: 100vh; background: #050106; color: white; overflow: hidden; }
+        .sx-sidebar { width: 400px; background: rgba(10, 0, 15, 0.7); backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 0, 128, 0.15); padding: 25px; overflow-y: auto; }
+        .sx-preview-pane { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #020002; }
+        
+        .sx-profile-card {
+          position: relative; z-index: 5; text-align: center;
+          display: flex; flex-direction: column; align-items: center;
+          width: 90%; max-width: 420px;
+          padding: 40px 25px; border-radius: 28px;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          background: ${profileData.showGlass ? 'rgba(0, 0, 0, 0.45)' : 'transparent'};
+          backdrop-filter: ${profileData.showGlass ? 'blur(25px)' : 'none'};
+          border: ${profileData.showGlass ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
+          box-shadow: ${profileData.showGlass ? '0 25px 50px -12px rgba(0, 0, 0, 0.7)' : 'none'};
+        }
+        
+        .sx-pfp { 
+          width: 110px; height: 110px; border-radius: 50%; object-fit: cover; margin-bottom: 20px;
+          border: 2px solid ${profileData.accent}; padding: 3px;
+        }
+        
+        .sx-name { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 8px; }
+        
+        .sx-badge-pill { 
+          display: flex; gap: 8px; background: rgba(255, 255, 255, 0.08); 
+          padding: 5px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); 
+          align-items: center; margin-bottom: 15px;
+        }
+        
+        .sx-tags-row { 
+          display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; 
+          margin-bottom: 20px; width: 100%;
+        }
+        .sx-tag-pill {
+          background: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 8px;
+          font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-  .sx-input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: white;
-    outline: none;
-    transition: 0.2s;
-    font-size: 14px;
-  }
+        .sx-bio { font-size: 15px; margin-bottom: 25px; line-height: 1.5; max-width: 90%; }
+        
+        .sx-links-row { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .sx-icon-link { transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.7; }
+        .sx-icon-link:hover { opacity: 1; transform: translateY(-4px) scale(1.1); }
+        .sx-icon-link img { width: 28px; height: 28px; }
 
-  .sx-input:focus {
-    border-color: #ff2a8a;
-    background: rgba(255,255,255,0.06);
-  }
+        .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; opacity: 0.5; font-size: 13px; font-weight: 600; }
+        .sx-editor-link:hover { opacity: 1; color: #ec4899; }
+        
+        .sx-publish-btn {
+            width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700;
+            background: linear-gradient(90deg, #ff008c, #ff4df0); color: white; cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 0, 128, 0.25); margin-bottom: 25px; transition: 0.2s;
+        }
+        .sx-publish-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        .sx-publish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* 🔥 FIX DROPDOWNS */
-  select.sx-input {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-color: rgba(255,255,255,0.04);
-    color: white;
+        .sx-tabs-row { display: flex; gap: 4px; margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px; }
+        .sx-tab { flex: 1; padding: 10px 5px; border-radius: 9px; cursor: pointer; opacity: 0.5; text-align: center; transition: 0.2s; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .sx-tab-active { background: #ec4899; opacity: 1; color: white; }
+        
+        .sx-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-bottom: 8px; display: block; font-weight: 800; }
+        .sx-input {
+            width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08); color: white; outline: none; transition: 0.2s; font-size: 14px;
+        }
+        .sx-input:focus { border-color: #ff2a8a; background: rgba(255,255,255,0.06); }
+        
+        .sx-bg-layer { position: absolute; inset: 0; z-index: 1; object-fit: cover; width: 100%; height: 100%; }
 
-    /* custom arrow */
-    background-image: url("data:image/svg+xml,%3Csvg fill='white' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M5 7l5 5 5-5'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 14px;
-    padding-right: 35px;
-  }
-
-  /* dropdown list items */
-  select.sx-input option {
-    background: #0a0010;
-    color: white;
-  }
-
-  /* hover (some browsers ignore this but still good) */
-  select.sx-input option:hover {
-    background: #ff2a8a;
-  }
-
-  .sx-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-bottom: 8px; display: block; font-weight: 800; }
-
-  .sx-publish-btn {
-    width: 100%;
-    padding: 14px;
-    border-radius: 14px;
-    border: none;
-    font-weight: 700;
-    background: linear-gradient(90deg, #ff008c, #ff4df0);
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 8px 20px rgba(255, 0, 128, 0.25);
-    margin-bottom: 25px;
-    transition: 0.2s;
-  }
-
-  .sx-publish-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
-  .sx-publish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .sx-tabs-row { display: flex; gap: 4px; margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px; }
-  .sx-tab { flex: 1; padding: 10px 5px; border-radius: 9px; cursor: pointer; opacity: 0.5; text-align: center; transition: 0.2s; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-  .sx-tab-active { background: #ec4899; opacity: 1; color: white; }
-
-  .sx-link-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    padding: 15px;
-    margin-bottom: 12px;
-    position: relative;
-  }
-
-  .sx-remove-link {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background: #ef4444;
-    color: white;
-    border: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .tag-input-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-
-  .sx-tag-clear {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    padding: 10px;
-    cursor: pointer;
-    color: #ff4d4d;
-  }
-
-  .sx-tag-clear:hover {
-    background: rgba(255, 77, 77, 0.2);
-    border-color: #ff4d4d;
-  }
-`}</style>
+        .sx-link-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 15px; margin-bottom: 12px; position: relative;
+        }
+        .sx-remove-link {
+            position: absolute; top: -10px; right: -10px;
+            background: #ef4444; color: white; border: none;
+            width: 24px; height: 24px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        .tag-input-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .sx-tag-clear { 
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+          border-radius: 10px; padding: 10px; cursor: pointer; color: #ff4d4d; transition: 0.2s;
+        }
+        .sx-tag-clear:hover { background: rgba(255, 77, 77, 0.2); border-color: #ff4d4d; }
+      `}</style>
 
       <div className="sx-sidebar">
         <div className="sx-editor-link" onClick={() => setView("hub")}>
