@@ -27,7 +27,7 @@ export default function PublicProfile({ params }: { params: { username: string }
   const [hasEntered, setHasEntered] = useState(false)
   const [volume, setVolume] = useState(0.5)
   const [isMuted, setIsMuted] = useState(false)
-  const [copied, setCopied] = useState(false) // State for copy notification
+  const [copied, setCopied] = useState(false)
   
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -176,16 +176,29 @@ export default function PublicProfile({ params }: { params: { username: string }
         .social-icon { width: 24px; height: 24px; }
 
         .copy-toast {
-          position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-          background: ${accent}; color: white; font-size: 10px; font-weight: 800;
-          padding: 4px 8px; border-radius: 6px; margin-bottom: 8px;
-          white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+          background: ${accent} !important; 
+          color: white !important; 
+          font-size: 11px; font-weight: 800;
+          padding: 6px 12px; border-radius: 8px;
+          white-space: nowrap; 
+          box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+          z-index: 1000;
           animation: popIn 0.2s ease-out;
         }
 
+        .copy-toast::after {
+          content: '';
+          position: absolute; top: 100%; left: 50%;
+          transform: translateX(-50%);
+          border-width: 6px;
+          border-style: solid;
+          border-color: ${accent} transparent transparent transparent;
+        }
+
         @keyframes popIn {
-          from { opacity: 0; transform: translateX(-50%) translateY(5px); }
-          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+          from { opacity: 0; transform: translateX(-50%) translateY(5px) scale(0.9); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
         }
 
         .overlay {
@@ -267,11 +280,12 @@ export default function PublicProfile({ params }: { params: { username: string }
         <div className="social-row">
           {socials.map((l: any) => {
             const isDiscord = l.type === 'discord';
+            const isInvite = isDiscord && (l.url.includes('discord.gg') || l.url.includes('invite'));
             
             const handleSocialClick = (e: React.MouseEvent) => {
-              if (isDiscord) {
+              // Only copy if it's Discord and NOT an invite link
+              if (isDiscord && !isInvite) {
                 e.preventDefault();
-                // Get the username by removing URL parts if present
                 const val = l.url.split('/').pop();
                 navigator.clipboard.writeText(val);
                 setCopied(true);
@@ -282,14 +296,14 @@ export default function PublicProfile({ params }: { params: { username: string }
             return (
               <a 
                 key={l.id} 
-                href={isDiscord ? "#" : (l.url.startsWith('http') ? l.url : `https://${l.url}`)} 
-                target={isDiscord ? "_self" : "_blank"} 
+                href={l.url.startsWith('http') ? l.url : `https://${l.url}`} 
+                target="_blank" 
                 rel="noopener noreferrer" 
                 className="social-link"
                 onClick={handleSocialClick}
               >
                 <img src={getIcon(l)} className="social-icon" alt="icon" />
-                {isDiscord && copied && <div className="copy-toast">Copied!</div>}
+                {isDiscord && !isInvite && copied && <div className="copy-toast">Copied!</div>}
               </a>
             );
           })}
