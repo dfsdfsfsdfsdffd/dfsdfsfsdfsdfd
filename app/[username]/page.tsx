@@ -27,7 +27,8 @@ export default function PublicProfile({ params }: { params: { username: string }
   const [hasEntered, setHasEntered] = useState(false)
   const [volume, setVolume] = useState(0.5)
   const [isMuted, setIsMuted] = useState(false)
-  const [copied, setCopied] = useState(false)
+  // Store the ID of the clicked link instead of just a boolean
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null)
   
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -176,15 +177,16 @@ export default function PublicProfile({ params }: { params: { username: string }
         .social-icon { width: 24px; height: 24px; }
 
         .copy-toast {
-          position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+          position: absolute; bottom: 140%; left: 50%; transform: translateX(-50%);
           background: ${accent} !important; 
           color: white !important; 
-          font-size: 11px; font-weight: 800;
+          font-size: 10px; font-weight: 800;
           padding: 6px 12px; border-radius: 8px;
           white-space: nowrap; 
           box-shadow: 0 4px 15px rgba(0,0,0,0.5);
           z-index: 1000;
           animation: popIn 0.2s ease-out;
+          pointer-events: none;
         }
 
         .copy-toast::after {
@@ -283,13 +285,15 @@ export default function PublicProfile({ params }: { params: { username: string }
             const isInvite = isDiscord && (l.url.includes('discord.gg') || l.url.includes('invite'));
             
             const handleSocialClick = (e: React.MouseEvent) => {
-              // Only copy if it's Discord and NOT an invite link
               if (isDiscord && !isInvite) {
                 e.preventDefault();
+                // Extract username from URL if necessary, or just use the full string
                 const val = l.url.split('/').pop();
-                navigator.clipboard.writeText(val);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
+                if (val) {
+                  navigator.clipboard.writeText(val);
+                  setCopiedLinkId(l.id); // Track which specific link was copied
+                  setTimeout(() => setCopiedLinkId(null), 2000);
+                }
               }
             };
 
@@ -303,7 +307,10 @@ export default function PublicProfile({ params }: { params: { username: string }
                 onClick={handleSocialClick}
               >
                 <img src={getIcon(l)} className="social-icon" alt="icon" />
-                {isDiscord && !isInvite && copied && <div className="copy-toast">Copied!</div>}
+                {/* Specific toast for this link */}
+                {isDiscord && !isInvite && copiedLinkId === l.id && (
+                  <div className="copy-toast">Copied Username!</div>
+                )}
               </a>
             );
           })}
