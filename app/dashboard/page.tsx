@@ -75,7 +75,7 @@ export default function SoftcardDashboard() {
     timezone: "",
     accent: "#7000ff",
     nameColor: "#ffffff",
-    bioColor: "rgba(255,255,255,0.7)",
+    bioColor: "#ffffffb3", // Set a hex default for the picker to handle
     font: "Inter",
     bgType: "gradient",
     gradient: "linear-gradient(135deg, #1a0b1a 0%, #050106 100%)",
@@ -120,7 +120,7 @@ export default function SoftcardDashboard() {
           timezone: profile.timezone || "",
           accent: profile.accent_color || "#7000ff",
           nameColor: profile.name_color || "#ffffff",
-          bioColor: profile.bio_color || "rgba(255,255,255,0.7)",
+          bioColor: profile.bio_color || "#ffffffb3",
           font: profile.font_family || "Inter",
           bgType: profile.background_type || "gradient",
           bgAudio: profile.audio_url || "",
@@ -601,10 +601,10 @@ export default function SoftcardDashboard() {
                 <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.accent} onChange={e => updateProfile("accent", e.target.value)} /></div>
             </div>
             
-            {/* Added Bio Color Feature */}
+            {/* Bio Color Picker */}
             <div className="sx-input-group" style={{marginTop: '10px'}}>
                 <label className="sx-label">Bio Color</label>
-                <input className="sx-input" style={{height: '45px', padding: '5px'}} type="text" value={profileData.bioColor} onChange={e => updateProfile("bioColor", e.target.value)} placeholder="Hex, RGB, or Name" />
+                <input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.bioColor.length > 7 ? profileData.bioColor.substring(0,7) : profileData.bioColor} onChange={e => updateProfile("bioColor", e.target.value)} />
             </div>
 
             <div className="sx-input-group">
