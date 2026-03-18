@@ -75,7 +75,7 @@ export default function SoftcardDashboard() {
     timezone: "",
     accent: "#7000ff",
     nameColor: "#ffffff",
-    bioColor: "#ffffffb3", // Set a hex default for the picker to handle
+    bioColor: "#ffffffb3",
     font: "Inter",
     bgType: "gradient",
     gradient: "linear-gradient(135deg, #1a0b1a 0%, #050106 100%)",
@@ -324,8 +324,8 @@ export default function SoftcardDashboard() {
     <div className="softcardx-dashboard" style={{ fontFamily: `${profileData.font}, system-ui, sans-serif` }}>
       <style>{`
         .softcardx-dashboard { display: flex; height: 100vh; background: #050106; color: white; overflow: hidden; }
-        .sx-sidebar { width: 400px; background: rgba(10, 0, 15, 0.7); backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 0, 128, 0.15); padding: 25px; overflow-y: auto; }
-        .sx-preview-pane { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #020002; }
+        .sx-sidebar { width: 400px; background: rgba(10, 0, 15, 0.7); backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 0, 128, 0.15); padding: 25px; overflow-y: auto; z-index: 10; }
+        .sx-preview-pane { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000; }
         
         .sx-profile-card {
           position: relative; z-index: 5; text-align: center;
@@ -406,7 +406,7 @@ export default function SoftcardDashboard() {
             padding: 10px;
         }
         
-        .sx-bg-layer { position: absolute; inset: 0; z-index: 1; object-fit: cover; width: 100%; height: 100%; }
+        .sx-bg-layer { position: absolute; inset: 0; z-index: 0; object-fit: cover; width: 100%; height: 100%; }
 
         .sx-link-card {
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
@@ -421,7 +421,7 @@ export default function SoftcardDashboard() {
         
         .tag-input-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .sx-tag-clear { 
-          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+          background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); 
           border-radius: 10px; padding: 10px; cursor: pointer; color: #ff4d4d; transition: 0.2s;
         }
         .sx-tag-clear:hover { background: rgba(255, 77, 77, 0.2); border-color: #ff4d4d; }
@@ -601,7 +601,6 @@ export default function SoftcardDashboard() {
                 <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.accent} onChange={e => updateProfile("accent", e.target.value)} /></div>
             </div>
             
-            {/* Bio Color Picker */}
             <div className="sx-input-group" style={{marginTop: '10px'}}>
                 <label className="sx-label">Bio Color</label>
                 <input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.bioColor.length > 7 ? profileData.bioColor.substring(0,7) : profileData.bioColor} onChange={e => updateProfile("bioColor", e.target.value)} />
