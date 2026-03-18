@@ -71,57 +71,62 @@ export default function PublicProfile({ params }: { params: { username: string }
         .profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
-          width: 90%; max-width: 400px;
-          padding: 30px 25px;
+          width: 90%; max-width: 420px;
+          padding: 35px 25px;
           border-radius: 24px;
           background: ${profile.show_glass_card ? 'rgba(0, 0, 0, 0.4)' : 'transparent'};
           backdrop-filter: ${profile.show_glass_card ? 'blur(20px)' : 'none'};
           border: ${profile.show_glass_card ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
+          box-shadow: ${profile.show_glass_card ? '0 20px 50px rgba(0,0,0,0.5)' : 'none'};
         }
 
         .pfp {
-          width: 90px; height: 90px; object-fit: cover; margin-bottom: 12px;
+          width: 95px; height: 95px; object-fit: cover; margin-bottom: 18px;
           border-radius: 50%; border: 3px solid ${accent};
-          box-shadow: 0 0 20px ${accent}44;
+          box-shadow: 0 0 25px ${accent}44;
         }
 
         .name-wrapper {
           display: flex; align-items: center; justify-content: center;
-          width: 100%; gap: 10px; margin-bottom: 8px;
+          gap: 10px; margin-bottom: 6px;
         }
-        
-        .name-wrapper::before { content: ""; flex: 1; }
-        .badge-anchor { flex: 1; display: flex; justify-content: flex-start; align-items: center; }
 
         .display-name { 
-          font-size: 26px; font-weight: 800;
+          font-size: 28px; font-weight: 800;
           color: ${profile.name_color || '#ffffff'};
           letter-spacing: -0.02em; white-space: nowrap;
         }
 
         .badges-pill {
           display: flex; gap: 8px; background: rgba(255, 255, 255, 0.08);
-          padding: 4px 10px; border-radius: 12px; 
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          padding: 6px 10px; border-radius: 12px; 
+          border: 1px solid rgba(255, 255, 255, 0.1);
           align-items: center;
         }
 
-        .tag-text {
-          font-size: 11px; font-weight: 600; opacity: 0.8;
-          padding-left: 4px; border-left: 1px solid rgba(255,255,255,0.1);
-          display: flex; gap: 6px;
-        }
-
         .bio { 
-          font-size: 14px; margin-bottom: 20px; 
+          font-size: 15px; margin-bottom: 20px; 
           color: ${profile.bio_color || 'rgba(255,255,255,0.7)'}; 
-          max-width: 90%; line-height: 1.4;
+          max-width: 90%; line-height: 1.5;
         }
 
-        .social-row { display: flex; justify-content: center; gap: 20px; }
+        /* NEW TAGS ROW STYLING */
+        .tags-row {
+          display: flex; flex-wrap: wrap; justify-content: center;
+          gap: 8px; margin-bottom: 25px; width: 100%;
+        }
+        .tag-pill {
+          font-size: 12px; font-weight: 500;
+          background: rgba(255, 255, 255, 0.06);
+          padding: 5px 12px; border-radius: 10px;
+          color: white; border: 1px solid rgba(255, 255, 255, 0.05);
+          white-space: nowrap;
+        }
+
+        .social-row { display: flex; justify-content: center; gap: 22px; }
         .social-link { transition: 0.3s ease; opacity: 0.8; }
         .social-link:hover { opacity: 1; transform: translateY(-3px); }
-        .social-icon { width: 22px; height: 22px; }
+        .social-icon { width: 24px; height: 24px; }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
@@ -149,27 +154,25 @@ export default function PublicProfile({ params }: { params: { username: string }
         <div className="name-wrapper">
           <div className="display-name">{profile.display_name}</div>
           
-          <div className="badge-anchor">
+          {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
             <div className="badges-pill">
-              {/* Icons Area */}
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {profile.badges?.user && <ShieldCheck size={14} color="rgba(255,255,255,0.6)" />}
-                {profile.badges?.dev && <Code size={14} color={accent} />}
-                {profile.badges?.staff && <Star size={14} color="rgba(255,255,255,0.6)" />}
-              </div>
-
-              {/* Tags Area inside the same pill */}
-              {(profile.age || profile.gender || profile.timezone) && (
-                <div className="tag-text">
-                  {profile.age && <span>{profile.age}</span>}
-                  {profile.gender && <span>{profile.gender}</span>}
-                </div>
-              )}
+                {profile.badges?.user && <ShieldCheck size={15} color="rgba(255,255,255,0.6)" />}
+                {profile.badges?.dev && <Code size={15} color={accent} />}
+                {profile.badges?.staff && <Star size={15} color="rgba(255,255,255,0.6)" />}
             </div>
-          </div>
+          )}
         </div>
 
         <div className="bio">{profile.bio}</div>
+
+        {/* Tags Row - Moved below Bio for better visibility */}
+        <div className="tags-row">
+          {profile.age && <div className="tag-pill">🎂 {profile.age}</div>}
+          {profile.gender && <div className="tag-pill">⚥ {profile.gender}</div>}
+          {profile.sexuality && <div className="tag-pill">⚧ {profile.sexuality}</div>}
+          {profile.birthday && <div className="tag-pill">🎈 {profile.birthday}</div>}
+          {profile.timezone && <div className="tag-pill">🌍 {profile.timezone}</div>}
+        </div>
 
         <div className="social-row">
           {socials.map((l: any) => (
