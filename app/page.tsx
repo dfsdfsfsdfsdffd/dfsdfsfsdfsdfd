@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { Space_Grotesk } from "next/font/google";
+// Import the Heart icon
+import { Heart } from "lucide-react";
 
 const font = Space_Grotesk({
   subsets: ["latin"],
@@ -11,9 +13,12 @@ const font = Space_Grotesk({
 export default function Home() {
   return (
     <main className={`sx-main ${font.className}`}>
-
       <nav className="sx-nav">
-        <div className="sx-logo">softcard.cc</div>
+        {/* LOGO WITH HEART ICON */}
+        <div className="sx-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Heart size={20} fill="#7000ff" color="#7000ff" /> 
+          softcard.cc
+        </div>
 
         <Link href="/login">
           <button className="sx-nav-btn">Dashboard →</button>
@@ -21,7 +26,6 @@ export default function Home() {
       </nav>
 
       <section className="sx-hero">
-
         <h1 className="sx-title">
           Build Your <span>Presence</span>
         </h1>
@@ -37,13 +41,14 @@ export default function Home() {
             </button>
           </Link>
 
-          <button className="sx-secondary">
-            Learn More
-          </button>
+          {/* LINK TO THE NEW MORE PAGE */}
+          <Link href="/more">
+            <button className="sx-secondary">
+              Learn More
+            </button>
+          </Link>
         </div>
-
       </section>
-
     </main>
   );
 }
