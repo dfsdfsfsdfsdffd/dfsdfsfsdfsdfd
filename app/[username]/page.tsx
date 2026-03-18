@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
 import { createBrowserClient } from '@supabase/ssr'
-import { ShieldCheck, Code, Star } from "lucide-react"
+import { ShieldCheck, Code, Star, Volume2, VolumeX } from "lucide-react"
 
 const iconMap: any = {
   tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
@@ -25,6 +25,9 @@ function getIcon(linkObj: any) {
 export default function PublicProfile({ params }: { params: { username: string } }) {
   const [profile, setProfile] = useState<any>(null)
   const [hasEntered, setHasEntered] = useState(false)
+  const [volume, setVolume] = useState(0.5)
+  const [isMuted, setIsMuted] = useState(false)
+  
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -41,9 +44,19 @@ export default function PublicProfile({ params }: { params: { username: string }
     loadProfile()
   }, [params.username])
 
+  // Sync volume to audio element
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : volume
+    }
+  }, [volume, isMuted])
+
   const handleEnter = () => {
     setHasEntered(true)
-    if (audioRef.current) audioRef.current.play().catch(() => {});
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : volume
+      audioRef.current.play().catch(() => {});
+    }
     if (videoRef.current) videoRef.current.play().catch(() => {});
   }
 
@@ -65,6 +78,31 @@ export default function PublicProfile({ params }: { params: { username: string }
           overflow: hidden; position: relative;
         }
 
+        /* Volume Controls */
+        .audio-controls {
+          position: fixed; right: 30px; bottom: 30px;
+          display: flex; flex-direction: column; align-items: center;
+          gap: 15px; z-index: 100;
+          background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
+          padding: 15px 10px; border-radius: 50px;
+          border: 1px solid rgba(255,255,255,0.1);
+          transition: opacity 0.3s;
+          opacity: ${hasEntered ? 1 : 0};
+        }
+        
+        .volume-slider {
+          writing-mode: bt-lr; /* Vertical slider */
+          -webkit-appearance: slider-vertical;
+          width: 4px; height: 80px;
+          cursor: pointer; accent-color: ${accent};
+        }
+
+        .mute-btn {
+          background: none; border: none; color: white; cursor: pointer;
+          opacity: 0.7; transition: 0.2s;
+        }
+        .mute-btn:hover { opacity: 1; transform: scale(1.1); }
+
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
         .bg-content { width: 100%; height: 100%; object-fit: cover; }
 
@@ -72,7 +110,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
           width: 90%; max-width: 420px;
-          padding: 30px 20px; /* Reduced vertical padding */
+          padding: 30px 20px;
           border-radius: 28px;
           background: ${profile.show_glass_card ? 'rgba(0, 0, 0, 0.45)' : 'transparent'};
           backdrop-filter: ${profile.show_glass_card ? 'blur(25px)' : 'none'};
@@ -81,19 +119,14 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         .pfp {
-          width: 100px; height: 100px; object-fit: cover; margin-bottom: 15px; /* Smaller PFP and margin */
+          width: 100px; height: 100px; object-fit: cover; margin-bottom: 15px;
           border-radius: 50%; border: 2px solid ${accent};
           box-shadow: 0 0 30px ${accent}44;
           padding: 3px;
         }
 
-        .name-row {
-          display: flex; align-items: center; justify-content: center;
-          gap: 12px; margin-bottom: 5px; /* Tighter gap to next element */
-        }
-
         .display-name { 
-          font-size: 28px; font-weight: 800; /* Slightly smaller text */
+          font-size: 28px; font-weight: 800; margin-bottom: 5px;
           color: ${profile.name_color || '#ffffff'};
           letter-spacing: -0.03em;
         }
@@ -102,14 +135,12 @@ export default function PublicProfile({ params }: { params: { username: string }
           display: flex; gap: 6px; background: rgba(255, 255, 255, 0.08);
           padding: 4px 10px; border-radius: 12px; 
           border: 1px solid rgba(255, 255, 255, 0.1);
-          align-items: center; margin-bottom: 12px; /* Tighter spacing */
+          align-items: center; margin-bottom: 12px;
         }
-
-        .badge-item { position: relative; display: flex; align-items: center; cursor: help; }
 
         .tags-row { 
           display: flex; flex-wrap: wrap; align-items: center; justify-content: center; 
-          gap: 4px; margin-bottom: 15px; width: 100%; /* Reduced gap and margin */
+          gap: 4px; margin-bottom: 15px; width: 100%;
         }
         .tag-pill {
           background: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 8px;
@@ -118,17 +149,15 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         .bio { 
-          font-size: 14px; margin-bottom: 22px; line-height: 1.4; /* Tighter leading and bottom margin */
+          font-size: 14px; margin-bottom: 22px; line-height: 1.4;
           color: ${profile.bio_color || 'rgba(255,255,255,0.7)'}; 
-          max-width: 85%;
-          white-space: pre-wrap;
-          word-break: break-word;
+          max-width: 85%; white-space: pre-wrap; word-break: break-word;
         }
 
         .social-row { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; }
-        .social-link { transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0.75; }
+        .social-link { transition: 0.3s; opacity: 0.75; }
         .social-link:hover { opacity: 1; transform: scale(1.1) translateY(-2px); }
-        .social-icon { width: 24px; height: 24px; } /* Slightly smaller icons */
+        .social-icon { width: 24px; height: 24px; }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
@@ -141,6 +170,25 @@ export default function PublicProfile({ params }: { params: { username: string }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
+
+      {/* Audio Control UI */}
+      {profile.audio_url && (
+        <div className="audio-controls">
+          <input 
+            type="range" 
+            className="volume-slider" 
+            min="0" max="1" step="0.01" 
+            value={volume} 
+            onChange={(e) => {
+              setVolume(parseFloat(e.target.value));
+              if (isMuted) setIsMuted(false);
+            }} 
+          />
+          <button className="mute-btn" onClick={() => setIsMuted(!isMuted)}>
+            {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+          </button>
+        </div>
+      )}
 
       <div className="bg-wrapper">
         {profile.background_type === "video" ? (
@@ -155,27 +203,13 @@ export default function PublicProfile({ params }: { params: { username: string }
       <div className="profile-card">
         <img src={profile.avatar_url} className="pfp" alt="profile" />
         
-        <div className="name-row">
-          <div className="display-name">{profile.display_name}</div>
-        </div>
+        <div className="display-name">{profile.display_name}</div>
 
         {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
           <div className="badges-pill">
-              {profile.badges?.user && (
-                <div className="badge-item" data-tooltip="Verified User">
-                  <ShieldCheck size={14} color="#3b82f6" />
-                </div>
-              )}
-              {profile.badges?.dev && (
-                <div className="badge-item" data-tooltip="Developer">
-                  <Code size={14} color={accent} />
-                </div>
-              )}
-              {profile.badges?.staff && (
-                <div className="badge-item" data-tooltip="Staff">
-                  <Star size={14} color="#f59e0b" />
-                </div>
-              )}
+              {profile.badges?.user && <ShieldCheck size={14} color="#3b82f6" />}
+              {profile.badges?.dev && <Code size={14} color={accent} />}
+              {profile.badges?.staff && <Star size={14} color="#f59e0b" />}
           </div>
         )}
 
