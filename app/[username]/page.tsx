@@ -89,7 +89,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         .name-row {
           display: flex; align-items: center; justify-content: center;
-          gap: 12px; margin-bottom: 15px;
+          gap: 12px; margin-bottom: 8px;
         }
 
         .display-name { 
@@ -98,17 +98,30 @@ export default function PublicProfile({ params }: { params: { username: string }
           letter-spacing: -0.03em;
         }
 
-        /* NEW BADGE CAPSULE NEXT TO NAME */
         .badges-pill {
           display: flex; gap: 8px; background: rgba(255, 255, 255, 0.08);
           padding: 5px 12px; border-radius: 12px; 
           border: 1px solid rgba(255, 255, 255, 0.1);
-          align-items: center;
+          align-items: center; margin-bottom: 15px;
         }
 
-        .badge-item { position: relative; display: flex; align-items: center; }
+        .badge-item { position: relative; display: flex; align-items: center; cursor: help; }
 
-        /* TAG PILLS (BACK TO PREVIOUS STYLE) */
+        .badge-item::before {
+          content: attr(data-tooltip);
+          position: absolute; bottom: 130%; left: 50%;
+          transform: translateX(-50%) translateY(10px);
+          background: rgba(0, 0, 0, 0.9); color: white;
+          padding: 5px 10px; border-radius: 8px;
+          font-size: 11px; font-weight: 600; white-space: nowrap;
+          opacity: 0; visibility: hidden;
+          transition: 0.2s ease; border: 1px solid rgba(255, 255, 255, 0.1);
+          z-index: 10;
+        }
+
+        .badge-item:hover::before { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+        /* UPDATED TAG STYLES */
         .tags-row { 
           display: flex; flex-wrap: wrap; align-items: center; justify-content: center; 
           gap: 6px; margin-bottom: 20px; width: 100%;
@@ -135,8 +148,9 @@ export default function PublicProfile({ params }: { params: { username: string }
           display: ${hasEntered ? 'none' : 'flex'};
           align-items: center; justify-content: center; cursor: pointer;
           font-weight: 700; letter-spacing: 5px; font-size: 11px;
-          color: rgba(255,255,255,0.5);
+          color: rgba(255,255,255,0.5); transition: 0.3s;
         }
+        .overlay:hover { color: white; letter-spacing: 7px; }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
@@ -156,34 +170,43 @@ export default function PublicProfile({ params }: { params: { username: string }
         
         <div className="name-row">
           <div className="display-name">{profile.display_name}</div>
-          
-          {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
-            <div className="badges-pill">
-                {profile.badges?.user && (
-                  <div className="badge-item">
-                    <ShieldCheck size={16} color="rgba(255,255,255,0.7)" />
-                  </div>
-                )}
-                {profile.badges?.dev && (
-                  <div className="badge-item">
-                    <Code size={16} color={accent} />
-                  </div>
-                )}
-                {profile.badges?.staff && (
-                  <div className="badge-item">
-                    <Star size={16} color="rgba(255,255,255,0.7)" />
-                  </div>
-                )}
-            </div>
-          )}
         </div>
 
+        {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
+          <div className="badges-pill">
+              {profile.badges?.user && (
+                <div className="badge-item" data-tooltip="Verified User">
+                  <ShieldCheck size={16} color="#3b82f6" />
+                </div>
+              )}
+              {profile.badges?.dev && (
+                <div className="badge-item" data-tooltip="Developer">
+                  <Code size={16} color={accent} />
+                </div>
+              )}
+              {profile.badges?.staff && (
+                <div className="badge-item" data-tooltip="Staff">
+                  <Star size={16} color="#f59e0b" />
+                </div>
+              )}
+          </div>
+        )}
+
+        {/* REFINED TAGS BAR */}
         <div className="tags-row">
-          {profile.age && <span className="tag-pill">{profile.age}</span>}
+          {profile.age && <span className="tag-pill">{profile.age} y/o</span>}
           {profile.gender && <span className="tag-pill">{profile.gender}</span>}
           {profile.sexuality && <span className="tag-pill">{profile.sexuality}</span>}
-          {profile.birthday && <span className="tag-pill">{profile.birthday}</span>}
-          {profile.timezone && <span className="tag-pill">{profile.timezone}</span>}
+          {profile.birthday && (
+            <span className="tag-pill">
+              {new Date(profile.birthday).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
+            </span>
+          )}
+          {profile.timezone && (
+            <span className="tag-pill">
+              {profile.timezone.split('/').pop()?.replace(/_/g, ' ')}
+            </span>
+          )}
         </div>
 
         <div className="bio">{profile.bio}</div>
