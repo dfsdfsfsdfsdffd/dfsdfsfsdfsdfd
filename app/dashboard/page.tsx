@@ -350,33 +350,23 @@ export default function SoftcardDashboard() {
           border: 2px solid ${accent}; padding: 2px;
         }
         .sx-name-wrapper {
-          display: flex; align-items: center; justify-content: center; width: 100%; gap: 10px; margin-bottom: 8px;
+          display: flex; align-items: center; justify-content: center; width: 100%; gap: 10px; margin-bottom: 4px;
         }
         .sx-name { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
         
         .sx-badge-pill { 
-          display: flex; gap: 8px; background: rgba(255, 255, 255, 0.05); 
-          padding: 5px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); 
+          display: flex; gap: 6px; background: rgba(255, 255, 255, 0.08); 
+          padding: 4px 10px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); 
+          align-items: center;
         }
         
-        .sx-bio { font-size: 16px; margin-bottom: 25px; opacity: 0.8; }
+        .sx-bio { font-size: 16px; margin-bottom: 12px; opacity: 0.8; }
         
         .sx-tags-row { 
-          display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; 
-          margin-bottom: 30px; width: 100%;
+          display: flex; align-items: center; justify-content: center; gap: 8px; 
+          margin-bottom: 25px; width: 100%; color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 500;
         }
-        .sx-tag { 
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          padding: 6px 14px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 14px;
-          color: white;
-          white-space: nowrap;
-        }
+        .sx-tag-sep { opacity: 0.3; }
 
         .sx-links-row { display: flex; justify-content: center; gap: 24px; }
         .sx-icon-link { transition: 0.3s ease; opacity: 0.8; }
@@ -530,15 +520,19 @@ export default function SoftcardDashboard() {
              )}
           </div>
 
-          <div className="sx-bio" style={{ color: bioColor }}>{bio}</div>
-
           <div className="sx-tags-row">
-            {age && <div className="sx-tag">🎂 {age}</div>}
-            {gender && <div className="sx-tag">⚥ {gender}</div>}
-            {sexuality && <div className="sx-tag">⚧ {sexuality}</div>}
-            {birthday && <div className="sx-tag">🎈 {birthday}</div>}
-            {timezone && <div className="sx-tag">🌍 {timezone}</div>}
+            {age && <span>{age}</span>}
+            {age && gender && <span className="sx-tag-sep">•</span>}
+            {gender && <span>{gender}</span>}
+            {gender && sexuality && <span className="sx-tag-sep">•</span>}
+            {sexuality && <span>{sexuality}</span>}
+            {sexuality && birthday && <span className="sx-tag-sep">•</span>}
+            {birthday && <span>{birthday}</span>}
+            {birthday && timezone && <span className="sx-tag-sep">•</span>}
+            {timezone && <span>{timezone}</span>}
           </div>
+
+          <div className="sx-bio" style={{ color: bioColor }}>{bio}</div>
           
           <div className="sx-links-row">
             {links.map(l => l.url && (
