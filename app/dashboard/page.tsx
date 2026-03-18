@@ -600,6 +600,12 @@ export default function SoftcardDashboard() {
                 <div className="sx-input-group"><label className="sx-label">Name Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.nameColor} onChange={e => updateProfile("nameColor", e.target.value)} /></div>
                 <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.accent} onChange={e => updateProfile("accent", e.target.value)} /></div>
             </div>
+            
+            {/* Added Bio Color Feature */}
+            <div className="sx-input-group" style={{marginTop: '10px'}}>
+                <label className="sx-label">Bio Color</label>
+                <input className="sx-input" style={{height: '45px', padding: '5px'}} type="text" value={profileData.bioColor} onChange={e => updateProfile("bioColor", e.target.value)} placeholder="Hex, RGB, or Name" />
+            </div>
 
             <div className="sx-input-group">
               <label className="sx-label">Audio Background URL (.mp3)</label>
