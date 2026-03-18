@@ -14,7 +14,10 @@ import {
   ExternalLink,
   Copy,
   Check,
-  Type
+  Type,
+  Palette,
+  User as UserIcon,
+  Tag
 } from "lucide-react"
 
 // Types
@@ -359,7 +362,7 @@ export default function SoftcardDashboard() {
           border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .sx-bio { font-size: 15px; margin-bottom: 25px; line-height: 1.5; max-width: 90%; }
+        .sx-bio { font-size: 15px; margin-bottom: 25px; line-height: 1.5; max-width: 90%; white-space: pre-wrap; word-break: break-word; }
         
         .sx-links-row { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
         .sx-icon-link { transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.7; }
@@ -378,7 +381,7 @@ export default function SoftcardDashboard() {
         .sx-publish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .sx-tabs-row { display: flex; gap: 4px; margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px; }
-        .sx-tab { flex: 1; padding: 10px 5px; border-radius: 9px; cursor: pointer; opacity: 0.5; text-align: center; transition: 0.2s; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .sx-tab { flex: 1; padding: 10px 5px; border-radius: 9px; cursor: pointer; opacity: 0.5; text-align: center; transition: 0.2s; font-size: 11px; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .sx-tab-active { background: #ec4899; opacity: 1; color: white; }
         
         .sx-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-bottom: 8px; display: block; font-weight: 800; }
@@ -389,7 +392,6 @@ export default function SoftcardDashboard() {
             appearance: none;
         }
 
-        /* FIX: Dropdown Arrow and Visibility */
         select.sx-input {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat;
@@ -435,14 +437,22 @@ export default function SoftcardDashboard() {
         </button>
 
         <div className="sx-tabs-row">
-          <div className={`sx-tab ${tab === "profile" ? "sx-tab-active" : ""}`} onClick={() => setTab("profile")}>Profile</div>
-          <div className={`sx-tab ${tab === "tags" ? "sx-tab-active" : ""}`} onClick={() => setTab("tags")}>Tags</div>
-          <div className={`sx-tab ${tab === "appearance" ? "sx-tab-active" : ""}`} onClick={() => setTab("appearance")}>Style</div>
-          <div className={`sx-tab ${tab === "badges" ? "sx-tab-active" : ""}`} onClick={() => setTab("badges")}>Badges</div>
+          <div className={`sx-tab ${tab === "profile" ? "sx-tab-active" : ""}`} onClick={() => setTab("profile")}>
+            <UserIcon size={12} /> Profile
+          </div>
+          <div className={`sx-tab ${tab === "tags" ? "sx-tab-active" : ""}`} onClick={() => setTab("tags")}>
+            <Tag size={12} /> Tags
+          </div>
+          <div className={`sx-tab ${tab === "appearance" ? "sx-tab-active" : ""}`} onClick={() => setTab("appearance")}>
+            <Palette size={12} /> Style
+          </div>
+          <div className={`sx-tab ${tab === "badges" ? "sx-tab-active" : ""}`} onClick={() => setTab("badges")}>
+            <ShieldCheck size={12} /> Badges
+          </div>
         </div>
 
         {tab === "profile" && (
-          <div className="sx-pane animate-in fade-in duration-300">
+          <div className="sx-pane">
             <div className="sx-input-group mb-4">
               <label className="sx-label">Avatar Image URL</label>
               <input className="sx-input" value={profileData.avatar} onChange={e => updateProfile("avatar", e.target.value)} placeholder="https://..." />
@@ -486,7 +496,7 @@ export default function SoftcardDashboard() {
         )}
 
         {tab === "tags" && (
-          <div className="sx-pane animate-in fade-in duration-300">
+          <div className="sx-pane">
             <div className="sx-input-group">
               <label className="sx-label">Age</label>
               <div className="tag-input-wrapper">
@@ -548,7 +558,7 @@ export default function SoftcardDashboard() {
         )}
 
         {tab === "appearance" && (
-          <div className="sx-pane animate-in fade-in duration-300">
+          <div className="sx-pane">
             <div className="sx-input-group" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px'}}>
                 <input type="checkbox" id="glass" checked={profileData.showGlass} onChange={e => updateProfile("showGlass", e.target.checked)} style={{width: '18px', height: '18px'}} />
                 <label htmlFor="glass" style={{margin: 0, fontSize: '13px', cursor: 'pointer'}}>Transparent Glass Card</label>
@@ -599,7 +609,7 @@ export default function SoftcardDashboard() {
         )}
 
         {tab === "badges" && (
-          <div className="sx-pane animate-in fade-in duration-300">
+          <div className="sx-pane">
             <div className="sx-input-group" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px'}}>
                 <input type="checkbox" id="userBadge" checked={badges.user} onChange={() => setBadges({ ...badges, user: !badges.user })} style={{width: '18px', height: '18px'}} />
                 <label htmlFor="userBadge" style={{margin: 0, fontSize: '13px', cursor: 'pointer'}}>Display Verified Badge</label>
