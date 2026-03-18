@@ -361,7 +361,6 @@ export default function SoftcardDashboard() {
         
         .sx-bio { font-size: 16px; margin-bottom: 25px; opacity: 0.8; }
         
-        /* FIX: INDIVIDUAL TAG PILLS */
         .sx-tags-row { 
           display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; 
           margin-bottom: 30px; width: 100%;
@@ -472,9 +471,31 @@ export default function SoftcardDashboard() {
                   <option value="image">Image</option>
                 </select>
             </div>
+            {bgType === "gradient" && (
+              <div className="sx-input-group">
+                <label className="sx-label">Gradient Value</label>
+                <input className="sx-input" value={gradient} onChange={e => setGradient(e.target.value)} placeholder="linear-gradient(...)" />
+              </div>
+            )}
+            {bgType === "video" && (
+              <div className="sx-input-group">
+                <label className="sx-label">Video URL</label>
+                <input className="sx-input" value={bgVideo} onChange={e => setBgVideo(e.target.value)} placeholder="Direct .mp4 link" />
+              </div>
+            )}
+            {bgType === "image" && (
+              <div className="sx-input-group">
+                <label className="sx-label">Image URL</label>
+                <input className="sx-input" value={bgImage} onChange={e => setBgImage(e.target.value)} placeholder="Direct image link" />
+              </div>
+            )}
             <div className="sx-input-group"><label className="sx-label">Name Color</label><input type="color" className="sx-input" value={nameColor} onChange={e => setNameColor(e.target.value)} /></div>
             <div className="sx-input-group"><label className="sx-label">Bio Color</label><input type="color" className="sx-input" value={bioColor} onChange={e => setBioColor(e.target.value)} /></div>
             <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" value={accent} onChange={e => setAccent(e.target.value)} /></div>
+            <div className="sx-input-group">
+              <label className="sx-label">Audio URL</label>
+              <input className="sx-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} placeholder="Direct .mp3 link" />
+            </div>
           </div>
         )}
 
