@@ -85,6 +85,19 @@ export default function SoftcardDashboard() {
     showGlass: true
   })
 
+  // Helper to extract colors from a CSS linear-gradient string
+  const gradientColors = useMemo(() => {
+    const match = profileData.gradient.match(/#(?:[0-9a-fA-F]{3}){1,2}/g);
+    return {
+      c1: match?.[0] || "#1a0b1a",
+      c2: match?.[1] || "#050106"
+    };
+  }, [profileData.gradient]);
+
+  const updateGradient = (c1: string, c2: string) => {
+    updateProfile("gradient", `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`);
+  };
+
   const [links, setLinks] = useState<SocialLink[]>([])
   const [badges, setBadges] = useState<Badges>({ user: true, dev: false, staff: false })
   const [devPassword, setDevPassword] = useState("")
@@ -324,8 +337,8 @@ export default function SoftcardDashboard() {
     <div className="softcardx-dashboard" style={{ fontFamily: `${profileData.font}, system-ui, sans-serif` }}>
       <style>{`
         .softcardx-dashboard { display: flex; height: 100vh; background: #050106; color: white; overflow: hidden; }
-        .sx-sidebar { width: 400px; background: rgba(10, 0, 15, 0.7); backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 0, 128, 0.15); padding: 25px; overflow-y: auto; z-index: 10; }
-        .sx-preview-pane { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000; }
+        .sx-sidebar { width: 400px; background: rgba(10, 0, 15, 0.7); backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 0, 128, 0.15); padding: 25px; overflow-y: auto; }
+        .sx-preview-pane { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #020002; }
         
         .sx-profile-card {
           position: relative; z-index: 5; text-align: center;
@@ -406,7 +419,7 @@ export default function SoftcardDashboard() {
             padding: 10px;
         }
         
-        .sx-bg-layer { position: absolute; inset: 0; z-index: 0; object-fit: cover; width: 100%; height: 100%; }
+        .sx-bg-layer { position: absolute; inset: 0; z-index: 1; object-fit: cover; width: 100%; height: 100%; }
 
         .sx-link-card {
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
@@ -421,7 +434,7 @@ export default function SoftcardDashboard() {
         
         .tag-input-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .sx-tag-clear { 
-          background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); 
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
           border-radius: 10px; padding: 10px; cursor: pointer; color: #ff4d4d; transition: 0.2s;
         }
         .sx-tag-clear:hover { background: rgba(255, 77, 77, 0.2); border-color: #ff4d4d; }
@@ -584,11 +597,41 @@ export default function SoftcardDashboard() {
             </div>
 
             {profileData.bgType === "gradient" && (
-              <div className="sx-input-group">
-                <label className="sx-label">CSS Gradient String</label>
-                <input className="sx-input" value={profileData.gradient} onChange={e => updateProfile("gradient", e.target.value)} placeholder="linear-gradient(...)" />
+              <div className="sx-input-group" style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <label className="sx-label">Background Colors</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
+                   <div>
+                     <span style={{ fontSize: '10px', opacity: 0.5 }}>START</span>
+                     <input type="color" className="sx-input" style={{height: '40px', padding: '4px'}} value={gradientColors.c1} onChange={e => updateGradient(e.target.value, gradientColors.c2)} />
+                   </div>
+                   <div>
+                     <span style={{ fontSize: '10px', opacity: 0.5 }}>END</span>
+                     <input type="color" className="sx-input" style={{height: '40px', padding: '4px'}} value={gradientColors.c2} onChange={e => updateGradient(gradientColors.c1, e.target.value)} />
+                   </div>
+                </div>
+                
+                {/* Quick Presets */}
+                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '5px' }}>
+                  {[
+                    ['#1a0b1a', '#050106'], // Default Dark
+                    ['#7000ff', '#ff008c'], // Purple Pink
+                    ['#00d2ff', '#3a7bd5'], // Blue Sea
+                    ['#11e1de', '#111111'], // Neon Cyan
+                    ['#833ab4', '#fd1d1d'], // Sunset
+                  ].map(([c1, c2], i) => (
+                    <div 
+                      key={i} 
+                      onClick={() => updateGradient(c1, c2)}
+                      style={{ 
+                        flexShrink: 0, width: '24px', height: '24px', borderRadius: '6px', cursor: 'pointer',
+                        background: `linear-gradient(135deg, ${c1}, ${c2})`, border: '1px solid rgba(255,255,255,0.2)'
+                      }} 
+                    />
+                  ))}
+                </div>
               </div>
             )}
+
             {(profileData.bgType === "video" || profileData.bgType === "image") && (
               <div className="sx-input-group">
                 <label className="sx-label">{profileData.bgType === "video" ? "Video (.mp4) URL" : "Image URL"}</label>
@@ -596,7 +639,7 @@ export default function SoftcardDashboard() {
               </div>
             )}
 
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px'}}>
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '20px'}}>
                 <div className="sx-input-group"><label className="sx-label">Name Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.nameColor} onChange={e => updateProfile("nameColor", e.target.value)} /></div>
                 <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.accent} onChange={e => updateProfile("accent", e.target.value)} /></div>
             </div>
