@@ -71,8 +71,8 @@ export default function PublicProfile({ params }: { params: { username: string }
         .profile-card {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
-          width: 90%; max-width: 400px;
-          padding: 40px 20px;
+          width: 90%; max-width: 420px;
+          padding: 45px 25px;
           border-radius: 28px;
           background: ${profile.show_glass_card ? 'rgba(0, 0, 0, 0.45)' : 'transparent'};
           backdrop-filter: ${profile.show_glass_card ? 'blur(25px)' : 'none'};
@@ -81,88 +81,76 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         .pfp {
-          width: 100px; height: 100px; object-fit: cover; margin-bottom: 20px;
-          border-radius: 50%; border: 3px solid ${accent};
-          box-shadow: 0 0 30px ${accent}55;
+          width: 110px; height: 110px; object-fit: cover; margin-bottom: 20px;
+          border-radius: 50%; border: 2px solid ${accent};
+          box-shadow: 0 0 30px ${accent}44;
+          padding: 3px;
         }
 
         .name-row {
           display: flex; align-items: center; justify-content: center;
-          gap: 12px; margin-bottom: 4px;
+          gap: 12px; margin-bottom: 8px;
         }
 
         .display-name { 
-          font-size: 30px; font-weight: 800;
+          font-size: 32px; font-weight: 800;
           color: ${profile.name_color || '#ffffff'};
           letter-spacing: -0.03em;
         }
 
         .badges-pill {
-          display: flex; gap: 8px; background: rgba(255, 255, 255, 0.1);
-          padding: 6px 12px; border-radius: 12px; 
+          display: flex; gap: 8px; background: rgba(255, 255, 255, 0.08);
+          padding: 5px 12px; border-radius: 12px; 
           border: 1px solid rgba(255, 255, 255, 0.1);
-          align-items: center;
+          align-items: center; margin-bottom: 15px;
         }
 
-        /* TOOLTIP STYLES */
-        .badge-item {
-          position: relative;
-          display: flex;
-          align-items: center;
-          cursor: help;
-        }
+        .badge-item { position: relative; display: flex; align-items: center; cursor: help; }
 
         .badge-item::before {
           content: attr(data-tooltip);
-          position: absolute;
-          bottom: 125%;
-          left: 50%;
+          position: absolute; bottom: 130%; left: 50%;
           transform: translateX(-50%) translateY(10px);
-          background: rgba(0, 0, 0, 0.8);
-          color: white;
-          padding: 4px 8px;
-          border-radius: 6px;
-          font-size: 10px;
-          white-space: nowrap;
-          opacity: 0;
-          visibility: hidden;
-          transition: all 0.2s ease;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(0, 0, 0, 0.9); color: white;
+          padding: 5px 10px; border-radius: 8px;
+          font-size: 11px; font-weight: 600; white-space: nowrap;
+          opacity: 0; visibility: hidden;
+          transition: 0.2s ease; border: 1px solid rgba(255, 255, 255, 0.1);
           z-index: 10;
         }
 
-        .badge-item:hover::before {
-          opacity: 1;
-          visibility: visible;
-          transform: translateX(-50%) translateY(0);
-        }
+        .badge-item:hover::before { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
-        .tags-bar {
-          display: flex; align-items: center; justify-content: center;
-          flex-wrap: wrap; gap: 6px; margin-bottom: 16px;
-          opacity: 0.7; font-size: 13px; font-weight: 500;
+        /* UPDATED TAG STYLES */
+        .tags-row { 
+          display: flex; flex-wrap: wrap; align-items: center; justify-content: center; 
+          gap: 6px; margin-bottom: 20px; width: 100%;
         }
-        .tag-item:not(:last-child)::after {
-          content: "•"; margin-left: 6px; opacity: 0.4;
+        .tag-pill {
+          background: rgba(255, 255, 255, 0.06); padding: 5px 12px; border-radius: 10px;
+          font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.65);
+          border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .bio { 
-          font-size: 15px; margin-bottom: 24px; 
+          font-size: 15px; margin-bottom: 28px; line-height: 1.6;
           color: ${profile.bio_color || 'rgba(255,255,255,0.7)'}; 
-          max-width: 85%; line-height: 1.5;
+          max-width: 90%;
         }
 
-        .social-row { display: flex; justify-content: center; gap: 24px; }
+        .social-row { display: flex; justify-content: center; gap: 22px; flex-wrap: wrap; }
         .social-link { transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0.8; }
-        .social-link:hover { opacity: 1; transform: scale(1.2); }
-        .social-icon { width: 24px; height: 24px; }
+        .social-link:hover { opacity: 1; transform: scale(1.15) translateY(-3px); }
+        .social-icon { width: 28px; height: 28px; }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
           display: ${hasEntered ? 'none' : 'flex'};
           align-items: center; justify-content: center; cursor: pointer;
           font-weight: 700; letter-spacing: 5px; font-size: 11px;
+          color: rgba(255,255,255,0.5); transition: 0.3s;
         }
+        .overlay:hover { color: white; letter-spacing: 7px; }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
@@ -182,34 +170,43 @@ export default function PublicProfile({ params }: { params: { username: string }
         
         <div className="name-row">
           <div className="display-name">{profile.display_name}</div>
-          
-          {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
-            <div className="badges-pill">
-                {profile.badges?.user && (
-                  <div className="badge-item" data-tooltip="Verified User">
-                    <ShieldCheck size={16} color="rgba(255,255,255,0.7)" />
-                  </div>
-                )}
-                {profile.badges?.dev && (
-                  <div className="badge-item" data-tooltip="Developer">
-                    <Code size={16} color={accent} />
-                  </div>
-                )}
-                {profile.badges?.staff && (
-                  <div className="badge-item" data-tooltip="Staff">
-                    <Star size={16} color="rgba(255,255,255,0.7)" />
-                  </div>
-                )}
-            </div>
-          )}
         </div>
 
-        <div className="tags-bar">
-          {profile.age && <span className="tag-item">{profile.age}</span>}
-          {profile.gender && <span className="tag-item">{profile.gender}</span>}
-          {profile.sexuality && <span className="tag-item">{profile.sexuality}</span>}
-          {profile.birthday && <span className="tag-item">{profile.birthday}</span>}
-          {profile.timezone && <span className="tag-item">{profile.timezone}</span>}
+        {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
+          <div className="badges-pill">
+              {profile.badges?.user && (
+                <div className="badge-item" data-tooltip="Verified User">
+                  <ShieldCheck size={16} color="#3b82f6" />
+                </div>
+              )}
+              {profile.badges?.dev && (
+                <div className="badge-item" data-tooltip="Developer">
+                  <Code size={16} color={accent} />
+                </div>
+              )}
+              {profile.badges?.staff && (
+                <div className="badge-item" data-tooltip="Staff">
+                  <Star size={16} color="#f59e0b" />
+                </div>
+              )}
+          </div>
+        )}
+
+        {/* REFINED TAGS BAR */}
+        <div className="tags-row">
+          {profile.age && <span className="tag-pill">{profile.age} y/o</span>}
+          {profile.gender && <span className="tag-pill">{profile.gender}</span>}
+          {profile.sexuality && <span className="tag-pill">{profile.sexuality}</span>}
+          {profile.birthday && (
+            <span className="tag-pill">
+              {new Date(profile.birthday).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
+            </span>
+          )}
+          {profile.timezone && (
+            <span className="tag-pill">
+              {profile.timezone.split('/').pop()?.replace(/_/g, ' ')}
+            </span>
+          )}
         </div>
 
         <div className="bio">{profile.bio}</div>
