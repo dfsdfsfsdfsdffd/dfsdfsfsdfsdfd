@@ -1,7 +1,6 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
 import { createBrowserClient } from '@supabase/ssr'
-// Added Eye icon here
 import { ShieldCheck, Code, Star, Volume2, VolumeX, Eye } from "lucide-react"
 
 const iconMap: any = {
@@ -39,11 +38,20 @@ export default function PublicProfile({ params }: { params: { username: string }
 
   useEffect(() => {
     async function loadProfile() {
-      const { data } = await supabase.from('profiles').select('*').eq('username', params.username).single()
-      setProfile(data)
+      // 1. Fetch profile data
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('username', params.username)
+        .single()
       
-      // OPTIONAL: Increment view count in Supabase here if you have a 'views' column
-      // await supabase.rpc('increment_views', { profile_id: data.id })
+      if (data) {
+        setProfile(data)
+        
+        // 2. Increment view count in DB
+        // Calls the SQL function you created in Supabase
+        await supabase.rpc('increment_profile_views', { target_id: data.id })
+      }
     }
     loadProfile()
   }, [params.username])
@@ -120,18 +128,19 @@ export default function PublicProfile({ params }: { params: { username: string }
           box-shadow: ${profile.show_glass_card ? '0 25px 50px rgba(0,0,0,0.6)' : 'none'};
         }
 
-        /* NEW VIEW COUNTER STYLES */
         .view-count {
           position: absolute;
-          top: 15px;
-          right: 20px;
+          top: 18px;
+          right: 22px;
           display: flex;
           align-items: center;
-          gap: 5px;
-          font-size: 11px;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.4);
-          letter-spacing: 0.05em;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 700;
+          /* Increased visibility */
+          color: rgba(255, 255, 255, 0.85);
+          text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+          letter-spacing: 0.02em;
         }
 
         .pfp {
@@ -216,10 +225,10 @@ export default function PublicProfile({ params }: { params: { username: string }
       {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
 
       <div className="profile-card">
-        {/* VIEW COUNTER ADDED HERE */}
         <div className="view-count">
-          <Eye size={12} />
-          {profile.views?.toLocaleString() || 0}
+          <Eye size={14} strokeWidth={2.5} />
+          {/* We show current views + 1 so the user's visit is counted instantly on screen */}
+          {((profile.views || 0) + 1).toLocaleString()}
         </div>
 
         <img src={profile.avatar_url} className="pfp" alt="profile" />
