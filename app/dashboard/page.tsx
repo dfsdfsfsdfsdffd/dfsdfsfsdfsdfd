@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { createBrowserClient } from "@supabase/ssr"
 import { 
   Pencil, 
@@ -9,18 +9,29 @@ import {
   ShieldCheck, 
   Code, 
   Star, 
-  Trash2, 
-  Globe, 
-  Tag as TagIcon, 
   Plus, 
   X,
   ExternalLink,
   Copy,
-  Check
+  Check,
+  Type
 } from "lucide-react"
 
+// Types
+interface SocialLink {
+  id: number;
+  type: string;
+  url: string;
+}
+
+interface Badges {
+  user: boolean;
+  dev: boolean;
+  staff: boolean;
+}
+
 // Social Icon Mapping
-const iconMap: any = {
+const iconMap: Record<string, string> = {
   tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
   instagram: "https://cdn.simpleicons.org/instagram/ffffff",
   x: "https://cdn.simpleicons.org/x/ffffff",
@@ -32,13 +43,6 @@ const iconMap: any = {
   threads: "https://cdn.simpleicons.org/threads/ffffff",
   linkedin: "https://cdn.simpleicons.org/linkedin/ffffff",
   website: "https://cdn.simpleicons.org/pwa/ffffff"
-}
-
-function getIcon(linkObj: any) {
-  if (linkObj.type && iconMap[linkObj.type]) {
-    return iconMap[linkObj.type]
-  }
-  return iconMap.website
 }
 
 export default function SoftcardDashboard() {
@@ -55,34 +59,32 @@ export default function SoftcardDashboard() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // Profile States
-  const [avatar, setAvatar] = useState("https://i.imgur.com/1X6g1YH.jpeg")
-  const [name, setName] = useState("User")
-  const [username, setUsername] = useState("") 
-  const [bio, setBio] = useState("")
-  
-  // Tag States
-  const [age, setAge] = useState("")
-  const [gender, setGender] = useState("")
-  const [sexuality, setSexuality] = useState("")
-  const [birthday, setBirthday] = useState("")
-  const [timezone, setTimezone] = useState("")
+  // Consolidated State
+  const [profileData, setProfileData] = useState({
+    avatar: "https://i.imgur.com/1X6g1YH.jpeg",
+    name: "User",
+    username: "",
+    bio: "",
+    age: "",
+    gender: "",
+    sexuality: "",
+    birthday: "",
+    timezone: "",
+    accent: "#7000ff",
+    nameColor: "#ffffff",
+    bioColor: "rgba(255,255,255,0.7)",
+    font: "Inter",
+    bgType: "gradient",
+    gradient: "linear-gradient(135deg, #1a0b1a 0%, #050106 100%)",
+    bgVideo: "",
+    bgImage: "",
+    bgAudio: "",
+    showGlass: true
+  })
 
-  const [links, setLinks] = useState<any[]>([])
-  const [badges, setBadges] = useState<any>({ user: true, dev: false, staff: false })
+  const [links, setLinks] = useState<SocialLink[]>([])
+  const [badges, setBadges] = useState<Badges>({ user: true, dev: false, staff: false })
   const [devPassword, setDevPassword] = useState("")
-
-  // Appearance States
-  const [accent, setAccent] = useState("#7000ff")
-  const [nameColor, setNameColor] = useState("#ffffff")
-  const [bioColor, setBioColor] = useState("rgba(255,255,255,0.7)")
-  const [font, setFont] = useState("Inter")
-  const [bgType, setBgType] = useState("gradient")
-  const [gradient, setGradient] = useState("linear-gradient(135deg, #1a0b1a 0%, #050106 100%)")
-  const [bgVideo, setBgVideo] = useState("")
-  const [bgImage, setBgImage] = useState("")
-  const [bgAudio, setBgAudio] = useState("")
-  const [showGlass, setShowGlass] = useState(true)
 
   const timezones = useMemo(() => Intl.supportedValuesOf('timeZone'), []);
 
@@ -91,8 +93,8 @@ export default function SoftcardDashboard() {
       if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-          setLoading(false);
-          return;
+        setLoading(false);
+        return;
       }
 
       const { data: profile } = await supabase
@@ -102,86 +104,91 @@ export default function SoftcardDashboard() {
         .single()
 
       if (profile) {
-        setAvatar(profile.avatar_url || avatar)
-        setName(profile.display_name || name)
-        setUsername(profile.username || "") 
-        setBio(profile.bio || "")
-        setAge(profile.age || "")
-        setGender(profile.gender || "")
-        setSexuality(profile.sexuality || "")
-        setBirthday(profile.birthday || "")
-        setTimezone(profile.timezone || "")
+        setProfileData(prev => ({
+          ...prev,
+          avatar: profile.avatar_url || prev.avatar,
+          name: profile.display_name || prev.name,
+          username: profile.username || "",
+          bio: profile.bio || "",
+          age: profile.age || "",
+          gender: profile.gender || "",
+          sexuality: profile.sexuality || "",
+          birthday: profile.birthday || "",
+          timezone: profile.timezone || "",
+          accent: profile.accent_color || "#7000ff",
+          nameColor: profile.name_color || "#ffffff",
+          bioColor: profile.bio_color || "rgba(255,255,255,0.7)",
+          font: profile.font_family || "Inter",
+          bgType: profile.background_type || "gradient",
+          bgAudio: profile.audio_url || "",
+          showGlass: profile.show_glass_card ?? true,
+          gradient: profile.background_type === "gradient" ? profile.background_value : prev.gradient,
+          bgVideo: profile.background_type === "video" ? profile.background_value : "",
+          bgImage: profile.background_type === "image" ? profile.background_value : ""
+        }))
         setLinks(profile.links || [])
-        setAccent(profile.accent_color || "#7000ff")
-        setNameColor(profile.name_color || "#ffffff")
-        setBioColor(profile.bio_color || "rgba(255,255,255,0.7)")
-        setFont(profile.font_family || "Inter")
-        setBgType(profile.background_type || "gradient")
-        setBadges(profile.badges || { user: true })
-        setBgAudio(profile.audio_url || "")
-        setShowGlass(profile.show_glass_card ?? true)
-
-        const bgVal = profile.background_value || "";
-        if (profile.background_type === "gradient") setGradient(bgVal || gradient);
-        else if (profile.background_type === "video") setBgVideo(bgVal);
-        else if (profile.background_type === "image") setBgImage(bgVal);
+        setBadges(profile.badges || { user: true, dev: false, staff: false })
       }
       setLoading(false)
     }
     loadData()
   }, [supabase])
 
-  async function saveChanges() {
+  const saveChanges = async () => {
     if (!supabase) return;
     setSaving(true)
     try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) throw new Error("No user found");
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error("No user found");
 
-        const { error } = await supabase.from('profiles').update({
-          display_name: name,
-          avatar_url: avatar,
-          bio: bio,
-          age: age,
-          gender: gender,
-          sexuality: sexuality,
-          birthday: birthday,
-          timezone: timezone,
-          links: links,
-          accent_color: accent,
-          name_color: nameColor,
-          bio_color: bioColor,
-          font_family: font,
-          background_type: bgType,
-          background_value: bgType === "gradient" ? gradient : (bgType === "video" ? bgVideo : bgImage),
-          audio_url: bgAudio,
-          badges: badges,
-          show_glass_card: showGlass,
-          setup_completed: true
-        }).eq('id', user.id)
+      const { error } = await supabase.from('profiles').update({
+        display_name: profileData.name,
+        avatar_url: profileData.avatar,
+        bio: profileData.bio,
+        age: profileData.age,
+        gender: profileData.gender,
+        sexuality: profileData.sexuality,
+        birthday: profileData.birthday,
+        timezone: profileData.timezone,
+        links: links,
+        accent_color: profileData.accent,
+        name_color: profileData.nameColor,
+        bio_color: profileData.bioColor,
+        font_family: profileData.font,
+        background_type: profileData.bgType,
+        background_value: profileData.bgType === "gradient" ? profileData.gradient : (profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage),
+        audio_url: profileData.bgAudio,
+        badges: badges,
+        show_glass_card: profileData.showGlass,
+        setup_completed: true
+      }).eq('id', user.id)
 
-        if (error) throw error;
-        alert("Published successfully! ♡")
+      if (error) throw error;
+      alert("Published successfully! ♡")
     } catch (err: any) {
-        alert("Error: " + err.message)
+      alert("Error: " + err.message)
     } finally {
-        setSaving(false)
+      setSaving(false)
     }
   }
 
   const handleCopy = () => {
-    if (!username) return;
-    navigator.clipboard.writeText(`softcard.cc/${username}`)
+    if (!profileData.username) return;
+    navigator.clipboard.writeText(`softcard.cc/${profileData.username}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   const addLink = () => setLinks([...links, { id: Date.now(), type: "website", url: "" }])
   const removeLink = (id: number) => setLinks(links.filter(l => l.id !== id))
-  const updateLink = (i: number, key: string, val: string) => {
-    const copy = [...links]
-    copy[i][key] = val
-    setLinks(copy)
+  const updateLink = (index: number, key: keyof SocialLink, val: string) => {
+    const updated = [...links]
+    updated[index] = { ...updated[index], [key]: val }
+    setLinks(updated)
+  }
+
+  const updateProfile = (key: string, value: any) => {
+    setProfileData(prev => ({ ...prev, [key]: value }))
   }
 
   const unlockDev = () => {
@@ -194,9 +201,11 @@ export default function SoftcardDashboard() {
     }
   }
 
-  if (loading) return <div style={{ height: '100vh', background: '#020617', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="animate-pulse text-pink-500 font-bold">LOADING...</div>
-  </div>
+  if (loading) return (
+    <div style={{ height: '100vh', background: '#020617', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="animate-pulse text-pink-500 font-bold tracking-widest">LOADING SOFTCARD...</div>
+    </div>
+  )
 
   if (view === "hub") {
     return (
@@ -267,13 +276,13 @@ export default function SoftcardDashboard() {
         <div className="hx-container">
           <div className="hub-header">
             <p className="hx-status">DASHBOARD</p>
-            <h1 className="hx-title">Welcome back, <span className="hx-username">{username || "User"}</span></h1>
+            <h1 className="hx-title">Welcome back, <span className="hx-username">{profileData.username || "User"}</span></h1>
           </div>
 
           <div className="hx-circle-wrap">
             <div className="hx-circle">
               <div className="hx-avatar">
-                <img src={avatar} alt="avatar" />
+                <img src={profileData.avatar} alt="avatar" />
               </div>
             </div>
 
@@ -290,13 +299,13 @@ export default function SoftcardDashboard() {
 
           <div>
             <div className="hx-url">
-              <span style={{ opacity: 0.6, fontSize: '14px' }}>softcard.cc/{username || "..."}</span>
+              <span style={{ opacity: 0.6, fontSize: '14px' }}>softcard.cc/{profileData.username || "..."}</span>
               <div style={{ display: 'flex', gap: '6px' }}>
                 <button className="hx-small-btn" onClick={handleCopy}>
                   {copied ? <Check size={14} /> : <Copy size={14} />}
                   {copied ? "Copied" : "Copy"}
                 </button>
-                <a href={`/${username}`} target="_blank" rel="noreferrer" className="hx-small-btn hx-view">
+                <a href={`/${profileData.username}`} target="_blank" rel="noreferrer" className="hx-small-btn hx-view">
                   <ExternalLink size={14} />
                   View
                 </a>
@@ -309,7 +318,7 @@ export default function SoftcardDashboard() {
   }
 
   return (
-    <div className="softcardx-dashboard" style={{ fontFamily: `${font}, system-ui` }}>
+    <div className="softcardx-dashboard" style={{ fontFamily: `${profileData.font}, system-ui, sans-serif` }}>
       <style>{`
         .softcardx-dashboard { display: flex; height: 100vh; background: #050106; color: white; overflow: hidden; }
         .sx-sidebar { width: 400px; background: rgba(10, 0, 15, 0.7); backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 0, 128, 0.15); padding: 25px; overflow-y: auto; }
@@ -321,15 +330,15 @@ export default function SoftcardDashboard() {
           width: 90%; max-width: 420px;
           padding: 40px 25px; border-radius: 28px;
           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          background: ${showGlass ? 'rgba(0, 0, 0, 0.45)' : 'transparent'};
-          backdrop-filter: ${showGlass ? 'blur(25px)' : 'none'};
-          border: ${showGlass ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
-          box-shadow: ${showGlass ? '0 25px 50px -12px rgba(0, 0, 0, 0.7)' : 'none'};
+          background: ${profileData.showGlass ? 'rgba(0, 0, 0, 0.45)' : 'transparent'};
+          backdrop-filter: ${profileData.showGlass ? 'blur(25px)' : 'none'};
+          border: ${profileData.showGlass ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
+          box-shadow: ${profileData.showGlass ? '0 25px 50px -12px rgba(0, 0, 0, 0.7)' : 'none'};
         }
         
         .sx-pfp { 
           width: 110px; height: 110px; border-radius: 50%; object-fit: cover; margin-bottom: 20px;
-          border: 2px solid ${accent}; padding: 3px;
+          border: 2px solid ${profileData.accent}; padding: 3px;
         }
         
         .sx-name { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 8px; }
@@ -366,7 +375,7 @@ export default function SoftcardDashboard() {
             box-shadow: 0 8px 20px rgba(255, 0, 128, 0.25); margin-bottom: 25px; transition: 0.2s;
         }
         .sx-publish-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
-        .sx-publish-btn:active { transform: translateY(0); }
+        .sx-publish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .sx-tabs-row { display: flex; gap: 4px; margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px; }
         .sx-tab { flex: 1; padding: 10px 5px; border-radius: 9px; cursor: pointer; opacity: 0.5; text-align: center; transition: 0.2s; font-size: 11px; font-weight: 700; text-transform: uppercase; }
@@ -405,7 +414,7 @@ export default function SoftcardDashboard() {
           <X size={16} /> Close Editor
         </div>
         
-        <button className="sx-publish-btn" onClick={saveChanges}>
+        <button className="sx-publish-btn" onClick={saveChanges} disabled={saving}>
           {saving ? "Saving Changes..." : "Save & Publish Page"}
         </button>
 
@@ -418,9 +427,27 @@ export default function SoftcardDashboard() {
 
         {tab === "profile" && (
           <div className="sx-pane animate-in fade-in duration-300">
-            <div className="sx-input-group"><label className="sx-label">Avatar Image URL</label><input className="sx-input" value={avatar} onChange={e => setAvatar(e.target.value)} placeholder="https://..." /></div>
-            <div className="sx-input-group"><label className="sx-label">Display Name</label><input className="sx-input" value={name} onChange={e => setName(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Short Bio</label><textarea className="sx-input" rows={3} style={{resize: 'none'}} value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell the world about yourself..." /></div>
+            <div className="sx-input-group mb-4">
+              <label className="sx-label">Avatar Image URL</label>
+              <input className="sx-input" value={profileData.avatar} onChange={e => updateProfile("avatar", e.target.value)} placeholder="https://..." />
+            </div>
+            <div className="sx-input-group mb-4">
+              <label className="sx-label">Display Name</label>
+              <input className="sx-input" value={profileData.name} onChange={e => updateProfile("name", e.target.value)} />
+            </div>
+            <div className="sx-input-group mb-4">
+              <label className="sx-label">Short Bio</label>
+              <textarea 
+                className="sx-input" 
+                rows={3} 
+                style={{resize: 'none'}} 
+                value={profileData.bio} 
+                onChange={e => updateProfile("bio", e.target.value)} 
+                placeholder="Tell the world about yourself..." 
+                maxLength={150}
+              />
+              <span className="text-[10px] opacity-30 mt-1 block text-right">{profileData.bio.length}/150</span>
+            </div>
             
             <div style={{marginTop: '25px'}}>
                 <label className="sx-label">Social Links</label>
@@ -447,29 +474,29 @@ export default function SoftcardDashboard() {
             <div className="sx-input-group">
               <label className="sx-label">Age</label>
               <div className="tag-input-wrapper">
-                <input type="number" className="sx-input" placeholder="Age" value={age} onChange={e => setAge(e.target.value.slice(0, 2))} />
-                <button className="sx-tag-clear" onClick={() => setAge("")}><X size={16} /></button>
+                <input type="number" className="sx-input" placeholder="Age" value={profileData.age} onChange={e => updateProfile("age", e.target.value.slice(0, 2))} />
+                <button className="sx-tag-clear" onClick={() => updateProfile("age", "")}><X size={16} /></button>
               </div>
             </div>
 
             <div className="sx-input-group">
               <label className="sx-label">Gender</label>
               <div className="tag-input-wrapper">
-                <select className="sx-input" value={gender} onChange={e => setGender(e.target.value)}>
+                <select className="sx-input" value={profileData.gender} onChange={e => updateProfile("gender", e.target.value)}>
                   <option value="">Select Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Non-Binary">Non-Binary</option>
                   <option value="Other">Other</option>
                 </select>
-                <button className="sx-tag-clear" onClick={() => setGender("")}><X size={16} /></button>
+                <button className="sx-tag-clear" onClick={() => updateProfile("gender", "")}><X size={16} /></button>
               </div>
             </div>
 
             <div className="sx-input-group">
               <label className="sx-label">Sexuality</label>
               <div className="tag-input-wrapper">
-                <select className="sx-input" value={sexuality} onChange={e => setSexuality(e.target.value)}>
+                <select className="sx-input" value={profileData.sexuality} onChange={e => updateProfile("sexuality", e.target.value)}>
                   <option value="">Select Sexuality</option>
                   <option value="Straight">Straight</option>
                   <option value="Gay">Gay</option>
@@ -479,26 +506,26 @@ export default function SoftcardDashboard() {
                   <option value="Asexual">Asexual</option>
                   <option value="Queer">Queer</option>
                 </select>
-                <button className="sx-tag-clear" onClick={() => setSexuality("")}><X size={16} /></button>
+                <button className="sx-tag-clear" onClick={() => updateProfile("sexuality", "")}><X size={16} /></button>
               </div>
             </div>
 
             <div className="sx-input-group">
               <label className="sx-label">Birthday</label>
               <div className="tag-input-wrapper">
-                <input type="date" className="sx-input" value={birthday} onChange={e => setBirthday(e.target.value)} />
-                <button className="sx-tag-clear" onClick={() => setBirthday("")}><X size={16} /></button>
+                <input type="date" className="sx-input" value={profileData.birthday} onChange={e => updateProfile("birthday", e.target.value)} />
+                <button className="sx-tag-clear" onClick={() => updateProfile("birthday", "")}><X size={16} /></button>
               </div>
             </div>
 
             <div className="sx-input-group">
               <label className="sx-label">Timezone</label>
               <div className="tag-input-wrapper">
-                <select className="sx-input" value={timezone} onChange={e => setTimezone(e.target.value)}>
+                <select className="sx-input" value={profileData.timezone} onChange={e => updateProfile("timezone", e.target.value)}>
                   <option value="">Select Timezone</option>
                   {timezones.map(tz => <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>)}
                 </select>
-                <button className="sx-tag-clear" onClick={() => setTimezone("")}><X size={16} /></button>
+                <button className="sx-tag-clear" onClick={() => updateProfile("timezone", "")}><X size={16} /></button>
               </div>
             </div>
           </div>
@@ -507,40 +534,50 @@ export default function SoftcardDashboard() {
         {tab === "appearance" && (
           <div className="sx-pane animate-in fade-in duration-300">
             <div className="sx-input-group" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px'}}>
-                <input type="checkbox" id="glass" checked={showGlass} onChange={e => setShowGlass(e.target.checked)} style={{width: '18px', height: '18px'}} />
+                <input type="checkbox" id="glass" checked={profileData.showGlass} onChange={e => updateProfile("showGlass", e.target.checked)} style={{width: '18px', height: '18px'}} />
                 <label htmlFor="glass" style={{margin: 0, fontSize: '13px', cursor: 'pointer'}}>Transparent Glass Card</label>
             </div>
 
             <div className="sx-input-group" style={{marginTop: '20px'}}>
+                <label className="sx-label">Font Style</label>
+                <select className="sx-input" value={profileData.font} onChange={e => updateProfile("font", e.target.value)}>
+                  <option value="Inter">Inter (Sans)</option>
+                  <option value="Playfair Display">Playfair (Serif)</option>
+                  <option value="JetBrains Mono">JetBrains (Mono)</option>
+                  <option value="Outfit">Outfit (Modern)</option>
+                </select>
+            </div>
+
+            <div className="sx-input-group" style={{marginTop: '20px'}}>
                 <label className="sx-label">Background Type</label>
-                <select className="sx-input" value={bgType} onChange={e => setBgType(e.target.value)}>
+                <select className="sx-input" value={profileData.bgType} onChange={e => updateProfile("bgType", e.target.value)}>
                   <option value="gradient">Gradient</option>
                   <option value="video">Video</option>
                   <option value="image">Image</option>
                 </select>
             </div>
 
-            {bgType === "gradient" && (
+            {profileData.bgType === "gradient" && (
               <div className="sx-input-group">
                 <label className="sx-label">CSS Gradient String</label>
-                <input className="sx-input" value={gradient} onChange={e => setGradient(e.target.value)} placeholder="linear-gradient(...)" />
+                <input className="sx-input" value={profileData.gradient} onChange={e => updateProfile("gradient", e.target.value)} placeholder="linear-gradient(...)" />
               </div>
             )}
-            {(bgType === "video" || bgType === "image") && (
+            {(profileData.bgType === "video" || profileData.bgType === "image") && (
               <div className="sx-input-group">
-                <label className="sx-label">{bgType === "video" ? "Video (.mp4) URL" : "Image URL"}</label>
-                <input className="sx-input" value={bgType === "video" ? bgVideo : bgImage} onChange={e => bgType === "video" ? setBgVideo(e.target.value) : setBgImage(e.target.value)} placeholder="Direct link..." />
+                <label className="sx-label">{profileData.bgType === "video" ? "Video (.mp4) URL" : "Image URL"}</label>
+                <input className="sx-input" value={profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage} onChange={e => profileData.bgType === "video" ? updateProfile("bgVideo", e.target.value) : updateProfile("bgImage", e.target.value)} placeholder="Direct link..." />
               </div>
             )}
 
             <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px'}}>
-                <div className="sx-input-group"><label className="sx-label">Name Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={nameColor} onChange={e => setNameColor(e.target.value)} /></div>
-                <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={accent} onChange={e => setAccent(e.target.value)} /></div>
+                <div className="sx-input-group"><label className="sx-label">Name Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.nameColor} onChange={e => updateProfile("nameColor", e.target.value)} /></div>
+                <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.accent} onChange={e => updateProfile("accent", e.target.value)} /></div>
             </div>
 
             <div className="sx-input-group">
               <label className="sx-label">Audio Background URL (.mp3)</label>
-              <input className="sx-input" value={bgAudio} onChange={e => setBgAudio(e.target.value)} placeholder="Link to audio file" />
+              <input className="sx-input" value={profileData.bgAudio} onChange={e => updateProfile("bgAudio", e.target.value)} placeholder="Link to audio file" />
             </div>
           </div>
         )}
@@ -562,37 +599,37 @@ export default function SoftcardDashboard() {
       </div>
 
       <div className="sx-preview-pane">
-        {bgType === "gradient" && <div className="sx-bg-layer" style={{ background: gradient }} />}
-        {bgType === "video" && bgVideo && <video className="sx-bg-layer" src={bgVideo} autoPlay loop muted playsInline />}
-        {bgType === "image" && bgImage && <img className="sx-bg-layer" src={bgImage} alt="bg" />}
+        {profileData.bgType === "gradient" && <div className="sx-bg-layer" style={{ background: profileData.gradient }} />}
+        {profileData.bgType === "video" && profileData.bgVideo && <video className="sx-bg-layer" src={profileData.bgVideo} autoPlay loop muted playsInline />}
+        {profileData.bgType === "image" && profileData.bgImage && <img className="sx-bg-layer" src={profileData.bgImage} alt="bg" />}
         
         <div className="sx-profile-card">
-          <img src={avatar} className="sx-pfp" alt="profile" />
+          <img src={profileData.avatar} className="sx-pfp" alt="profile" />
           
-          <div className="sx-name" style={{ color: nameColor }}>{name}</div>
+          <div className="sx-name" style={{ color: profileData.nameColor }}>{profileData.name}</div>
 
           {(badges.user || badges.dev || badges.staff) && (
             <div className="sx-badge-pill">
                 {badges.user && <ShieldCheck size={16} color="#3b82f6" />}
-                {badges.dev && <Code size={16} color={accent} />}
+                {badges.dev && <Code size={16} color={profileData.accent} />}
                 {badges.staff && <Star size={16} color="#f59e0b" />}
             </div>
           )}
 
           <div className="sx-tags-row">
-            {age && <span className="sx-tag-pill">{age} y/o</span>}
-            {gender && <span className="sx-tag-pill">{gender}</span>}
-            {sexuality && <span className="sx-tag-pill">{sexuality}</span>}
-            {birthday && <span className="sx-tag-pill">{new Date(birthday).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span>}
-            {timezone && <span className="sx-tag-pill">{timezone.split('/').pop()?.replace('_', ' ')}</span>}
+            {profileData.age && <span className="sx-tag-pill">{profileData.age} y/o</span>}
+            {profileData.gender && <span className="sx-tag-pill">{profileData.gender}</span>}
+            {profileData.sexuality && <span className="sx-tag-pill">{profileData.sexuality}</span>}
+            {profileData.birthday && <span className="sx-tag-pill">{new Date(profileData.birthday).toLocaleDateString(undefined, {month: 'short', day: 'numeric', timeZone: 'UTC'})}</span>}
+            {profileData.timezone && <span className="sx-tag-pill">{profileData.timezone.split('/').pop()?.replace('_', ' ')}</span>}
           </div>
 
-          <div className="sx-bio" style={{ color: bioColor }}>{bio || "No bio yet."}</div>
+          <div className="sx-bio" style={{ color: profileData.bioColor }}>{profileData.bio || "No bio yet."}</div>
           
           <div className="sx-links-row">
             {links.map(l => l.url && (
               <a key={l.id} href={l.url} target="_blank" rel="noreferrer" className="sx-icon-link">
-                <img src={getIcon(l)} alt={l.type} />
+                <img src={iconMap[l.type] || iconMap.website} alt={l.type} />
               </a>
             ))}
           </div>
