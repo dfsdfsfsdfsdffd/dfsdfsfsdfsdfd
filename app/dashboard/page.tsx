@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { Pencil, BarChart3, LogOut, ShieldCheck, Code, Star, Trash2, Globe, Tag as TagIcon, Plus } from "lucide-react"
+import { Pencil, BarChart3, LogOut, ShieldCheck, Code, Star, Trash2, Globe, Tag as TagIcon, Plus, X } from "lucide-react"
 
 // Social Icon Mapping
 const iconMap: any = {
@@ -69,6 +69,9 @@ export default function SoftcardDashboard() {
   const [bgImage, setBgImage] = useState("")
   const [bgAudio, setBgAudio] = useState("")
   const [showGlass, setShowGlass] = useState(true)
+
+  // List of all timezones
+  const timezones = Intl.supportedValuesOf('timeZone');
 
   useEffect(() => {
     async function loadData() {
@@ -405,6 +408,14 @@ export default function SoftcardDashboard() {
             width: 22px; height: 22px; border-radius: 50%;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
+        
+        /* New Tag Styles */
+        .tag-input-wrapper { display: flex; align-items: center; gap: 8px; }
+        .sx-tag-clear { 
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+          border-radius: 8px; padding: 10px; cursor: pointer; color: #ff4d4d; transition: 0.2s;
+        }
+        .sx-tag-clear:hover { background: rgba(255, 77, 77, 0.2); border-color: #ff4d4d; }
       `}</style>
 
       <div className="sx-sidebar">
@@ -442,11 +453,83 @@ export default function SoftcardDashboard() {
 
         {tab === "tags" && (
           <div className="sx-pane">
-            <div className="sx-input-group"><label className="sx-label">Age</label><input className="sx-input" placeholder="18" value={age} onChange={e => setAge(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Gender</label><input className="sx-input" placeholder="female" value={gender} onChange={e => setGender(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Sexuality</label><input className="sx-input" placeholder="gay" value={sexuality} onChange={e => setSexuality(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Birthday</label><input className="sx-input" placeholder="april 11th" value={birthday} onChange={e => setBirthday(e.target.value)} /></div>
-            <div className="sx-input-group"><label className="sx-label">Timezone</label><input className="sx-input" placeholder="est" value={timezone} onChange={e => setTimezone(e.target.value)} /></div>
+            {/* Age - 2 Digit Number */}
+            <div className="sx-input-group">
+              <label className="sx-label">Age</label>
+              <div className="tag-input-wrapper">
+                <input 
+                  type="number" 
+                  className="sx-input" 
+                  placeholder="18" 
+                  value={age} 
+                  onChange={e => setAge(e.target.value.slice(0, 2))} 
+                />
+                <button className="sx-tag-clear" onClick={() => setAge("")}><X size={16} /></button>
+              </div>
+            </div>
+
+            {/* Gender Dropdown */}
+            <div className="sx-input-group">
+              <label className="sx-label">Gender</label>
+              <div className="tag-input-wrapper">
+                <select className="sx-input" value={gender} onChange={e => setGender(e.target.value)}>
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="non-binary">Non-Binary</option>
+                  <option value="other">Other</option>
+                </select>
+                <button className="sx-tag-clear" onClick={() => setGender("")}><X size={16} /></button>
+              </div>
+            </div>
+
+            {/* Sexuality Dropdown - Top 10 + Other */}
+            <div className="sx-input-group">
+              <label className="sx-label">Sexuality</label>
+              <div className="tag-input-wrapper">
+                <select className="sx-input" value={sexuality} onChange={e => setSexuality(e.target.value)}>
+                  <option value="">Select Sexuality</option>
+                  <option value="straight">Straight</option>
+                  <option value="gay">Gay</option>
+                  <option value="lesbian">Lesbian</option>
+                  <option value="bisexual">Bisexual</option>
+                  <option value="pansexual">Pansexual</option>
+                  <option value="asexual">Asexual</option>
+                  <option value="queer">Queer</option>
+                  <option value="questioning">Questioning</option>
+                  <option value="omnisexual">Omnisexual</option>
+                  <option value="polysexual">Polysexual</option>
+                  <option value="other">Other</option>
+                </select>
+                <button className="sx-tag-clear" onClick={() => setSexuality("")}><X size={16} /></button>
+              </div>
+            </div>
+
+            {/* Birthday - Calendar */}
+            <div className="sx-input-group">
+              <label className="sx-label">Birthday</label>
+              <div className="tag-input-wrapper">
+                <input 
+                  type="date" 
+                  className="sx-input" 
+                  value={birthday} 
+                  onChange={e => setBirthday(e.target.value)} 
+                />
+                <button className="sx-tag-clear" onClick={() => setBirthday("")}><X size={16} /></button>
+              </div>
+            </div>
+
+            {/* Timezone - Full List Dropdown */}
+            <div className="sx-input-group">
+              <label className="sx-label">Timezone</label>
+              <div className="tag-input-wrapper">
+                <select className="sx-input" value={timezone} onChange={e => setTimezone(e.target.value)}>
+                  <option value="">Select Timezone</option>
+                  {timezones.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+                </select>
+                <button className="sx-tag-clear" onClick={() => setTimezone("")}><X size={16} /></button>
+              </div>
+            </div>
           </div>
         )}
 
