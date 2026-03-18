@@ -27,6 +27,7 @@ export default function PublicProfile({ params }: { params: { username: string }
   const [hasEntered, setHasEntered] = useState(false)
   const [volume, setVolume] = useState(0.5)
   const [isMuted, setIsMuted] = useState(false)
+  const [copied, setCopied] = useState(false) // State for copy notification
   
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -38,7 +39,6 @@ export default function PublicProfile({ params }: { params: { username: string }
 
   useEffect(() => {
     async function loadProfile() {
-      // 1. Fetch profile data
       const { data } = await supabase
         .from('profiles')
         .select('*')
@@ -47,9 +47,6 @@ export default function PublicProfile({ params }: { params: { username: string }
       
       if (data) {
         setProfile(data)
-        
-        // 2. Increment view count in DB
-        // Calls the SQL function you created in Supabase
         await supabase.rpc('increment_profile_views', { target_id: data.id })
       }
     }
@@ -129,15 +126,9 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         .view-count {
-          position: absolute;
-          top: 18px;
-          right: 22px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 12px;
-          font-weight: 700;
-          /* Increased visibility */
+          position: absolute; top: 18px; right: 22px;
+          display: flex; align-items: center; gap: 6px;
+          font-size: 12px; font-weight: 700;
           color: rgba(255, 255, 255, 0.85);
           text-shadow: 0 2px 4px rgba(0,0,0,0.5);
           letter-spacing: 0.02em;
@@ -180,9 +171,22 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         .social-row { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; }
-        .social-link { transition: 0.3s; opacity: 0.75; }
+        .social-link { transition: 0.3s; opacity: 0.75; position: relative; cursor: pointer; }
         .social-link:hover { opacity: 1; transform: scale(1.1) translateY(-2px); }
         .social-icon { width: 24px; height: 24px; }
+
+        .copy-toast {
+          position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+          background: ${accent}; color: white; font-size: 10px; font-weight: 800;
+          padding: 4px 8px; border-radius: 6px; margin-bottom: 8px;
+          white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          animation: popIn 0.2s ease-out;
+        }
+
+        @keyframes popIn {
+          from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
@@ -227,7 +231,6 @@ export default function PublicProfile({ params }: { params: { username: string }
       <div className="profile-card">
         <div className="view-count">
           <Eye size={14} strokeWidth={2.5} />
-          {/* We show current views + 1 so the user's visit is counted instantly on screen */}
           {((profile.views || 0) + 1).toLocaleString()}
         </div>
 
@@ -262,11 +265,34 @@ export default function PublicProfile({ params }: { params: { username: string }
         <div className="bio">{profile.bio || "No bio yet."}</div>
 
         <div className="social-row">
-          {socials.map((l: any) => (
-            <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="social-link">
-              <img src={getIcon(l)} className="social-icon" alt="icon" />
-            </a>
-          ))}
+          {socials.map((l: any) => {
+            const isDiscord = l.type === 'discord';
+            
+            const handleSocialClick = (e: React.MouseEvent) => {
+              if (isDiscord) {
+                e.preventDefault();
+                // Get the username by removing URL parts if present
+                const val = l.url.split('/').pop();
+                navigator.clipboard.writeText(val);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }
+            };
+
+            return (
+              <a 
+                key={l.id} 
+                href={isDiscord ? "#" : (l.url.startsWith('http') ? l.url : `https://${l.url}`)} 
+                target={isDiscord ? "_self" : "_blank"} 
+                rel="noopener noreferrer" 
+                className="social-link"
+                onClick={handleSocialClick}
+              >
+                <img src={getIcon(l)} className="social-icon" alt="icon" />
+                {isDiscord && copied && <div className="copy-toast">Copied!</div>}
+              </a>
+            );
+          })}
         </div>
       </div>
     </div>
