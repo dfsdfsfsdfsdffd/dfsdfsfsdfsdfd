@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from '@supabase/ssr';
@@ -26,6 +26,18 @@ export default function Login() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   ), []);
 
+  // 🔄 AUTO-LOGIN LOGIC
+  // If they are already logged in, send them to dashboard immediately
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push("/dashboard");
+      }
+    };
+    checkUser();
+  }, [supabase, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -33,84 +45,72 @@ export default function Login() {
 
     try {
       if (mode === "signup") {
-        // 🔍 Check username first (faster UX)
-        const { data: existingUsername } = await supabase
+        // 1. Check username availability FIRST
+        const { data: existingUser } = await supabase
           .from("profiles")
           .select("username")
           .eq("username", username)
           .maybeSingle();
 
-        if (existingUsername) {
+        if (existingUser) {
           setError("That username is already taken.");
           setLoading(false);
           return;
         }
-      }
 
-      // 🔐 AUTH
-      const { data, error: authError } = mode === "signin"
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({
-            email,
-            password,
-            options: { data: { full_name: username } }
-          });
+        // 2. Auth SignUp
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: username } }
+        });
 
-      if (authError) {
-        // 🔥 Handle duplicate email cleanly
-        if (authError.message.toLowerCase().includes("already")) {
-          setError("An account with this email already exists.");
-        } else {
+        if (authError) {
           setError(authError.message);
+          setLoading(false);
+          return;
         }
-        setLoading(false);
-        return;
-      }
 
-      if (!data.user) {
-        setLoading(false);
-        return;
-      }
+        if (authData?.user) {
+          // 3. Create Profile (The "Fixed" way)
+          // We use upsert or a cleaner insert to ensure the profile exists
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .insert([{ 
+              id: authData.user.id, 
+              username: username, 
+              email: email,
+              views: 0 // Initialize views
+            }]);
 
-      // 📦 CREATE PROFILE (protected by SQL constraints too)
-      if (mode === "signup") {
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert({
-            id: data.user.id,
-            username: username,
-            email: email
-          });
-
-        // 🔥 This catches DB-level duplicate errors
-        if (insertError) {
-          if (insertError.message.toLowerCase().includes("username")) {
-            setError("That username is already taken.");
-          } else if (insertError.message.toLowerCase().includes("email")) {
-            setError("An account with this email already exists.");
-          } else {
-            setError("Something went wrong. Try again.");
+          if (profileError) {
+            // If profile creation fails, we actually have a problem. 
+            // Most likely a RLS policy issue or the user already exists in Auth.
+            setError("Account created, but profile setup failed. Please try signing in.");
+            setLoading(false);
+            return;
           }
+        }
+      } else {
+        // SIGN IN LOGIC
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) {
+          setError(signInError.message);
           setLoading(false);
           return;
         }
       }
 
-      // 🔁 REDIRECT LOGIC
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', data.user.id)
-        .single();
-
-      if (!profile?.username) {
-        router.push("/setup");
-      } else {
-        router.push("/dashboard");
-      }
+      // 4. Final Redirect
+      router.push("/dashboard");
+      router.refresh(); // Forces Next.js to re-check the session
 
     } catch (err) {
-      setError("Unexpected error. Try again.");
+      setError("An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -127,12 +127,6 @@ export default function Login() {
           {mode === "signin" ? "Welcome Back" : "Create Account"}
         </h1>
 
-        <p className="lx-sub">
-          {mode === "signin"
-            ? "Login to your dashboard"
-            : "Start your Softcard page"}
-        </p>
-
         <form className="lx-form" onSubmit={handleSubmit}>
           {error && <p className="lx-error">{error}</p>}
 
@@ -143,7 +137,7 @@ export default function Login() {
               placeholder="Username"
               required
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
             />
           )}
 
@@ -172,15 +166,9 @@ export default function Login() {
 
         <div className="lx-switch">
           {mode === "signin" ? (
-            <>
-              Don’t have an account?{" "}
-              <button onClick={() => setMode("signup")}>Sign up</button>
-            </>
+            <>Don’t have an account? <button onClick={() => setMode("signup")}>Sign up</button></>
           ) : (
-            <>
-              Already have an account?{" "}
-              <button onClick={() => setMode("signin")}>Sign in</button>
-            </>
+            <>Already have an account? <button onClick={() => setMode("signin")}>Sign in</button></>
           )}
         </div>
       </section>
