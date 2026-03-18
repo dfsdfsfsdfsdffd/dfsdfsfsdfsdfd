@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from '@supabase/ssr';
 import { Space_Grotesk } from "next/font/google";
+// Consistent branding with heart icon
+import { Heart } from "lucide-react";
 
 const font = Space_Grotesk({
   subsets: ["latin"],
@@ -26,8 +28,7 @@ export default function Login() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   ), []);
 
-  // 🔄 AUTO-LOGIN LOGIC
-  // If they are already logged in, send them to dashboard immediately
+  // 🔄 AUTO-LOGIN: Stay logged in logic
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -45,7 +46,7 @@ export default function Login() {
 
     try {
       if (mode === "signup") {
-        // 1. Check username availability FIRST
+        // 1. Check username availability
         const { data: existingUser } = await supabase
           .from("profiles")
           .select("username")
@@ -58,11 +59,16 @@ export default function Login() {
           return;
         }
 
-        // 2. Auth SignUp
+        // 2. Auth SignUp 
+        // We rely on the SQL Trigger to create the profile row automatically
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: username } }
+          options: { 
+            data: { full_name: username },
+            // Ensures the user stays logged in after confirmation if applicable
+            emailRedirectTo: `${window.location.origin}/auth/callback`
+          }
         });
 
         if (authError) {
@@ -71,29 +77,15 @@ export default function Login() {
           return;
         }
 
-        if (authData?.user) {
-          // 3. Create Profile (The "Fixed" way)
-          // We use upsert or a cleaner insert to ensure the profile exists
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .insert([{ 
-              id: authData.user.id, 
-              username: username, 
-              email: email,
-              views: 0 // Initialize views
-            }]);
-
-          if (profileError) {
-            // If profile creation fails, we actually have a problem. 
-            // Most likely a RLS policy issue or the user already exists in Auth.
-            setError("Account created, but profile setup failed. Please try signing in.");
-            setLoading(false);
-            return;
-          }
+        // 3. Redirect to setup immediately for new accounts
+        if (authData.user) {
+          router.push("/setup");
+          return;
         }
+
       } else {
         // SIGN IN LOGIC
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
@@ -103,12 +95,22 @@ export default function Login() {
           setLoading(false);
           return;
         }
+
+        // 4. Check if they need setup or dashboard
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('id', signInData.user.id)
+          .single();
+
+        if (!profile?.display_name) {
+          router.push("/setup");
+        } else {
+          router.push("/dashboard");
+        }
       }
 
-      // 4. Final Redirect
-      router.push("/dashboard");
-      router.refresh(); // Forces Next.js to re-check the session
-
+      router.refresh();
     } catch (err) {
       setError("An unexpected error occurred.");
     } finally {
@@ -119,13 +121,20 @@ export default function Login() {
   return (
     <main className={`lx-main ${font.className}`}>
       <nav className="lx-nav">
-        <Link href="/" className="lx-logo">softcard.cc</Link>
+        <Link href="/" className="lx-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Heart size={18} fill="#7000ff" color="#7000ff" />
+          softcard.cc
+        </Link>
       </nav>
 
       <section className="lx-wrap">
         <h1 className="lx-title">
           {mode === "signin" ? "Welcome Back" : "Create Account"}
         </h1>
+
+        <p className="lx-sub">
+          {mode === "signin" ? "Login to your dashboard" : "Start your Softcard page"}
+        </p>
 
         <form className="lx-form" onSubmit={handleSubmit}>
           {error && <p className="lx-error">{error}</p>}
@@ -137,6 +146,7 @@ export default function Login() {
               placeholder="Username"
               required
               value={username}
+              // Prevent spaces and force lowercase for clean URLs
               onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
             />
           )}
