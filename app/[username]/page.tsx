@@ -27,7 +27,6 @@ export default function PublicProfile({ params }: { params: { username: string }
   const [hasEntered, setHasEntered] = useState(false)
   const [volume, setVolume] = useState(0.5)
   const [isMuted, setIsMuted] = useState(false)
-  // Store the ID of the clicked link instead of just a boolean
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null)
   
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -176,22 +175,30 @@ export default function PublicProfile({ params }: { params: { username: string }
         .social-link:hover { opacity: 1; transform: scale(1.1) translateY(-2px); }
         .social-icon { width: 24px; height: 24px; }
 
+        /* FIXED TOAST STYLES */
         .copy-toast {
-          position: absolute; bottom: 140%; left: 50%; transform: translateX(-50%);
-          background: ${accent} !important; 
-          color: white !important; 
-          font-size: 10px; font-weight: 800;
-          padding: 6px 12px; border-radius: 8px;
+          position: absolute; 
+          bottom: 160%; /* Moves it higher so the arrow is visible */
+          left: 50%; 
+          transform: translateX(-50%);
+          background-color: ${accent} !important; 
+          color: #ffffff !important; /* Forces white text */
+          font-size: 11px; 
+          font-weight: 800;
+          padding: 6px 12px; 
+          border-radius: 8px;
           white-space: nowrap; 
-          box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-          z-index: 1000;
-          animation: popIn 0.2s ease-out;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.5); /* Stronger shadow */
+          z-index: 9999;
+          animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
           pointer-events: none;
         }
 
         .copy-toast::after {
           content: '';
-          position: absolute; top: 100%; left: 50%;
+          position: absolute; 
+          top: 100%; 
+          left: 50%;
           transform: translateX(-50%);
           border-width: 6px;
           border-style: solid;
@@ -199,7 +206,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         @keyframes popIn {
-          from { opacity: 0; transform: translateX(-50%) translateY(5px) scale(0.9); }
+          from { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.8); }
           to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
         }
 
@@ -287,11 +294,10 @@ export default function PublicProfile({ params }: { params: { username: string }
             const handleSocialClick = (e: React.MouseEvent) => {
               if (isDiscord && !isInvite) {
                 e.preventDefault();
-                // Extract username from URL if necessary, or just use the full string
                 const val = l.url.split('/').pop();
                 if (val) {
                   navigator.clipboard.writeText(val);
-                  setCopiedLinkId(l.id); // Track which specific link was copied
+                  setCopiedLinkId(l.id);
                   setTimeout(() => setCopiedLinkId(null), 2000);
                 }
               }
@@ -307,7 +313,6 @@ export default function PublicProfile({ params }: { params: { username: string }
                 onClick={handleSocialClick}
               >
                 <img src={getIcon(l)} className="social-icon" alt="icon" />
-                {/* Specific toast for this link */}
                 {isDiscord && !isInvite && copiedLinkId === l.id && (
                   <div className="copy-toast">Copied Username!</div>
                 )}
