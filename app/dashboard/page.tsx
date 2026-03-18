@@ -355,7 +355,6 @@ export default function SoftcardDashboard() {
         }
         .sx-name { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
         
-        /* PILL BADGE STYLING (Next to name) */
         .sx-badge-pill { 
           display: flex; gap: 8px; background: rgba(255, 255, 255, 0.08); 
           padding: 6px 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); 
