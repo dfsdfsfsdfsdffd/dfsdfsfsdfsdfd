@@ -17,20 +17,15 @@ export default function LoginPage() {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    const restricted = ['home', 'login', 'start', 'admin'];
-
     if (isSignUp) {
-      if (restricted.includes(username.toLowerCase())) return alert("Name forbidden.");
-
-      const { data, error } = await supabase.auth.signUp({ 
-        email, 
-        password,
-        options: { data: { display_name: username } }
-      });
-
-      if (error) return alert(error.message);
-      if (data.user) {
-        await supabase.from('profiles').insert({ id: data.user.id, username });
+      const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+      if (authError) return alert(authError.message);
+      if (authData.user) {
+        const { error: dbError } = await supabase.from('profiles').insert({ 
+          id: authData.user.id, 
+          username: username 
+        });
+        if (dbError) return alert("DB Error: " + dbError.message);
         router.push('/start');
       }
     } else {
@@ -42,24 +37,22 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
-      <form onSubmit={handleAuth} className="w-full max-w-sm space-y-4 border border-neutral-900 p-8">
-        <h2 className="text-xl font-bold uppercase tracking-widest text-center">
-          {isSignUp ? 'New Soul' : 'Returning Thane'}
-        </h2>
+      <form onSubmit={handleAuth} className="w-full max-w-sm space-y-4 border border-neutral-800 p-8">
+        <h2 className="text-xl font-bold uppercase text-center tracking-widest">Unbound</h2>
         {isSignUp && (
           <input type="text" placeholder="USERNAME" value={username} onChange={(e) => setUsername(e.target.value)}
-            className="w-full bg-neutral-900 border border-neutral-800 p-3 focus:border-white outline-none font-mono text-sm" required />
+            className="w-full bg-neutral-900 border border-neutral-700 p-3 outline-none" required />
         )}
         <input type="email" placeholder="EMAIL" value={email} onChange={(e) => setEmail(e.target.value)}
-          className="w-full bg-neutral-900 border border-neutral-800 p-3 focus:border-white outline-none font-mono text-sm" required />
+          className="w-full bg-neutral-900 border border-neutral-700 p-3 outline-none" required />
         <input type="password" placeholder="PASSWORD" value={password} onChange={(e) => setPassword(e.target.value)}
-          className="w-full bg-neutral-900 border border-neutral-800 p-3 focus:border-white outline-none font-mono text-sm" required />
-        <button type="submit" className="w-full bg-white text-black font-bold p-3 uppercase tracking-tighter hover:bg-gray-200">
-          {isSignUp ? 'Begin Journey' : 'Authenticate'}
+          className="w-full bg-neutral-900 border border-neutral-700 p-3 outline-none" required />
+        <button type="submit" className="w-full bg-white text-black font-bold p-3 uppercase hover:bg-gray-200">
+          {isSignUp ? 'Create Character' : 'Login'}
         </button>
-        <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="w-full text-xs text-neutral-500 uppercase tracking-widest hover:text-white">
-          {isSignUp ? 'Already Have Account?' : 'Create New Account'}
-        </button>
+        <p className="text-center text-xs text-neutral-500 cursor-pointer" onClick={() => setIsSignUp(!isSignUp)}>
+          {isSignUp ? 'Already have an account?' : 'Need an account?'}
+        </p>
       </form>
     </div>
   );
