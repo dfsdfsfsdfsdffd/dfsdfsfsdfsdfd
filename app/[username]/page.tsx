@@ -17,6 +17,12 @@ const iconMap: any = {
   website: "https://cdn.simpleicons.org/pwa/ffffff"
 }
 
+const badgeInfo = {
+  user: { label: "Verified User", description: "This profile belongs to a verified Softcard user." },
+  dev: { label: "Developer", description: "This user is marked as a Softcard developer." },
+  staff: { label: "Staff", description: "This user is marked as Softcard staff." },
+}
+
 const SAFE_FONTS = new Set(["Inter", "Playfair Display", "JetBrains Mono", "Outfit"]);
 const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
 
@@ -211,6 +217,18 @@ export default function PublicProfile({ params }: { params: { username: string }
           border: 1px solid rgba(255, 255, 255, 0.1);
           align-items: center; margin-bottom: 12px;
         }
+        .badge-tip { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+        .badge-tip::after {
+          content: attr(data-tip);
+          position: absolute; left: 50%; bottom: calc(100% + 9px);
+          transform: translateX(-50%) translateY(4px);
+          width: max-content; max-width: 210px; padding: 8px 10px;
+          border-radius: 8px; background: rgba(0,0,0,0.88);
+          border: 1px solid rgba(255,255,255,0.14);
+          color: white; font-size: 11px; line-height: 1.35;
+          opacity: 0; pointer-events: none; transition: 0.18s ease; z-index: 30;
+        }
+        .badge-tip:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         .tags-row { 
           display: flex; flex-wrap: wrap; align-items: center; justify-content: center; 
@@ -232,6 +250,16 @@ export default function PublicProfile({ params }: { params: { username: string }
         .social-link { transition: 0.3s; opacity: 0.75; }
         .social-link:hover { opacity: 1; transform: scale(1.1) translateY(-2px); }
         .social-icon { width: 24px; height: 24px; }
+        .featured-links { display: flex; flex-direction: column; gap: 9px; width: 100%; max-width: 310px; margin-top: 18px; }
+        .featured-link {
+          display: flex; align-items: center; justify-content: space-between; gap: 12px;
+          padding: 11px 13px; border-radius: 10px;
+          background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+          color: white; text-decoration: none; font-size: 13px; font-weight: 700;
+          transition: transform 0.2s, background 0.2s;
+        }
+        .featured-link:hover { transform: translateY(-1px); background: rgba(255,255,255,0.12); }
+        .featured-link img { width: 18px; height: 18px; opacity: 0.84; }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
@@ -286,9 +314,9 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
           <div className="badges-pill">
-              {profile.badges?.user && <ShieldCheck size={14} color="#3b82f6" />}
-              {profile.badges?.dev && <Code size={14} color={accent} />}
-              {profile.badges?.staff && <Star size={14} color="#f59e0b" />}
+              {profile.badges?.user && <span className="badge-tip" data-tip={badgeInfo.user.description} aria-label={badgeInfo.user.label}><ShieldCheck size={14} color="#3b82f6" /></span>}
+              {profile.badges?.dev && <span className="badge-tip" data-tip={badgeInfo.dev.description} aria-label={badgeInfo.dev.label}><Code size={14} color={accent} /></span>}
+              {profile.badges?.staff && <span className="badge-tip" data-tip={badgeInfo.staff.description} aria-label={badgeInfo.staff.label}><Star size={14} color="#f59e0b" /></span>}
           </div>
         )}
 
@@ -314,6 +342,15 @@ export default function PublicProfile({ params }: { params: { username: string }
           {socials.map((l: any) => (
             <a key={l.id} href={safeExternalUrl(l.url)} target="_blank" rel="noopener noreferrer" className="social-link">
               <img src={getIcon(l)} className="social-icon" alt="icon" />
+            </a>
+          ))}
+        </div>
+
+        <div className="featured-links">
+          {socials.filter((l: any) => l.label).slice(0, 4).map((l: any) => (
+            <a key={`featured-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noopener noreferrer" className="featured-link">
+              <span>{String(l.label).slice(0, 40)}</span>
+              <img src={getIcon(l)} alt="" />
             </a>
           ))}
         </div>

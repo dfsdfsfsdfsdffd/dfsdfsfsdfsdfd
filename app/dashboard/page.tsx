@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { createBrowserClient } from "@supabase/ssr"
 import { useRouter } from "next/navigation"
 import { 
@@ -26,6 +26,7 @@ interface SocialLink {
   id: number;
   type: string;
   url: string;
+  label?: string;
 }
 
 interface Badges {
@@ -47,6 +48,12 @@ const iconMap: Record<string, string> = {
   threads: "https://cdn.simpleicons.org/threads/ffffff",
   linkedin: "https://cdn.simpleicons.org/linkedin/ffffff",
   website: "https://cdn.simpleicons.org/pwa/ffffff"
+}
+
+const badgeInfo = {
+  user: { label: "Verified User", description: "This profile belongs to a verified Softcard user." },
+  dev: { label: "Developer", description: "This user is marked as a Softcard developer." },
+  staff: { label: "Staff", description: "This user is marked as Softcard staff." },
 }
 
 export default function SoftcardDashboard() {
@@ -181,7 +188,7 @@ export default function SoftcardDashboard() {
       }).eq('id', user.id)
 
       if (error) throw error;
-      alert("Published successfully! ♡")
+      alert("Published successfully!")
     } catch (err: any) {
       alert("Error: " + err.message)
     } finally {
@@ -196,7 +203,7 @@ export default function SoftcardDashboard() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const addLink = () => setLinks([...links, { id: Date.now(), type: "website", url: "" }])
+  const addLink = () => setLinks([...links, { id: Date.now(), type: "website", url: "", label: "" }])
   const removeLink = (id: number) => setLinks(links.filter(l => l.id !== id))
   const updateLink = (index: number, key: keyof SocialLink, val: string) => {
     const updated = [...links]
@@ -361,6 +368,18 @@ export default function SoftcardDashboard() {
           padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); 
           align-items: center; margin-bottom: 12px;
         }
+        .sx-badge-tip { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+        .sx-badge-tip::after {
+          content: attr(data-tip);
+          position: absolute; left: 50%; bottom: calc(100% + 9px);
+          transform: translateX(-50%) translateY(4px);
+          width: max-content; max-width: 190px; padding: 8px 10px;
+          border-radius: 8px; background: rgba(0, 0, 0, 0.86);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: white; font-size: 11px; line-height: 1.35;
+          opacity: 0; pointer-events: none; transition: 0.18s ease; z-index: 20;
+        }
+        .sx-badge-tip:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
         
         .sx-tags-row { 
           display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; 
@@ -378,6 +397,14 @@ export default function SoftcardDashboard() {
         .sx-icon-link { transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.7; }
         .sx-icon-link:hover { opacity: 1; transform: translateY(-2px) scale(1.05); }
         .sx-icon-link img { width: 24px; height: 24px; }
+        .sx-feature-links { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 300px; margin-top: 16px; }
+        .sx-feature-link {
+          display: flex; align-items: center; justify-content: space-between; gap: 12px;
+          padding: 10px 12px; border-radius: 10px;
+          background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+          color: white; text-decoration: none; font-size: 13px; font-weight: 700;
+        }
+        .sx-feature-link img { width: 18px; height: 18px; opacity: 0.82; }
 
         .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; opacity: 0.5; font-size: 13px; font-weight: 600; }
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
@@ -494,6 +521,7 @@ export default function SoftcardDashboard() {
                     <select className="sx-input" value={l.type} onChange={e => updateLink(i, "type", e.target.value)}>
                         {Object.keys(iconMap).map(k => <option key={k} value={k}>{k.toUpperCase()}</option>)}
                     </select>
+                    <input className="sx-input" value={l.label || ""} onChange={e => updateLink(i, "label", e.target.value)} placeholder="Display label (optional)" maxLength={40} />
                     <input className="sx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="https://..." />
                     </div>
                 </div>
@@ -675,9 +703,9 @@ export default function SoftcardDashboard() {
 
           {(badges.user || badges.dev || badges.staff) && (
             <div className="sx-badge-pill">
-                {badges.user && <ShieldCheck size={14} color="#3b82f6" />}
-                {badges.dev && <Code size={14} color={profileData.accent} />}
-                {badges.staff && <Star size={14} color="#f59e0b" />}
+                {badges.user && <span className="sx-badge-tip" data-tip={badgeInfo.user.description} aria-label={badgeInfo.user.label}><ShieldCheck size={14} color="#3b82f6" /></span>}
+                {badges.dev && <span className="sx-badge-tip" data-tip={badgeInfo.dev.description} aria-label={badgeInfo.dev.label}><Code size={14} color={profileData.accent} /></span>}
+                {badges.staff && <span className="sx-badge-tip" data-tip={badgeInfo.staff.description} aria-label={badgeInfo.staff.label}><Star size={14} color="#f59e0b" /></span>}
             </div>
           )}
 
@@ -695,6 +723,14 @@ export default function SoftcardDashboard() {
             {links.map(l => l.url && (
               <a key={l.id} href={l.url} target="_blank" rel="noreferrer" className="sx-icon-link">
                 <img src={iconMap[l.type] || iconMap.website} alt={l.type} />
+              </a>
+            ))}
+          </div>
+          <div className="sx-feature-links">
+            {links.filter(l => l.url && l.label).slice(0, 4).map(l => (
+              <a key={`feature-${l.id}`} href={l.url} target="_blank" rel="noreferrer" className="sx-feature-link">
+                <span>{l.label}</span>
+                <img src={iconMap[l.type] || iconMap.website} alt="" />
               </a>
             ))}
           </div>
