@@ -45,12 +45,26 @@ export default function Login() {
 
     try {
       if (mode === "signup") {
+        const cleanedUsername = username.trim().toLowerCase().replace(/\s+/g, "");
+
+        if (cleanedUsername.length < 3) {
+          setError("Username must be at least 3 characters.");
+          setLoading(false);
+          return;
+        }
+
         // 1. Check username availability FIRST
-        const { data: existingUser } = await supabase
+        const { data: existingUser, error: existingError } = await supabase
           .from("profiles")
           .select("username")
-          .eq("username", username)
+          .eq("username", cleanedUsername)
           .maybeSingle();
+
+        if (existingError) {
+          setError("Unable to verify username availability.");
+          setLoading(false);
+          return;
+        }
 
         if (existingUser) {
           setError("That username is already taken.");
@@ -62,7 +76,7 @@ export default function Login() {
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: username } }
+          options: { data: { full_name: cleanedUsername } }
         });
 
         if (authError) {
@@ -71,25 +85,28 @@ export default function Login() {
           return;
         }
 
-        if (authData?.user) {
-          // 3. Create Profile (The "Fixed" way)
-          // We use upsert or a cleaner insert to ensure the profile exists
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .insert([{ 
-              id: authData.user.id, 
-              username: username, 
-              email: email,
-              views: 0 // Initialize views
-            }]);
+        if (!authData?.user?.id) {
+          setError("Account created, but we could not complete setup. Please check your email and sign in.");
+          setLoading(false);
+          return;
+        }
 
-          if (profileError) {
-            // If profile creation fails, we actually have a problem. 
-            // Most likely a RLS policy issue or the user already exists in Auth.
-            setError("Account created, but profile setup failed. Please try signing in.");
-            setLoading(false);
-            return;
-          }
+        const profilePayload = {
+          id: authData.user.id,
+          username: cleanedUsername,
+          email,
+          views: 0,
+        };
+
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .upsert([profilePayload], { onConflict: ["id"] });
+
+        if (profileError) {
+          const message = profileError.message || "Profile setup failed.";
+          setError(`Account created, but profile setup failed: ${message}`);
+          setLoading(false);
+          return;
         }
       } else {
         // SIGN IN LOGIC
