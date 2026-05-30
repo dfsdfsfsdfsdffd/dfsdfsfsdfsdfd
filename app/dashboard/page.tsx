@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { createBrowserClient } from "@supabase/ssr"
+import { useRouter } from "next/navigation"
 import { 
   Pencil, 
   BarChart3, 
@@ -49,6 +50,8 @@ const iconMap: Record<string, string> = {
 }
 
 export default function SoftcardDashboard() {
+  const router = useRouter()
+
   const supabase = useMemo(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -217,6 +220,12 @@ export default function SoftcardDashboard() {
     }
   }
 
+  const handleLogout = async () => {
+    await supabase?.auth.signOut()
+    router.replace("/login")
+    router.refresh()
+  }
+
   if (loading) return (
     <div style={{ height: '100vh', background: '#020617', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="animate-pulse text-pink-500 font-bold tracking-widest">LOADING SOFTCARD...</div>
@@ -281,13 +290,13 @@ export default function SoftcardDashboard() {
           .hx-small-btn:hover { opacity: 0.9; }
           .hx-view { background: rgba(255,255,255,0.1); text-decoration: none; }
 
-          .hx-logout { position: fixed; top: 30px; right: 30px; opacity: 0.4; cursor: pointer; transition: 0.2s; }
+          .hx-logout { position: fixed; top: 30px; right: 30px; opacity: 0.4; cursor: pointer; transition: 0.2s; background: transparent; border: 0; color: white; padding: 0; }
           .hx-logout:hover { opacity: 1; color: #f472b6; }
         `}</style>
 
-        <div className="hx-logout" onClick={() => supabase?.auth.signOut()}>
+        <button className="hx-logout" onClick={handleLogout} aria-label="Log out">
           <LogOut size={20} />
-        </div>
+        </button>
 
         <div className="hx-container">
           <div className="hub-header">

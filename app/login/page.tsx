@@ -139,19 +139,36 @@ export default function Login() {
         <h1 className="lx-title">
           {mode === "signin" ? "Welcome Back" : "Create Account"}
         </h1>
+        <p className="lx-sub">
+          {mode === "signin"
+            ? "Sign in to edit and publish your Softcard."
+            : "Pick your username, then sign in instantly after signup."}
+        </p>
 
         <form className="lx-form" onSubmit={handleSubmit}>
           {error && <p className="lx-error">{error}</p>}
 
           {mode === "signup" && (
-            <input
-              className="lx-input"
-              type="text"
-              placeholder="Username"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
-            />
+            <div className="lx-field">
+              <div className="lx-field-top">
+                <label htmlFor="signup-username">Username</label>
+                <span>This will be your softcard.cc/ link</span>
+              </div>
+              <div className="lx-url-input">
+                <span>softcard.cc/</span>
+                <input
+                  id="signup-username"
+                  type="text"
+                  placeholder="username"
+                  required
+                  value={username}
+                  onChange={(e) =>
+                    setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))
+                  }
+                />
+              </div>
+              <p className="lx-help">Use 3-30 letters, numbers, underscores, or hyphens.</p>
+            </div>
           )}
 
           <input
