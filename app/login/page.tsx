@@ -76,39 +76,31 @@ export default function Login() {
           return;
         }
 
-        // 2. Auth SignUp
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: cleanedUsername } }
+        const signupResponse = await fetch("/api/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            username: cleanedUsername,
+          }),
         });
 
-        if (authError) {
-          setError(authError.message);
+        const signupResult = await signupResponse.json();
+
+        if (!signupResponse.ok) {
+          setError(signupResult.error || "Unable to create account.");
           setLoading(false);
           return;
         }
 
-        if (!authData?.user?.id) {
-          setError("Account created, but we could not complete setup. Please check your email and sign in.");
-          setLoading(false);
-          return;
-        }
-
-        const profilePayload = {
-          id: authData.user.id,
-          username: cleanedUsername,
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
-          views: 0,
-        };
+          password,
+        });
 
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .upsert([profilePayload], { onConflict: ["id"] });
-
-        if (profileError) {
-          const message = profileError.message || "Profile setup failed.";
-          setError(`Account created, but profile setup failed: ${message}`);
+        if (signInError) {
+          setError(signInError.message);
           setLoading(false);
           return;
         }
