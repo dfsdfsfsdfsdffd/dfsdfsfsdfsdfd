@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { createBrowserClient } from '@supabase/ssr'
 import { ShieldCheck, Code, Star, Volume2, VolumeX, Eye } from "lucide-react"
 
@@ -31,13 +31,18 @@ export default function PublicProfile({ params }: { params: { username: string }
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    return createBrowserClient(url, key);
+  }, [])
 
   useEffect(() => {
     async function loadProfile() {
+      if (!supabase) return;
+
       // 1. Fetch profile data
       const { data } = await supabase
         .from('profiles')
@@ -54,7 +59,7 @@ export default function PublicProfile({ params }: { params: { username: string }
       }
     }
     loadProfile()
-  }, [params.username])
+  }, [params.username, supabase])
 
   useEffect(() => {
     if (audioRef.current) {

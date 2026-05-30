@@ -21,15 +21,19 @@ export default function Login() {
 
   const router = useRouter();
 
-  const supabase = useMemo(() => createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  ), []);
+  const supabase = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    return createBrowserClient(url, key);
+  }, []);
 
   // 🔄 AUTO-LOGIN LOGIC
   // If they are already logged in, send them to dashboard immediately
   useEffect(() => {
     const checkUser = async () => {
+      if (!supabase) return;
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         router.push("/dashboard");

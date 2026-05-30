@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { Space_Grotesk } from "next/font/google";
@@ -26,13 +26,18 @@ export default function Setup() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    return createBrowserClient(url, key);
+  }, []);
 
   useEffect(() => {
     const checkUsername = async () => {
+      if (!supabase) return;
+
       const lowerUsername = username.toLowerCase();
       
       if (lowerUsername.length < 3) {
@@ -65,6 +70,12 @@ export default function Setup() {
 
   const handleSave = async () => {
     setLoading(true);
+    if (!supabase) {
+      alert("Supabase is not configured.");
+      setLoading(false);
+      return;
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
 
     const { error } = await supabase

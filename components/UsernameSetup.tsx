@@ -24,6 +24,12 @@ export default function UsernameSetup({ onComplete, userId }: UsernameSetupProps
       return;
     }
 
+    if (!supabase) {
+      setError("Supabase is not configured.");
+      setLoading(false);
+      return;
+    }
+
     const cleanedUsername = username.trim().toLowerCase().replace(/\s+/g, "");
 
     if (!USERNAME_REGEX.test(cleanedUsername)) {
