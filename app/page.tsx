@@ -2,51 +2,65 @@
 
 import Link from "next/link";
 import { Space_Grotesk } from "next/font/google";
-// Import the Heart icon
-import { Heart } from "lucide-react";
+import { ArrowRight, Heart, Link as LinkIcon, ShieldCheck, Sparkles } from "lucide-react";
 
 const font = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["400","500","600","700"]
+  weight: ["400", "500", "600", "700"],
 });
 
 export default function Home() {
   return (
     <main className={`sx-main ${font.className}`}>
       <nav className="sx-nav">
-        {/* LOGO WITH HEART ICON */}
-        <div className="sx-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Heart size={20} fill="#7000ff" color="#7000ff" /> 
+        <div className="sx-logo">
+          <Heart size={18} fill="currentColor" />
           softcard.cc
         </div>
 
         <Link href="/login">
-          <button className="sx-nav-btn">Dashboard →</button>
+          <button className="sx-nav-btn">Dashboard</button>
         </Link>
       </nav>
 
       <section className="sx-hero">
-        <h1 className="sx-title">
-          Build Your <span>Presence</span>
-        </h1>
+        <div className="sx-kicker">
+          <Sparkles size={14} />
+          <span>Clean profile pages for every link</span>
+        </div>
+
+        <h1 className="sx-title">Build a sharper home for your online presence.</h1>
 
         <p className="sx-sub">
-          One clean link for everything you are.
+          Claim your softcard.cc link, customize the look, add socials, and publish a fast public profile from one dashboard.
         </p>
 
         <div className="sx-actions">
           <Link href="/login">
             <button className="sx-primary">
-              Create Page →
+              Create page
+              <ArrowRight size={16} />
             </button>
           </Link>
 
-          {/* LINK TO THE NEW MORE PAGE */}
           <Link href="/more">
-            <button className="sx-secondary">
-              Learn More
-            </button>
+            <button className="sx-secondary">Learn more</button>
           </Link>
+        </div>
+
+        <div className="sx-feature-grid">
+          <div className="sx-feature">
+            <LinkIcon size={18} />
+            <span>Custom softcard.cc URL</span>
+          </div>
+          <div className="sx-feature">
+            <Sparkles size={18} />
+            <span>Live profile editor</span>
+          </div>
+          <div className="sx-feature">
+            <ShieldCheck size={18} />
+            <span>Protected dashboard</span>
+          </div>
         </div>
       </section>
     </main>

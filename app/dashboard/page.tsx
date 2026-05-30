@@ -103,7 +103,6 @@ export default function SoftcardDashboard() {
 
   const [links, setLinks] = useState<SocialLink[]>([])
   const [badges, setBadges] = useState<Badges>({ user: true, dev: false, staff: false })
-  const [devPassword, setDevPassword] = useState("")
 
   const timezones = useMemo(() => Intl.supportedValuesOf('timeZone'), []);
 
@@ -177,7 +176,6 @@ export default function SoftcardDashboard() {
         background_type: profileData.bgType,
         background_value: profileData.bgType === "gradient" ? profileData.gradient : (profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage),
         audio_url: profileData.bgAudio,
-        badges: badges,
         show_glass_card: profileData.showGlass,
         setup_completed: true
       }).eq('id', user.id)
@@ -208,16 +206,6 @@ export default function SoftcardDashboard() {
 
   const updateProfile = (key: string, value: any) => {
     setProfileData(prev => ({ ...prev, [key]: value }))
-  }
-
-  const unlockDev = () => {
-    if (devPassword === "12345") {
-      setBadges({ ...badges, dev: true })
-      alert("Dev badge unlocked!")
-      setDevPassword("")
-    } else {
-      alert("Incorrect password.")
-    }
   }
 
   const handleLogout = async () => {
@@ -667,15 +655,9 @@ export default function SoftcardDashboard() {
 
         {tab === "badges" && (
           <div className="sx-pane">
-            <div className="sx-input-group" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px'}}>
-                <input type="checkbox" id="userBadge" checked={badges.user} onChange={() => setBadges({ ...badges, user: !badges.user })} style={{width: '18px', height: '18px'}} />
-                <label htmlFor="userBadge" style={{margin: 0, fontSize: '13px', cursor: 'pointer'}}>Display Verified Badge</label>
-            </div>
-            
-            <div className="sx-input-group" style={{marginTop: 30}}>
-                <label className="sx-label">Developer Portal</label>
-                <input className="sx-input" type="password" placeholder="Enter Developer Key" value={devPassword} onChange={e => setDevPassword(e.target.value)} />
-                <button className="sx-publish-btn" onClick={unlockDev} style={{marginTop: '10px', background: 'rgba(255,255,255,0.1)', boxShadow: 'none'}}>Unlock Badge</button>
+            <div className="sx-input-group" style={{background: 'rgba(255,255,255,0.03)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)'}}>
+                <label className="sx-label">Badges</label>
+                <p style={{fontSize: '13px', lineHeight: 1.5, opacity: 0.62}}>Badges are managed by Softcard and cannot be changed from the dashboard.</p>
             </div>
           </div>
         )}

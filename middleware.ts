@@ -1,5 +1,13 @@
-import { createServerClient, type NextRequest } from '@supabase/ssr'
-import { NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+
+function withSecurityHeaders(response: NextResponse) {
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  return response
+}
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next()
@@ -8,7 +16,7 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return NextResponse.next()
+    return withSecurityHeaders(response)
   }
 
   const supabase = createServerClient(
@@ -29,18 +37,16 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // PROTECT THE DASHBOARD
-  // If no session and user is trying to access dashboard, redirect to login
-  if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
+    const redirect = NextResponse.redirect(new URL('/login', request.url))
+    return withSecurityHeaders(redirect)
   }
 
-  return response
+  return withSecurityHeaders(response)
 }
 
-// FIXED: Merged into one single export config
 export const config = {
   matcher: [
     /*

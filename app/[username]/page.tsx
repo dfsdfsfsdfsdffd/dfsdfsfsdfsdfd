@@ -17,6 +17,44 @@ const iconMap: any = {
   website: "https://cdn.simpleicons.org/pwa/ffffff"
 }
 
+const SAFE_FONTS = new Set(["Inter", "Playfair Display", "JetBrains Mono", "Outfit"]);
+const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
+
+function safeColor(value: unknown, fallback: string) {
+  return typeof value === "string" && HEX_COLOR.test(value) ? value : fallback;
+}
+
+function safeFont(value: unknown) {
+  return typeof value === "string" && SAFE_FONTS.has(value) ? value : "Inter";
+}
+
+function safeGradient(value: unknown) {
+  if (typeof value !== "string") return "linear-gradient(135deg, #111827 0%, #020617 100%)";
+  const colors = value.match(/#(?:[0-9a-fA-F]{3}){1,2}/g);
+  if (!colors?.[0] || !colors?.[1]) return "linear-gradient(135deg, #111827 0%, #020617 100%)";
+  return `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
+}
+
+function safeMediaUrl(value: unknown) {
+  if (typeof value !== "string") return "";
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function safeExternalUrl(value: unknown) {
+  if (typeof value !== "string") return "";
+  try {
+    const url = new URL(value.startsWith("http") ? value : `https://${value}`);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
 function getIcon(linkObj: any) {
   if (linkObj.type && iconMap[linkObj.type]) return iconMap[linkObj.type]
   return iconMap.website
@@ -78,19 +116,25 @@ export default function PublicProfile({ params }: { params: { username: string }
 
   if (!profile) return null
 
-  const socials = profile.links?.filter((l: any) => l.url) || []
-  const accent = profile.accent_color || '#7000ff';
+  const socials = profile.links?.filter((l: any) => safeExternalUrl(l.url)) || []
+  const accent = safeColor(profile.accent_color, '#7000ff');
+  const nameColor = safeColor(profile.name_color, '#ffffff');
+  const bioColor = safeColor(profile.bio_color, '#d1d5db');
+  const fontFamily = safeFont(profile.font_family);
+  const background = safeGradient(profile.background_value);
   const hasMediaBg = (profile.background_type === "image" || profile.background_type === "video") && profile.background_value;
-  const bgUrl = hasMediaBg ? `${profile.background_value}` : null;
+  const bgUrl = hasMediaBg ? safeMediaUrl(profile.background_value) : "";
+  const avatarUrl = safeMediaUrl(profile.avatar_url) || "https://i.imgur.com/1X6g1YH.jpeg";
+  const audioUrl = safeMediaUrl(profile.audio_url);
 
   return (
     <div className="container">
       <style jsx>{`
         .container {
           height: 100vh; width: 100vw; 
-          background: ${profile.background_type === 'gradient' ? profile.background_value : '#000'};
+          background: ${profile.background_type === 'gradient' ? background : '#030712'};
           display: flex; align-items: center; justify-content: center;
-          color: white; font-family: ${profile.font_family || 'Inter'}, sans-serif;
+          color: white; font-family: ${fontFamily}, sans-serif;
           overflow: hidden; position: relative;
         }
 
@@ -157,7 +201,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         .display-name { 
           font-size: 28px; font-weight: 800; margin-bottom: 5px;
-          color: ${profile.name_color || '#ffffff'};
+          color: ${nameColor};
           letter-spacing: -0.03em;
         }
 
@@ -180,7 +224,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         .bio { 
           font-size: 14px; margin-bottom: 22px; line-height: 1.4;
-          color: ${profile.bio_color || 'rgba(255,255,255,0.7)'}; 
+          color: ${bioColor}; 
           max-width: 85%; white-space: pre-wrap; word-break: break-word;
         }
 
@@ -201,7 +245,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
 
-      {profile.audio_url && (
+      {audioUrl && (
         <div className="audio-controls">
           <input 
             type="range" 
@@ -220,14 +264,14 @@ export default function PublicProfile({ params }: { params: { username: string }
       )}
 
       <div className="bg-wrapper">
-        {profile.background_type === "video" ? (
-          <video key={profile.background_value} ref={videoRef} src={bgUrl} className="bg-content" loop muted playsInline />
-        ) : profile.background_type === "image" ? (
-          <img key={profile.background_value} src={bgUrl} className="bg-content" alt="bg" />
+        {profile.background_type === "video" && bgUrl ? (
+          <video key={bgUrl} ref={videoRef} src={bgUrl} className="bg-content" loop muted playsInline />
+        ) : profile.background_type === "image" && bgUrl ? (
+          <img key={bgUrl} src={bgUrl} className="bg-content" alt="bg" />
         ) : null}
       </div>
 
-      {profile.audio_url && <audio ref={audioRef} src={profile.audio_url} loop />}
+      {audioUrl && <audio ref={audioRef} src={audioUrl} loop />}
 
       <div className="profile-card">
         <div className="view-count">
@@ -236,7 +280,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           {((profile.views || 0) + 1).toLocaleString()}
         </div>
 
-        <img src={profile.avatar_url} className="pfp" alt="profile" />
+        <img src={avatarUrl} className="pfp" alt="profile" />
         
         <div className="display-name">{profile.display_name}</div>
 
@@ -268,7 +312,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         <div className="social-row">
           {socials.map((l: any) => (
-            <a key={l.id} href={l.url.startsWith('http') ? l.url : `https://${l.url}`} target="_blank" rel="noopener noreferrer" className="social-link">
+            <a key={l.id} href={safeExternalUrl(l.url)} target="_blank" rel="noopener noreferrer" className="social-link">
               <img src={getIcon(l)} className="social-icon" alt="icon" />
             </a>
           ))}

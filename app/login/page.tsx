@@ -48,6 +48,12 @@ export default function Login() {
     setError(null);
 
     try {
+      if (!supabase) {
+        setError("Auth is not configured.");
+        setLoading(false);
+        return;
+      }
+
       if (mode === "signup") {
         const cleanedUsername = username.trim().toLowerCase().replace(/\s+/g, "");
 
@@ -196,7 +202,7 @@ export default function Login() {
 
         <div className="lx-switch">
           {mode === "signin" ? (
-            <>Don’t have an account? <button onClick={() => setMode("signup")}>Sign up</button></>
+            <>Don't have an account? <button onClick={() => setMode("signup")}>Sign up</button></>
           ) : (
             <>Already have an account? <button onClick={() => setMode("signin")}>Sign in</button></>
           )}
