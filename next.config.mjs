@@ -1,10 +1,12 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true, // This forces the build to finish even with tiny code mistakes
-  },
-  eslint: {
-    ignoreDuringBuilds: true, // This prevents the build from stopping over "styling" rules
+  turbopack: {
+    root,
   },
 };
 
