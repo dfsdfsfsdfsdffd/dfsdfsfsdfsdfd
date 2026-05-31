@@ -881,7 +881,7 @@ export default function SoftcardDashboard() {
           <div className="sx-bio" style={{ color: profileData.bioColor }}>{profileData.bio || "No bio yet."}</div>
           
           <div className="sx-links-row">
-            {links.map(l => l.url && l.enabled !== false && safeExternalUrl(l.url) && (
+            {links.map(l => l.url && l.enabled !== false && !l.featured && safeExternalUrl(l.url) && (
               <a key={l.id} href={safeExternalUrl(l.url)} target="_blank" rel="noreferrer" className="sx-icon-link">
                 <img src={iconMap[l.type] || iconMap.website} alt={l.type} />
               </a>
@@ -894,7 +894,10 @@ export default function SoftcardDashboard() {
                   <span>{l.label}</span>
                   {l.description && <small>{l.description}</small>}
                 </span>
-                <img src={iconMap[l.type] || iconMap.website} alt="" />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                  <img src={iconMap[l.type] || iconMap.website} alt="" />
+                  <ExternalLink size={15} />
+                </span>
               </a>
             ))}
           </div>

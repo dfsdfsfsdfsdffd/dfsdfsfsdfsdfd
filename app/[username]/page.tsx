@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect, useRef, useMemo } from "react"
 import { createBrowserClient } from '@supabase/ssr'
-import { ShieldCheck, Code, Star, Volume2, VolumeX, Eye } from "lucide-react"
+import { ShieldCheck, Code, Star, Volume2, VolumeX, Eye, ExternalLink } from "lucide-react"
 
 const iconMap: any = {
   tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
@@ -341,7 +341,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         <div className="bio">{profile.bio || "No bio yet."}</div>
 
         <div className="social-row">
-          {socials.map((l: any) => (
+          {socials.filter((l: any) => !l.featured).map((l: any) => (
             <a key={l.id} href={safeExternalUrl(l.url)} target="_blank" rel="noopener noreferrer" className="social-link">
               <img src={getIcon(l)} className="social-icon" alt="icon" />
             </a>
@@ -355,7 +355,10 @@ export default function PublicProfile({ params }: { params: { username: string }
                 <span>{String(l.label).slice(0, 40)}</span>
                 {l.description && <small>{String(l.description).slice(0, 80)}</small>}
               </span>
-              <img src={getIcon(l)} alt="" />
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                <img src={getIcon(l)} alt="" />
+                <ExternalLink size={15} />
+              </span>
             </a>
           ))}
         </div>
