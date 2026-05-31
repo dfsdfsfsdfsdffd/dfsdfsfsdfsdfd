@@ -1480,6 +1480,34 @@ body::before {
   opacity: 0.72 !important;
 }
 
+/* Restore original dashboard feel while keeping cleaner colors */
+.hx-container {
+  max-width: 600px !important;
+}
+
+.hx-circle-wrap {
+  width: 280px !important;
+  height: 280px !important;
+  margin-bottom: 50px !important;
+}
+
+.hx-avatar {
+  width: 140px !important;
+  height: 140px !important;
+}
+
+.sx-sidebar {
+  width: 400px !important;
+}
+
+.sx-editor-link {
+  margin-bottom: 20px !important;
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  opacity: 0.5 !important;
+}
+
 @media (max-width: 900px) {
   .sx-nav {
     display: flex;

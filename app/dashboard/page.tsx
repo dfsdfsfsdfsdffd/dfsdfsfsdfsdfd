@@ -29,6 +29,8 @@ interface SocialLink {
   type: string;
   url: string;
   label?: string;
+  description?: string;
+  color?: string;
   featured?: boolean;
   enabled?: boolean;
 }
@@ -98,6 +100,8 @@ function normalizeLinks(items: SocialLink[]) {
     .map((link) => ({
       ...link,
       label: (link.label || "").trim().slice(0, 40),
+      description: (link.description || "").trim().slice(0, 80),
+      color: /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(link.color || "") ? link.color : "",
       url: safeExternalUrl(link.url),
       enabled: link.enabled !== false,
       featured: Boolean(link.featured),
@@ -261,7 +265,7 @@ export default function SoftcardDashboard() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const addLink = () => setLinks([...links, { id: Date.now(), type: "website", url: "", label: "", featured: false, enabled: true }])
+  const addLink = () => setLinks([...links, { id: Date.now(), type: "website", url: "", label: "", description: "", color: "", featured: false, enabled: true }])
   const removeLink = (id: number) => setLinks(links.filter(l => l.id !== id))
   const updateLink = (index: number, key: keyof SocialLink, val: string | boolean) => {
     const updated = [...links]
@@ -325,9 +329,9 @@ export default function SoftcardDashboard() {
             font-family: 'Inter', sans-serif;
           }
           .hx-container { text-align: center; width: 100%; max-width: 640px; padding: 22px; }
-          .hub-header { margin-bottom: 34px; }
+          .hub-header { margin-bottom: 40px; }
           .hx-status { font-size: 10px; letter-spacing: 2px; opacity: 0.5; margin-bottom: 8px; font-weight: 700; }
-          .hx-title { font-size: 34px; font-weight: 700; letter-spacing: -0.03em; }
+          .hx-title { font-size: 32px; font-weight: 600; }
           .hx-username { color: #f472b6; }
           
           .hx-circle-wrap { position: relative; display: inline-block; margin-bottom: 50px; width: 280px; height: 280px; }
@@ -372,10 +376,6 @@ export default function SoftcardDashboard() {
           .hx-small-btn:hover { opacity: 0.9; }
           .hx-view { background: rgba(255,255,255,0.1); text-decoration: none; }
 
-          .hx-quick-actions {
-            display: flex; justify-content: center; gap: 10px; margin-bottom: 32px; flex-wrap: wrap;
-          }
-
           .hx-logout { position: fixed; top: 30px; right: 30px; opacity: 0.4; cursor: pointer; transition: 0.2s; background: transparent; border: 0; color: white; padding: 0; }
           .hx-logout:hover { opacity: 1; color: #f472b6; }
         `}</style>
@@ -388,17 +388,6 @@ export default function SoftcardDashboard() {
           <div className="hub-header">
             <p className="hx-status">DASHBOARD</p>
             <h1 className="hx-title">Welcome back, <span className="hx-username">{profileData.username || "User"}</span></h1>
-          </div>
-
-          <div className="hx-quick-actions">
-            <button className="hx-small-btn" onClick={() => setView("editor")}>
-              <Pencil size={14} />
-              Edit profile
-            </button>
-            <a href={`/${profileData.username}`} target="_blank" rel="noreferrer" className="hx-small-btn hx-view">
-              <ExternalLink size={14} />
-              Open page
-            </a>
           </div>
 
           <div className="hx-circle-wrap">
@@ -506,6 +495,8 @@ export default function SoftcardDashboard() {
           background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
           color: white; text-decoration: none; font-size: 13px; font-weight: 700;
         }
+        .sx-feature-link-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
+        .sx-feature-link-text small { opacity: 0.58; font-size: 11px; font-weight: 600; line-height: 1.25; }
         .sx-feature-link img { width: 18px; height: 18px; opacity: 0.82; }
         .sx-check-row {
           display: flex; align-items: center; gap: 8px;
@@ -529,13 +520,6 @@ export default function SoftcardDashboard() {
         .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; opacity: 0.5; font-size: 13px; font-weight: 600; }
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
 
-        .sx-editor-head {
-          display: flex; align-items: center; justify-content: space-between; gap: 12px;
-          margin-bottom: 18px;
-        }
-        .sx-editor-title { font-size: 20px; font-weight: 900; letter-spacing: -0.03em; }
-        .sx-editor-sub { font-size: 12px; opacity: 0.48; margin-top: 3px; }
-        
         .sx-publish-btn {
             width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700;
             background: linear-gradient(90deg, #ff008c, #ff4df0); color: white; cursor: pointer;
@@ -602,14 +586,8 @@ export default function SoftcardDashboard() {
       `}</style>
 
       <div className="sx-sidebar">
-        <div className="sx-editor-head">
-          <div>
-            <div className="sx-editor-title">Edit page</div>
-            <div className="sx-editor-sub">Make changes, preview, then publish.</div>
-          </div>
-          <button className="sx-editor-link" onClick={() => setView("hub")}>
-            <X size={16} /> Close
-          </button>
+        <div className="sx-editor-link" onClick={() => setView("hub")}>
+          <X size={16} /> Close Editor
         </div>
         
         <button className="sx-publish-btn" onClick={saveChanges} disabled={saving}>
@@ -665,7 +643,12 @@ export default function SoftcardDashboard() {
                         {Object.keys(iconMap).map(k => <option key={k} value={k}>{k.toUpperCase()}</option>)}
                     </select>
                     <input className="sx-input" value={l.label || ""} onChange={e => updateLink(i, "label", e.target.value)} placeholder="Display label (optional)" maxLength={40} />
+                    <input className="sx-input" value={l.description || ""} onChange={e => updateLink(i, "description", e.target.value)} placeholder="Small description for featured button" maxLength={80} />
                     <input className="sx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="https://..." />
+                    <div style={{display: 'grid', gridTemplateColumns: '1fr 48px', gap: '10px', alignItems: 'center'}}>
+                      <input className="sx-input" value={l.color || ""} onChange={e => updateLink(i, "color", e.target.value)} placeholder="Custom color, ex: #a970ff" maxLength={7} />
+                      <input type="color" className="sx-input" style={{height: '42px', padding: '5px'}} value={l.color || profileData.accent} onChange={e => updateLink(i, "color", e.target.value)} />
+                    </div>
                     <div className="sx-link-actions">
                       <button className="sx-link-tool" type="button" disabled={i === 0} onClick={() => moveLink(i, -1)}>
                         <MoveUp size={14} /> Up
@@ -906,8 +889,11 @@ export default function SoftcardDashboard() {
           </div>
           <div className="sx-feature-links">
             {links.filter(l => l.url && l.label && l.enabled !== false && l.featured && safeExternalUrl(l.url)).slice(0, 4).map(l => (
-              <a key={`feature-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noreferrer" className="sx-feature-link">
-                <span>{l.label}</span>
+              <a key={`feature-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noreferrer" className="sx-feature-link" style={{ borderColor: l.color || profileData.accent }}>
+                <span className="sx-feature-link-text">
+                  <span>{l.label}</span>
+                  {l.description && <small>{l.description}</small>}
+                </span>
                 <img src={iconMap[l.type] || iconMap.website} alt="" />
               </a>
             ))}

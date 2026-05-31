@@ -260,6 +260,8 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
         .featured-link:hover { transform: translateY(-1px); background: rgba(255,255,255,0.12); }
         .featured-link img { width: 18px; height: 18px; opacity: 0.84; }
+        .featured-link-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
+        .featured-link-text small { opacity: 0.6; font-size: 11px; line-height: 1.25; }
 
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
@@ -348,8 +350,11 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         <div className="featured-links">
           {socials.filter((l: any) => l.label && l.featured).slice(0, 4).map((l: any) => (
-            <a key={`featured-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noopener noreferrer" className="featured-link">
-              <span>{String(l.label).slice(0, 40)}</span>
+            <a key={`featured-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noopener noreferrer" className="featured-link" style={{ borderColor: l.color || accent }}>
+              <span className="featured-link-text">
+                <span>{String(l.label).slice(0, 40)}</span>
+                {l.description && <small>{String(l.description).slice(0, 80)}</small>}
+              </span>
               <img src={getIcon(l)} alt="" />
             </a>
           ))}
