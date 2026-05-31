@@ -148,6 +148,14 @@ function fileTitle(name: string) {
   return name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim().slice(0, 60);
 }
 
+function uploadLimit(kind: "image" | "video" | "audio") {
+  return kind === "image" ? 4 * 1024 * 1024 : 4 * 1024 * 1024;
+}
+
+function formatMb(bytes: number) {
+  return `${Math.floor(bytes / 1024 / 1024)}MB`;
+}
+
 export default function SoftcardDashboard() {
   const router = useRouter()
 
@@ -321,6 +329,11 @@ export default function SoftcardDashboard() {
   }
 
   const uploadMedia = async (kind: "image" | "video" | "audio", file: File) => {
+    const limit = uploadLimit(kind)
+    if (file.size > limit) {
+      throw new Error(`${kind === "image" ? "Image" : kind === "video" ? "Video" : "Audio"} is too large. Use a file under ${formatMb(limit)}.`)
+    }
+
     const body = new FormData()
     body.append("kind", kind)
     body.append("file", file)
@@ -329,7 +342,14 @@ export default function SoftcardDashboard() {
       method: "POST",
       body,
     })
-    const result = await response.json()
+    const text = await response.text()
+    let result: any = {}
+
+    try {
+      result = text ? JSON.parse(text) : {}
+    } catch {
+      throw new Error(text.includes("Request Entity Too Large") ? "File is too large for this upload method." : text.slice(0, 140) || "Upload failed.")
+    }
 
     if (!response.ok) {
       throw new Error(result.error || "Upload failed.")

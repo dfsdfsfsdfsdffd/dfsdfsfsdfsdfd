@@ -3,8 +3,7 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
-const MAX_MEDIA_SIZE = 25 * 1024 * 1024;
+const MAX_UPLOAD_SIZE = 4 * 1024 * 1024;
 
 const allowedTypes = {
   image: new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]),
@@ -110,9 +109,8 @@ export async function POST(request: Request) {
     return json({ error: "Choose a file to upload." }, 400);
   }
 
-  const maxSize = kind === "image" ? MAX_IMAGE_SIZE : MAX_MEDIA_SIZE;
-  if (file.size > maxSize) {
-    return json({ error: `File is too large. Max ${Math.floor(maxSize / 1024 / 1024)}MB.` }, 413);
+  if (file.size > MAX_UPLOAD_SIZE) {
+    return json({ error: `File is too large. Max ${Math.floor(MAX_UPLOAD_SIZE / 1024 / 1024)}MB.` }, 413);
   }
 
   if (!allowedTypes[kind].has(file.type)) {
