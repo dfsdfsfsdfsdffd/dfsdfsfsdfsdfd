@@ -554,9 +554,22 @@ export default function SoftcardDashboard() {
   return (
     <div className="softcardx-dashboard" style={{ fontFamily: `${profileData.font}, system-ui, sans-serif` }}>
       <style>{`
-        .softcardx-dashboard { display: flex; height: 100vh; background: #050106; color: white; overflow: hidden; }
-        .sx-sidebar { width: 400px; background: rgba(10, 0, 15, 0.7); backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 0, 128, 0.15); padding: 25px; overflow-y: auto; }
-        .sx-preview-pane { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #020002; }
+        .softcardx-dashboard {
+          display: flex; height: 100vh; color: white; overflow: hidden;
+          background:
+            radial-gradient(circle at 18% 12%, rgba(236,72,153,0.16), transparent 32%),
+            radial-gradient(circle at 72% 88%, rgba(112,0,255,0.13), transparent 34%),
+            #040109;
+        }
+        .sx-sidebar {
+          width: 430px; background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.028)), rgba(8, 3, 15, 0.92);
+          backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 18px; overflow-y: auto; box-shadow: 24px 0 80px rgba(0,0,0,0.38);
+        }
+        .sx-preview-pane {
+          flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;
+          background: radial-gradient(circle at center, rgba(236,72,153,0.08), transparent 35%), #020002;
+        }
         
         .sx-profile-card {
           position: relative; z-index: 5; text-align: center;
@@ -660,22 +673,54 @@ export default function SoftcardDashboard() {
         .sx-preset span { font-size: 12px; font-weight: 900; }
         .sx-preset small { opacity: 0.62; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
 
-        .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; opacity: 0.5; font-size: 13px; font-weight: 600; }
+        .sx-editor-head {
+          position: sticky; top: -18px; z-index: 30;
+          padding: 18px 0 14px; margin-bottom: 12px;
+          background: linear-gradient(180deg, rgba(8,3,15,0.98), rgba(8,3,15,0.88) 74%, transparent);
+          backdrop-filter: blur(18px);
+        }
+        .sx-editor-brand {
+          display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px;
+        }
+        .sx-editor-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .sx-editor-logo {
+          width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center;
+          background: linear-gradient(135deg, ${profileData.accent}, #ff4df0);
+          box-shadow: 0 14px 32px ${profileData.accent}33;
+        }
+        .sx-editor-title strong { display: block; font-size: 15px; letter-spacing: -0.01em; }
+        .sx-editor-title span { display: block; margin-top: 2px; color: rgba(255,255,255,0.46); font-size: 11px; font-weight: 700; }
+        .sx-editor-link {
+          cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+          min-height: 34px; padding: 0 10px; border-radius: 10px;
+          color: rgba(255,255,255,0.56); background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.08);
+          font-size: 12px; font-weight: 800;
+        }
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
 
         .sx-publish-btn {
-            width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700;
+            width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 900; letter-spacing: 0.02em;
             background: linear-gradient(90deg, #ff008c, #ff4df0); color: white; cursor: pointer;
-            box-shadow: 0 8px 20px rgba(255, 0, 128, 0.25); margin-bottom: 25px; transition: 0.2s;
+            box-shadow: 0 12px 30px rgba(255, 0, 128, 0.25); margin-bottom: 0; transition: 0.2s;
         }
         .sx-publish-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
         .sx-publish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .sx-tabs-row { display: flex; gap: 4px; margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px; }
-        .sx-tab { flex: 1; padding: 10px 5px; border-radius: 9px; cursor: pointer; opacity: 0.5; text-align: center; transition: 0.2s; font-size: 11px; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .sx-tab-active { background: #ec4899; opacity: 1; color: white; }
+        .sx-tabs-row {
+          display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-bottom: 16px;
+          background: rgba(255,255,255,0.035); padding: 6px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.07);
+        }
+        .sx-tab {
+          min-height: 46px; border-radius: 12px; cursor: pointer; opacity: 0.68; text-align: center; transition: 0.2s;
+          font-size: 10px; font-weight: 900; text-transform: uppercase; display: flex; flex-direction: column;
+          align-items: center; justify-content: center; gap: 5px; color: rgba(255,255,255,0.72);
+          border: 0; background: transparent;
+        }
+        .sx-tab:hover { opacity: 1; background: rgba(255,255,255,0.055); }
+        .sx-tab-active { background: linear-gradient(135deg, ${profileData.accent}, #ec4899); opacity: 1; color: white; box-shadow: 0 10px 24px ${profileData.accent}28; }
         
         .sx-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-bottom: 8px; display: block; font-weight: 800; }
+        .sx-input-group { margin-bottom: 14px; }
         
         .sx-input {
             width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.04);
@@ -699,9 +744,11 @@ export default function SoftcardDashboard() {
         
         .sx-bg-layer { position: absolute; inset: 0; z-index: 1; object-fit: cover; width: 100%; height: 100%; }
 
+        .sx-pane { padding-bottom: 32px; }
         .sx-link-card {
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px; padding: 15px; margin-bottom: 12px; position: relative;
+            background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.026));
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 16px; padding: 14px; margin-bottom: 12px; position: relative;
         }
         .sx-remove-link {
             position: absolute; top: -10px; right: -10px;
@@ -774,55 +821,77 @@ export default function SoftcardDashboard() {
       `}</style>
 
       <div className="sx-sidebar">
-        <div className="sx-editor-link" onClick={() => setView("hub")}>
-          <X size={16} /> Close Editor
+        <div className="sx-editor-head">
+          <div className="sx-editor-brand">
+            <div className="sx-editor-title">
+              <div className="sx-editor-logo">
+                <Palette size={18} />
+              </div>
+              <div>
+                <strong>Page editor</strong>
+                <span>softcard.cc/{profileData.username || "username"}</span>
+              </div>
+            </div>
+            <button className="sx-editor-link" onClick={() => setView("hub")}>
+              <X size={15} /> Close
+            </button>
+          </div>
+
+          <button className="sx-publish-btn" onClick={saveChanges} disabled={saving}>
+            {saving ? "Saving Changes..." : "Save & Publish Page"}
+          </button>
         </div>
-        
-        <button className="sx-publish-btn" onClick={saveChanges} disabled={saving}>
-          {saving ? "Saving Changes..." : "Save & Publish Page"}
-        </button>
 
         <div className="sx-tabs-row">
-          <div className={`sx-tab ${tab === "profile" ? "sx-tab-active" : ""}`} onClick={() => setTab("profile")}>
+          <button className={`sx-tab ${tab === "profile" ? "sx-tab-active" : ""}`} onClick={() => setTab("profile")}>
             <UserIcon size={12} /> Profile
-          </div>
-          <div className={`sx-tab ${tab === "tags" ? "sx-tab-active" : ""}`} onClick={() => setTab("tags")}>
+          </button>
+          <button className={`sx-tab ${tab === "tags" ? "sx-tab-active" : ""}`} onClick={() => setTab("tags")}>
             <Tag size={12} /> Tags
-          </div>
-          <div className={`sx-tab ${tab === "appearance" ? "sx-tab-active" : ""}`} onClick={() => setTab("appearance")}>
+          </button>
+          <button className={`sx-tab ${tab === "appearance" ? "sx-tab-active" : ""}`} onClick={() => setTab("appearance")}>
             <Palette size={12} /> Style
-          </div>
-          <div className={`sx-tab ${tab === "badges" ? "sx-tab-active" : ""}`} onClick={() => setTab("badges")}>
+          </button>
+          <button className={`sx-tab ${tab === "badges" ? "sx-tab-active" : ""}`} onClick={() => setTab("badges")}>
             <ShieldCheck size={12} /> Badges
-          </div>
+          </button>
         </div>
 
         {tab === "profile" && (
           <div className="sx-pane">
-            <div className="sx-input-group mb-4">
-              <label className="sx-label">Avatar Image URL</label>
-              <input className="sx-input" value={profileData.avatar} onChange={e => updateProfile("avatar", e.target.value)} placeholder="https://..." />
-            </div>
-            <div className="sx-input-group mb-4">
-              <label className="sx-label">Display Name</label>
-              <input className="sx-input" value={profileData.name} onChange={e => updateProfile("name", e.target.value)} />
-            </div>
-            <div className="sx-input-group mb-4">
-              <label className="sx-label">Short Bio</label>
-              <textarea 
-                className="sx-input" 
-                rows={3} 
-                style={{resize: 'none'}} 
-                value={profileData.bio} 
-                onChange={e => updateProfile("bio", e.target.value)} 
-                placeholder="Tell the world about yourself..." 
-                maxLength={150}
-              />
-              <span className="text-[10px] opacity-30 mt-1 block text-right">{profileData.bio.length}/150</span>
-            </div>
+            <section className="sx-editor-section">
+              <div className="sx-section-title">
+                <span><UserIcon size={14} /> Identity</span>
+                <small>profile basics</small>
+              </div>
+              <div className="sx-input-group">
+                <label className="sx-label">Avatar Image URL</label>
+                <input className="sx-input" value={profileData.avatar} onChange={e => updateProfile("avatar", e.target.value)} placeholder="https://..." />
+              </div>
+              <div className="sx-input-group">
+                <label className="sx-label">Display Name</label>
+                <input className="sx-input" value={profileData.name} onChange={e => updateProfile("name", e.target.value)} />
+              </div>
+              <div className="sx-input-group" style={{marginBottom: 0}}>
+                <label className="sx-label">Short Bio</label>
+                <textarea 
+                  className="sx-input" 
+                  rows={3} 
+                  style={{resize: 'none'}} 
+                  value={profileData.bio} 
+                  onChange={e => updateProfile("bio", e.target.value)} 
+                  placeholder="Tell the world about yourself..." 
+                  maxLength={150}
+                />
+                <span className="text-[10px] opacity-30 mt-1 block text-right">{profileData.bio.length}/150</span>
+              </div>
+            </section>
             
-            <div style={{marginTop: '25px'}}>
-                <label className="sx-label">Social Links</label>
+            <section className="sx-editor-section">
+                <div className="sx-section-title">
+                  <span><ExternalLink size={14} /> Social Links</span>
+                  <small>{links.length} total</small>
+                </div>
                 {links.map((l, i) => (
                 <div key={l.id} className="sx-link-card">
                     <button className="sx-remove-link" onClick={() => removeLink(l.id)}><X size={14}/></button>
@@ -865,7 +934,7 @@ export default function SoftcardDashboard() {
                 <button className="sx-publish-btn" onClick={addLink} style={{background: 'rgba(255,255,255,0.05)', boxShadow: 'none', border: '1px dashed rgba(255,255,255,0.2)', marginTop: '10px'}}>
                     <Plus size={18} /> Add New Link
                 </button>
-            </div>
+            </section>
           </div>
         )}
 
