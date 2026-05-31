@@ -149,7 +149,7 @@ function fileTitle(name: string) {
 }
 
 function uploadLimit(kind: "image" | "video" | "audio") {
-  return kind === "image" ? 4 * 1024 * 1024 : 4 * 1024 * 1024;
+  return 15 * 1024 * 1024;
 }
 
 function formatMb(bytes: number) {

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-const MAX_UPLOAD_SIZE = 4 * 1024 * 1024;
+const MAX_UPLOAD_SIZE = 15 * 1024 * 1024;
 
 const allowedTypes = {
   image: new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]),
