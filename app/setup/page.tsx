@@ -121,10 +121,10 @@ return (
             }`}
           >
             {isReserved
-              ? "âœ– This username is reserved"
+              ? "✖ This username is reserved"
               : isTaken
-              ? "âœ– This link is already taken"
-              : "âœ” Link available!"}
+              ? "✖ This link is already taken"
+              : "✔ Link available!"}
           </p>
         )}
 
