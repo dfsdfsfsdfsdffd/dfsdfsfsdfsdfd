@@ -704,6 +704,27 @@ export default function SoftcardDashboard() {
           background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07);
           color: rgba(255,255,255,0.62); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
+        .sx-editor-section {
+          margin-bottom: 18px; padding: 14px; border-radius: 16px;
+          background: rgba(255,255,255,0.026); border: 1px solid rgba(255,255,255,0.07);
+        }
+        .sx-section-title {
+          display: flex; align-items: center; justify-content: space-between; gap: 10px;
+          margin-bottom: 12px; color: rgba(255,255,255,0.86);
+          font-size: 12px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase;
+        }
+        .sx-section-title span {
+          display: inline-flex; align-items: center; gap: 8px;
+        }
+        .sx-section-title small {
+          color: rgba(255,255,255,0.42); font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+        }
+        .sx-danger-mini {
+          border: 1px solid rgba(255,77,77,0.22); background: rgba(255,77,77,0.09);
+          color: #ff8f8f; border-radius: 10px; min-width: 38px; min-height: 38px;
+          display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .sx-danger-mini:hover { border-color: rgba(255,77,77,0.5); background: rgba(255,77,77,0.16); }
       `}</style>
 
       <div className="sx-sidebar">
@@ -866,28 +887,38 @@ export default function SoftcardDashboard() {
 
         {tab === "appearance" && (
           <div className="sx-pane">
-            <label className="sx-label">Quick Themes</label>
-            <div className="sx-preset-grid">
-              {themePresets.map((preset) => (
-                <button
-                  type="button"
-                  key={preset.name}
-                  className="sx-preset"
-                  style={{ background: preset.gradient }}
-                  onClick={() => applyPreset(preset)}
-                >
-                  <span>{preset.name}</span>
-                  <small>Apply theme</small>
-                </button>
-              ))}
-            </div>
+            <section className="sx-editor-section">
+              <div className="sx-section-title">
+                <span><Palette size={14} /> Theme</span>
+                <small>fast presets</small>
+              </div>
+              <div className="sx-preset-grid">
+                {themePresets.map((preset) => (
+                  <button
+                    type="button"
+                    key={preset.name}
+                    className="sx-preset"
+                    style={{ background: preset.gradient }}
+                    onClick={() => applyPreset(preset)}
+                  >
+                    <span>{preset.name}</span>
+                    <small>Apply theme</small>
+                  </button>
+                ))}
+              </div>
 
-            <div className="sx-input-group" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px'}}>
-                <input type="checkbox" id="glass" checked={profileData.showGlass} onChange={e => updateProfile("showGlass", e.target.checked)} style={{width: '18px', height: '18px'}} />
-                <label htmlFor="glass" style={{margin: 0, fontSize: '13px', cursor: 'pointer'}}>Transparent Glass Card</label>
-            </div>
+              <div className="sx-input-group" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px', marginBottom: 0}}>
+                  <input type="checkbox" id="glass" checked={profileData.showGlass} onChange={e => updateProfile("showGlass", e.target.checked)} style={{width: '18px', height: '18px'}} />
+                  <label htmlFor="glass" style={{margin: 0, fontSize: '13px', cursor: 'pointer'}}>Transparent Glass Card</label>
+              </div>
+            </section>
 
-            <div className="sx-input-group" style={{marginTop: '20px'}}>
+            <section className="sx-editor-section">
+              <div className="sx-section-title">
+                <span><UserIcon size={14} /> Text & Colors</span>
+                <small>profile card</small>
+              </div>
+              <div className="sx-input-group">
                 <label className="sx-label">Font Style</label>
                 <select className="sx-input" value={profileData.font} onChange={e => updateProfile("font", e.target.value)}>
                   <option value="Inter">Inter (Sans)</option>
@@ -895,112 +926,137 @@ export default function SoftcardDashboard() {
                   <option value="JetBrains Mono">JetBrains (Mono)</option>
                   <option value="Outfit">Outfit (Modern)</option>
                 </select>
-            </div>
+              </div>
 
-            <div className="sx-input-group" style={{marginTop: '20px'}}>
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px'}}>
+                  <div className="sx-input-group"><label className="sx-label">Name Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.nameColor} onChange={e => updateProfile("nameColor", e.target.value)} /></div>
+                  <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.accent} onChange={e => updateProfile("accent", e.target.value)} /></div>
+              </div>
+              
+              <div className="sx-input-group" style={{marginBottom: 0}}>
+                  <label className="sx-label">Bio Color</label>
+                  <input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.bioColor.length > 7 ? profileData.bioColor.substring(0,7) : profileData.bioColor} onChange={e => updateProfile("bioColor", e.target.value)} />
+              </div>
+            </section>
+
+            <section className="sx-editor-section">
+              <div className="sx-section-title">
+                <span><ImageIcon size={14} /> Background</span>
+                <small>image/video/gradient</small>
+              </div>
+              <div className="sx-input-group">
                 <label className="sx-label">Background Type</label>
                 <select className="sx-input" value={profileData.bgType} onChange={e => updateProfile("bgType", e.target.value)}>
                   <option value="gradient">Gradient</option>
                   <option value="video">Video</option>
                   <option value="image">Image</option>
                 </select>
-            </div>
-
-            <label className="sx-label">Upload Background</label>
-            <div className="sx-upload-grid">
-              <MediaDrop
-                kind="image"
-                icon={<ImageIcon size={20} />}
-                title="Drop image"
-                hint="PNG, JPG, WEBP, GIF"
-                onUpload={uploadMedia}
-              />
-              <MediaDrop
-                kind="video"
-                icon={<Video size={20} />}
-                title="Drop video"
-                hint="MP4, WEBM, MOV"
-                onUpload={uploadMedia}
-              />
-            </div>
-
-            {profileData.bgType === "gradient" && (
-              <div className="sx-input-group" style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <label className="sx-label">Background Colors</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
-                   <div>
-                     <span style={{ fontSize: '10px', opacity: 0.5 }}>START</span>
-                     <input type="color" className="sx-input" style={{height: '40px', padding: '4px'}} value={gradientColors.c1} onChange={e => updateGradient(e.target.value, gradientColors.c2)} />
-                   </div>
-                   <div>
-                     <span style={{ fontSize: '10px', opacity: 0.5 }}>END</span>
-                     <input type="color" className="sx-input" style={{height: '40px', padding: '4px'}} value={gradientColors.c2} onChange={e => updateGradient(gradientColors.c1, e.target.value)} />
-                   </div>
-                </div>
-                
-                {/* Quick Presets */}
-                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '5px' }}>
-                  {[
-                    ['#1a0b1a', '#050106'], // Default Dark
-                    ['#7000ff', '#ff008c'], // Purple Pink
-                    ['#00d2ff', '#3a7bd5'], // Blue Sea
-                    ['#11e1de', '#111111'], // Neon Cyan
-                    ['#833ab4', '#fd1d1d'], // Sunset
-                  ].map(([c1, c2], i) => (
-                    <div 
-                      key={i} 
-                      onClick={() => updateGradient(c1, c2)}
-                      style={{ 
-                        flexShrink: 0, width: '24px', height: '24px', borderRadius: '6px', cursor: 'pointer',
-                        background: `linear-gradient(135deg, ${c1}, ${c2})`, border: '1px solid rgba(255,255,255,0.2)'
-                      }} 
-                    />
-                  ))}
-                </div>
               </div>
-            )}
 
-            {(profileData.bgType === "video" || profileData.bgType === "image") && (
-              <div className="sx-input-group">
-                <label className="sx-label">{profileData.bgType === "video" ? "Video (.mp4) URL" : "Image URL"}</label>
-                <input className="sx-input" value={profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage} onChange={e => profileData.bgType === "video" ? updateProfile("bgVideo", e.target.value) : updateProfile("bgImage", e.target.value)} placeholder="Direct link..." />
-                {(profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage) && (
-                  <div className="sx-media-current">{profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage}</div>
+              <label className="sx-label">Upload Background</label>
+              <div className="sx-upload-grid">
+                <MediaDrop
+                  kind="image"
+                  icon={<ImageIcon size={20} />}
+                  title="Drop image"
+                  hint="PNG, JPG, WEBP, GIF"
+                  onUpload={uploadMedia}
+                />
+                <MediaDrop
+                  kind="video"
+                  icon={<Video size={20} />}
+                  title="Drop video"
+                  hint="MP4, WEBM, MOV"
+                  onUpload={uploadMedia}
+                />
+              </div>
+
+              {profileData.bgType === "gradient" && (
+                <div className="sx-input-group" style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <label className="sx-label">Background Colors</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
+                     <div>
+                       <span style={{ fontSize: '10px', opacity: 0.5 }}>START</span>
+                       <input type="color" className="sx-input" style={{height: '40px', padding: '4px'}} value={gradientColors.c1} onChange={e => updateGradient(e.target.value, gradientColors.c2)} />
+                     </div>
+                     <div>
+                       <span style={{ fontSize: '10px', opacity: 0.5 }}>END</span>
+                       <input type="color" className="sx-input" style={{height: '40px', padding: '4px'}} value={gradientColors.c2} onChange={e => updateGradient(gradientColors.c1, e.target.value)} />
+                     </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '5px' }}>
+                    {[
+                      ['#1a0b1a', '#050106'],
+                      ['#7000ff', '#ff008c'],
+                      ['#00d2ff', '#3a7bd5'],
+                      ['#11e1de', '#111111'],
+                      ['#833ab4', '#fd1d1d'],
+                    ].map(([c1, c2], i) => (
+                      <div 
+                        key={i} 
+                        onClick={() => updateGradient(c1, c2)}
+                        style={{ 
+                          flexShrink: 0, width: '24px', height: '24px', borderRadius: '6px', cursor: 'pointer',
+                          background: `linear-gradient(135deg, ${c1}, ${c2})`, border: '1px solid rgba(255,255,255,0.2)'
+                        }} 
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(profileData.bgType === "video" || profileData.bgType === "image") && (
+                <div className="sx-input-group" style={{marginBottom: 0}}>
+                  <label className="sx-label">{profileData.bgType === "video" ? "Video (.mp4) URL" : "Image URL"}</label>
+                  <div className="tag-input-wrapper">
+                    <input className="sx-input" value={profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage} onChange={e => profileData.bgType === "video" ? updateProfile("bgVideo", e.target.value) : updateProfile("bgImage", e.target.value)} placeholder="Direct link..." />
+                    <button className="sx-tag-clear" onClick={() => profileData.bgType === "video" ? updateProfile("bgVideo", "") : updateProfile("bgImage", "")}><X size={16} /></button>
+                  </div>
+                  {(profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage) && (
+                    <div className="sx-media-current">{profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage}</div>
+                  )}
+                </div>
+              )}
+            </section>
+
+            <section className="sx-editor-section">
+              <div className="sx-section-title">
+                <span><Music size={14} /> Audio Player</span>
+                {profileData.bgAudio && (
+                  <button className="sx-danger-mini" onClick={() => setProfileData(prev => ({ ...prev, bgAudio: "", bgAudioName: "" }))} aria-label="Remove audio">
+                    <X size={16} />
+                  </button>
                 )}
               </div>
-            )}
 
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '20px'}}>
-                <div className="sx-input-group"><label className="sx-label">Name Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.nameColor} onChange={e => updateProfile("nameColor", e.target.value)} /></div>
-                <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.accent} onChange={e => updateProfile("accent", e.target.value)} /></div>
-            </div>
-            
-            <div className="sx-input-group" style={{marginTop: '10px'}}>
-                <label className="sx-label">Bio Color</label>
-                <input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.bioColor.length > 7 ? profileData.bioColor.substring(0,7) : profileData.bioColor} onChange={e => updateProfile("bioColor", e.target.value)} />
-            </div>
+              <div className="sx-input-group">
+                <label className="sx-label">Audio Player Name</label>
+                <input className="sx-input" value={profileData.bgAudioName} onChange={e => updateProfile("bgAudioName", e.target.value.slice(0, 60))} placeholder="Song name shown on profile" />
+              </div>
 
-            <div className="sx-input-group">
-              <label className="sx-label">Audio Player Name</label>
-              <input className="sx-input" value={profileData.bgAudioName} onChange={e => updateProfile("bgAudioName", e.target.value.slice(0, 60))} placeholder="Song name shown on profile" />
-            </div>
+              <div className="sx-input-group">
+                <label className="sx-label">Upload Audio</label>
+                <MediaDrop
+                  kind="audio"
+                  icon={<Music size={20} />}
+                  title="Drop audio"
+                  hint="MP3, WAV, OGG, WEBM"
+                  onUpload={uploadMedia}
+                />
+              </div>
 
-            <div className="sx-input-group">
-              <label className="sx-label">Upload Audio</label>
-              <MediaDrop
-                kind="audio"
-                icon={<Music size={20} />}
-                title="Drop audio"
-                hint="MP3, WAV, OGG, WEBM"
-                onUpload={uploadMedia}
-              />
-            </div>
-
-            <div className="sx-input-group">
-              <label className="sx-label">Audio URL</label>
-              <input className="sx-input" value={profileData.bgAudio} onChange={e => updateProfile("bgAudio", e.target.value)} placeholder="Link to audio file" />
-              {profileData.bgAudio && <div className="sx-media-current">{profileData.bgAudio}</div>}
-            </div>
+              <div className="sx-input-group" style={{marginBottom: 0}}>
+                <label className="sx-label">Audio URL</label>
+                <div className="tag-input-wrapper">
+                  <input className="sx-input" value={profileData.bgAudio} onChange={e => updateProfile("bgAudio", e.target.value)} placeholder="Link to audio file" />
+                  {profileData.bgAudio && (
+                    <button className="sx-tag-clear" onClick={() => setProfileData(prev => ({ ...prev, bgAudio: "", bgAudioName: "" }))}><X size={16} /></button>
+                  )}
+                </div>
+                {profileData.bgAudio && <div className="sx-media-current">{profileData.bgAudio}</div>}
+              </div>
+            </section>
           </div>
         )}
 
