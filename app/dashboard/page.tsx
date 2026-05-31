@@ -149,11 +149,15 @@ function fileTitle(name: string) {
 }
 
 function uploadLimit(kind: "image" | "video" | "audio") {
-  return 15 * 1024 * 1024;
+  return 50 * 1024 * 1024;
 }
 
 function formatMb(bytes: number) {
   return `${Math.floor(bytes / 1024 / 1024)}MB`;
+}
+
+function safeFileName(name: string) {
+  return name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 90) || "softcard-media";
 }
 
 export default function SoftcardDashboard() {
@@ -329,49 +333,53 @@ export default function SoftcardDashboard() {
   }
 
   const uploadMedia = async (kind: "image" | "video" | "audio", file: File) => {
+    if (!supabase) throw new Error("Uploads are not configured.")
+
     const limit = uploadLimit(kind)
     if (file.size > limit) {
       throw new Error(`${kind === "image" ? "Image" : kind === "video" ? "Video" : "Audio"} is too large. Use a file under ${formatMb(limit)}.`)
     }
 
-    const body = new FormData()
-    body.append("kind", kind)
-    body.append("file", file)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error("You need to be signed in to upload media.")
 
-    const response = await fetch("/api/media/discord", {
-      method: "POST",
-      body,
-    })
-    const text = await response.text()
-    let result: any = {}
+    const path = `${user.id}/${kind}/${Date.now()}-${safeFileName(file.name)}`
+    const { error } = await supabase.storage
+      .from("media")
+      .upload(path, file, {
+        cacheControl: "31536000",
+        contentType: file.type,
+        upsert: false,
+      })
 
-    try {
-      result = text ? JSON.parse(text) : {}
-    } catch {
-      throw new Error(text.includes("Request Entity Too Large") ? "File is too large for this upload method." : text.slice(0, 140) || "Upload failed.")
+    if (error) {
+      throw new Error(
+        error.message.includes("Bucket not found")
+          ? "Create a public Supabase Storage bucket named media first."
+          : error.message
+      )
     }
 
-    if (!response.ok) {
-      throw new Error(result.error || "Upload failed.")
-    }
+    const { data } = supabase.storage.from("media").getPublicUrl(path)
+    const publicUrl = data.publicUrl
 
     if (kind === "image") {
-      setProfileData(prev => ({ ...prev, bgType: "image", bgImage: result.url }))
+      setProfileData(prev => ({ ...prev, bgType: "image", bgImage: publicUrl }))
     }
 
     if (kind === "video") {
-      setProfileData(prev => ({ ...prev, bgType: "video", bgVideo: result.url }))
+      setProfileData(prev => ({ ...prev, bgType: "video", bgVideo: publicUrl }))
     }
 
     if (kind === "audio") {
       setProfileData(prev => ({
         ...prev,
-        bgAudio: result.url,
-        bgAudioName: prev.bgAudioName || fileTitle(result.name || file.name),
+        bgAudio: publicUrl,
+        bgAudioName: prev.bgAudioName || fileTitle(file.name),
       }))
     }
 
-    return result.url as string
+    return publicUrl
   }
 
   const applyPreset = (preset: typeof themePresets[number]) => {
@@ -977,16 +985,16 @@ export default function SoftcardDashboard() {
               <div className="sx-upload-grid">
                 <MediaDrop
                   kind="image"
-                  icon={<ImageIcon size={20} />}
-                  title="Drop image"
-                  hint="PNG, JPG, WEBP, GIF"
+                icon={<ImageIcon size={20} />}
+                title="Drop image"
+                hint="PNG, JPG, WEBP, GIF up to 50MB"
                   onUpload={uploadMedia}
                 />
                 <MediaDrop
                   kind="video"
-                  icon={<Video size={20} />}
-                  title="Drop video"
-                  hint="MP4, WEBM, MOV"
+                icon={<Video size={20} />}
+                title="Drop video"
+                hint="MP4, WEBM, MOV up to 50MB"
                   onUpload={uploadMedia}
                 />
               </div>
@@ -1061,7 +1069,7 @@ export default function SoftcardDashboard() {
                   kind="audio"
                   icon={<Music size={20} />}
                   title="Drop audio"
-                  hint="MP3, WAV, OGG, WEBM"
+                  hint="MP3, WAV, OGG, WEBM up to 50MB"
                   onUpload={uploadMedia}
                 />
               </div>
