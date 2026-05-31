@@ -9,6 +9,7 @@ import {
   ChevronDown,
   Copy,
   CopyPlus,
+  Eye,
   Layers,
   Link as LinkIcon,
   LogOut,
@@ -17,6 +18,7 @@ import {
   Palette,
   Plus,
   ShieldCheck,
+  Sparkles,
   Star,
   Trash2,
   User,
@@ -299,6 +301,10 @@ export default function Dashboard() {
     setTimeout(() => setCopied(false), 1800);
   }
 
+  const visibleLinks = links.filter((link) => link.enabled !== false && safeExternalUrl(link.url));
+  const featuredLinks = visibleLinks.filter((link) => link.featured && link.label);
+  const iconLinks = visibleLinks.filter((link) => !link.featured);
+
   if (loading) {
     return (
       <main className="sc-screen">
@@ -468,7 +474,7 @@ export default function Dashboard() {
                   </label>
                   <label>
                     Pick
-                    <input type="color" value={safeHex(link.color) || profile.accent} onChange={(event) => updateLink(index, "color", event.target.value)} />
+                    <input type="color" value={link.color || profile.accent} onChange={(event) => updateLink(index, "color", event.target.value)} />
                   </label>
                 </div>
 
@@ -601,8 +607,8 @@ function ProfilePreview({ profile, links, badges }: { profile: ProfileData; link
 
   return (
     <div className="sc-profile-preview" style={{ background: profile.bgType === "gradient" ? profile.gradient : "#04050a" }}>
-      {profile.bgType === "image" && safeExternalUrl(profile.bgImage) && <img className="sc-bg-media" src={safeExternalUrl(profile.bgImage)} alt="" />}
-      {profile.bgType === "video" && safeExternalUrl(profile.bgVideo) && <video className="sc-bg-media" src={safeExternalUrl(profile.bgVideo)} muted loop autoPlay playsInline />}
+      {profile.bgType === "image" && profile.bgImage && <img className="sc-bg-media" src={profile.bgImage} alt="" />}
+      {profile.bgType === "video" && profile.bgVideo && <video className="sc-bg-media" src={profile.bgVideo} muted loop autoPlay playsInline />}
 
       <div className={`sc-profile-card ${profile.showGlass ? "is-glass" : ""}`}>
         <img className="sc-avatar" src={profile.avatar} alt="" />

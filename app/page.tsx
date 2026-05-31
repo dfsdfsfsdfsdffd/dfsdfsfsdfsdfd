@@ -2,126 +2,97 @@
 
 import Link from "next/link";
 import { Space_Grotesk } from "next/font/google";
-import {
-  ArrowRight,
-  BadgeCheck,
-  Eye,
-  Heart,
-  Link as LinkIcon,
-  LockKeyhole,
-  Palette,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, BadgeCheck, Heart, Link as LinkIcon, Palette, ShieldCheck, Sparkles } from "lucide-react";
 
 const font = Space_Grotesk({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
-const features = [
-  { icon: LinkIcon, title: "Featured links", text: "Turn important socials into large buttons without duplicating the small icon." },
-  { icon: Palette, title: "Live editor", text: "Change avatar, bio, colors, backgrounds, audio, tags, and link order from one clean panel." },
-  { icon: BadgeCheck, title: "Badge tooltips", text: "Badges explain what they mean on hover and stay controlled from the admin panel." },
-  { icon: ShieldCheck, title: "Safer defaults", text: "Public URLs, colors, media, admin access, and signup input are validated before use." },
-];
-
 export default function Home() {
+  const navItems = ["Home", "Features", "Dashboard", "Support", "Credits"];
+
   return (
-    <main className={`sf-root ${font.className}`}>
-      <nav className="sf-nav">
-        <Link href="/" className="sf-brand">
+    <main className={`sx-main ${font.className}`}>
+      <nav className="sx-nav">
+        <div className="sx-logo">
           <Heart size={18} fill="currentColor" />
           softcard.cc
-        </Link>
-
-        <div className="sf-nav-links">
-          <Link href="/">Home</Link>
-          <Link href="/more">Features</Link>
-          <Link href="/login">Dashboard</Link>
-          <Link href="/more">Support</Link>
         </div>
 
-        <Link href="/login" className="sf-nav-button">
-          Login
+        <div className="sx-nav-links">
+          {navItems.map((item, index) => (
+            <a
+              key={item}
+              href={item === "Dashboard" ? "/login" : item === "Home" ? "/" : "/more"}
+              className={index === 0 ? "is-active" : ""}
+            >
+              {item}
+            </a>
+          ))}
+        </div>
+
+        <Link href="/login">
+          <button className="sx-nav-btn">Login</button>
         </Link>
       </nav>
 
-      <section className="sf-hero">
-        <div className="sf-hero-copy">
-          <p className="sf-kicker">
-            <Sparkles size={14} />
-            Built for clean personal profiles
-          </p>
-          <h1>SOFTCARD</h1>
-          <p>
-            A polished profile page for socials, badges, media, and one memorable
-            softcard.cc link.
-          </p>
+      <section className="sx-hero">
+        <div className="sx-kicker">
+          <Sparkles size={14} />
+          <span>Built for personal links</span>
+        </div>
 
-          <div className="sf-actions">
-            <Link href="/login" className="sf-primary">
+        <h1 className="sx-title">SOFTCARD</h1>
+
+        <p className="sx-sub">
+          A focused profile utility for socials, badges, media, and a clean softcard.cc link.
+        </p>
+
+        <div className="sx-actions">
+          <Link href="/login">
+            <button className="sx-primary">
               Create page
-              <ArrowRight size={17} />
-            </Link>
-            <Link href="/more" className="sf-secondary">
-              See features
-            </Link>
+              <ArrowRight size={16} />
+            </button>
+          </Link>
+
+          <Link href="/more">
+            <button className="sx-secondary">Learn more</button>
+          </Link>
+        </div>
+
+        <div className="sx-feature-grid">
+          <div className="sx-feature">
+            <LinkIcon size={18} />
+            <span>Custom softcard.cc URL</span>
+          </div>
+          <div className="sx-feature">
+            <Sparkles size={18} />
+            <span>Live profile editor</span>
+          </div>
+          <div className="sx-feature">
+            <ShieldCheck size={18} />
+            <span>Protected dashboard</span>
           </div>
         </div>
 
-        <div className="sf-preview" aria-hidden="true">
-          <div className="sf-preview-top">
-            <span />
-            <span />
-            <span />
+        <div className="sx-product-grid">
+          <div className="sx-product-card">
+            <BadgeCheck size={20} />
+            <h2>Badges that mean something</h2>
+            <p>Verified, developer, and staff badges are admin-controlled and explain themselves on hover.</p>
           </div>
-          <div className="sf-profile-mini">
-            <div className="sf-mini-views">
-              <Eye size={13} />
-              1.2k
-            </div>
-            <img src="https://i.imgur.com/1X6g1YH.jpeg" alt="" />
-            <strong>akuryo</strong>
-            <div className="sf-mini-badges">
-              <ShieldCheck size={14} />
-              <BadgeCheck size={14} />
-              <Sparkles size={14} />
-            </div>
-            <p>rockstar</p>
-            <div className="sf-mini-link">
-              <span>
-                <b>softcard.cc</b>
-                <small>MY SITE</small>
-              </span>
-              <ArrowRight size={15} />
-            </div>
+          <div className="sx-product-card">
+            <Palette size={20} />
+            <h2>Profiles with actual style</h2>
+            <p>Theme presets, glass cards, background media, audio, colors, and featured links.</p>
           </div>
-        </div>
-      </section>
-
-      <section className="sf-feature-band">
-        <div className="sf-section-head">
-          <p>More control, less clutter</p>
-          <h2>Everything users need without making the dashboard messy.</h2>
-        </div>
-
-        <div className="sf-feature-grid">
-          {features.map((feature) => {
-            const Icon = feature.icon;
-            return (
-              <article key={feature.title} className="sf-feature-card">
-                <Icon size={20} />
-                <h3>{feature.title}</h3>
-                <p>{feature.text}</p>
-              </article>
-            );
-          })}
-        </div>
-
-        <div className="sf-security-strip">
-          <LockKeyhole size={18} />
-          Server signup route, httpOnly admin session, same-origin admin checks, safer public link rendering.
+          <div className="sx-product-card">
+            <ShieldCheck size={20} />
+            <h2>Hardened by default</h2>
+            <p>Protected dashboard, safer signup flow, sanitized public links, and locked-down admin tools.</p>
+          </div>
         </div>
       </section>
     </main>
