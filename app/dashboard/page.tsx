@@ -356,6 +356,8 @@ export default function SoftcardDashboard() {
       throw new Error(
         error.message.includes("Bucket not found")
           ? "Create a public Supabase Storage bucket named media first."
+          : error.message.includes("row-level security")
+          ? "Supabase Storage blocked this upload. Add the media bucket RLS policies first."
           : error.message
       )
     }
