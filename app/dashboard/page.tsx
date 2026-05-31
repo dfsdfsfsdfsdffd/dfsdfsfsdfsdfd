@@ -20,7 +20,8 @@ import {
   Tag,
   MoveUp,
   MoveDown,
-  CopyPlus
+  CopyPlus,
+  ChevronDown
 } from "lucide-react"
 
 // Types
@@ -569,6 +570,12 @@ export default function SoftcardDashboard() {
         .sx-link-actions {
           display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
         }
+        .sx-select-wrap { position: relative; }
+        .sx-select-wrap .sx-input { padding-right: 42px; }
+        .sx-select-icon {
+          position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+          pointer-events: none; opacity: 0.7; color: white;
+        }
         .sx-link-tool {
           display: inline-flex; align-items: center; justify-content: center; gap: 6px;
           min-height: 34px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
@@ -639,9 +646,12 @@ export default function SoftcardDashboard() {
                 <div key={l.id} className="sx-link-card">
                     <button className="sx-remove-link" onClick={() => removeLink(l.id)}><X size={14}/></button>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <select className="sx-input" value={l.type} onChange={e => updateLink(i, "type", e.target.value)}>
-                        {Object.keys(iconMap).map(k => <option key={k} value={k}>{k.toUpperCase()}</option>)}
-                    </select>
+                    <div className="sx-select-wrap">
+                      <select className="sx-input" value={l.type} onChange={e => updateLink(i, "type", e.target.value)}>
+                          {Object.keys(iconMap).map(k => <option key={k} value={k}>{k.toUpperCase()}</option>)}
+                      </select>
+                      <ChevronDown className="sx-select-icon" size={18} />
+                    </div>
                     <input className="sx-input" value={l.label || ""} onChange={e => updateLink(i, "label", e.target.value)} placeholder="Display label (optional)" maxLength={40} />
                     <input className="sx-input" value={l.description || ""} onChange={e => updateLink(i, "description", e.target.value)} placeholder="Small description for featured button" maxLength={80} />
                     <input className="sx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="https://..." />
