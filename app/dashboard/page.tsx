@@ -67,6 +67,8 @@ type ProfileData = {
   bgImage: string;
   bgAudio: string;
   bgAudioName: string;
+  showAudioPlayer: boolean;
+  backgroundAudio: boolean;
   showGlass: boolean;
   views: number;
 }
@@ -117,27 +119,35 @@ function normalizeLinks(items: SocialLink[]) {
 }
 
 function splitAudioMeta(value: string) {
-  if (!value) return { url: "", title: "" };
+  if (!value) return { url: "", title: "", showPlayer: true, backgroundAudio: true };
 
   try {
     const parsed = new URL(value);
-    const title = parsed.hash.startsWith("#softcardTitle=")
+    const params = new URLSearchParams(parsed.hash.startsWith("#") ? parsed.hash.slice(1) : parsed.hash);
+    const oldTitle = parsed.hash.startsWith("#softcardTitle=")
       ? decodeURIComponent(parsed.hash.replace("#softcardTitle=", ""))
       : "";
+    const title = params.get("title") || oldTitle;
+    const showPlayer = params.get("player") !== "0";
+    const backgroundAudio = params.get("bg") !== "0";
     parsed.hash = "";
-    return { url: parsed.toString(), title };
+    return { url: parsed.toString(), title, showPlayer, backgroundAudio };
   } catch {
-    return { url: value, title: "" };
+    return { url: value, title: "", showPlayer: true, backgroundAudio: true };
   }
 }
 
-function audioUrlWithTitle(url: string, title: string) {
+function audioUrlWithMeta(url: string, title: string, showPlayer: boolean, backgroundAudio: boolean) {
   if (!url.trim()) return "";
 
   try {
     const parsed = new URL(url.trim());
+    const params = new URLSearchParams();
     const cleanedTitle = title.trim().slice(0, 60);
-    parsed.hash = cleanedTitle ? `softcardTitle=${encodeURIComponent(cleanedTitle)}` : "";
+    if (cleanedTitle) params.set("title", cleanedTitle);
+    if (!showPlayer) params.set("player", "0");
+    if (!backgroundAudio) params.set("bg", "0");
+    parsed.hash = params.toString();
     return parsed.toString();
   } catch {
     return url.trim();
@@ -197,6 +207,8 @@ export default function SoftcardDashboard() {
     bgImage: "",
     bgAudio: "",
     bgAudioName: "",
+    showAudioPlayer: true,
+    backgroundAudio: true,
     showGlass: true,
     views: 0
   })
@@ -262,6 +274,8 @@ export default function SoftcardDashboard() {
           bgType: profile.background_type || "gradient",
           bgAudio: audioMeta.url,
           bgAudioName: audioMeta.title,
+          showAudioPlayer: audioMeta.showPlayer,
+          backgroundAudio: audioMeta.backgroundAudio,
           views: profile.views || 0,
           showGlass: profile.show_glass_card ?? true,
           gradient: profile.background_type === "gradient" ? profile.background_value : prev.gradient,
@@ -299,7 +313,7 @@ export default function SoftcardDashboard() {
         font_family: profileData.font,
         background_type: profileData.bgType,
         background_value: profileData.bgType === "gradient" ? profileData.gradient : (profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage),
-        audio_url: audioUrlWithTitle(profileData.bgAudio, profileData.bgAudioName),
+        audio_url: audioUrlWithMeta(profileData.bgAudio, profileData.bgAudioName, profileData.showAudioPlayer, profileData.backgroundAudio),
         show_glass_card: profileData.showGlass,
         setup_completed: true
       }).eq('id', user.id)
@@ -378,6 +392,8 @@ export default function SoftcardDashboard() {
         ...prev,
         bgAudio: publicUrl,
         bgAudioName: prev.bgAudioName || fileTitle(file.name),
+        showAudioPlayer: true,
+        backgroundAudio: true,
       }))
     }
 
@@ -1054,7 +1070,7 @@ export default function SoftcardDashboard() {
               <div className="sx-section-title">
                 <span><Music size={14} /> Audio Player</span>
                 {profileData.bgAudio && (
-                  <button className="sx-danger-mini" onClick={() => setProfileData(prev => ({ ...prev, bgAudio: "", bgAudioName: "" }))} aria-label="Remove audio">
+                  <button className="sx-danger-mini" onClick={() => setProfileData(prev => ({ ...prev, bgAudio: "", bgAudioName: "", showAudioPlayer: true, backgroundAudio: true }))} aria-label="Remove audio">
                     <X size={16} />
                   </button>
                 )}
@@ -1072,16 +1088,26 @@ export default function SoftcardDashboard() {
                   icon={<Music size={20} />}
                   title="Drop audio"
                   hint="MP3, WAV, OGG, WEBM up to 50MB"
-                  onUpload={uploadMedia}
-                />
-              </div>
+                onUpload={uploadMedia}
+              />
+            </div>
+
+              <label className="sx-check-row">
+                <input type="checkbox" checked={profileData.showAudioPlayer} onChange={e => updateProfile("showAudioPlayer", e.target.checked)} />
+                <span>Show audio player on profile</span>
+              </label>
+
+              <label className="sx-check-row">
+                <input type="checkbox" checked={profileData.backgroundAudio} onChange={e => updateProfile("backgroundAudio", e.target.checked)} />
+                <span>Use as background audio after click-to-enter</span>
+              </label>
 
               <div className="sx-input-group" style={{marginBottom: 0}}>
                 <label className="sx-label">Audio URL</label>
                 <div className="tag-input-wrapper">
                   <input className="sx-input" value={profileData.bgAudio} onChange={e => updateProfile("bgAudio", e.target.value)} placeholder="Link to audio file" />
                   {profileData.bgAudio && (
-                    <button className="sx-tag-clear" onClick={() => setProfileData(prev => ({ ...prev, bgAudio: "", bgAudioName: "" }))}><X size={16} /></button>
+                    <button className="sx-tag-clear" onClick={() => setProfileData(prev => ({ ...prev, bgAudio: "", bgAudioName: "", showAudioPlayer: true, backgroundAudio: true }))}><X size={16} /></button>
                   )}
                 </div>
                 {profileData.bgAudio && <div className="sx-media-current">{profileData.bgAudio}</div>}
@@ -1149,7 +1175,7 @@ export default function SoftcardDashboard() {
               </a>
             ))}
           </div>
-          {profileData.bgAudio && (
+          {profileData.bgAudio && profileData.showAudioPlayer && (
             <div className="sx-preview-player">
               <span className="sx-preview-player-btn">
                 <Play size={15} fill="currentColor" />

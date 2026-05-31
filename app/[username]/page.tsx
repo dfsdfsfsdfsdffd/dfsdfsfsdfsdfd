@@ -75,17 +75,21 @@ function mediaName(url: string) {
 }
 
 function splitAudioMeta(value: string) {
-  if (!value) return { url: "", title: "" }
+  if (!value) return { url: "", title: "", showPlayer: true, backgroundAudio: true }
 
   try {
     const parsed = new URL(value)
-    const title = parsed.hash.startsWith("#softcardTitle=")
+    const params = new URLSearchParams(parsed.hash.startsWith("#") ? parsed.hash.slice(1) : parsed.hash)
+    const oldTitle = parsed.hash.startsWith("#softcardTitle=")
       ? decodeURIComponent(parsed.hash.replace("#softcardTitle=", ""))
       : ""
+    const title = params.get("title") || oldTitle
+    const showPlayer = params.get("player") !== "0"
+    const backgroundAudio = params.get("bg") !== "0"
     parsed.hash = ""
-    return { url: parsed.toString(), title }
+    return { url: parsed.toString(), title, showPlayer, backgroundAudio }
   } catch {
-    return { url: value, title: "" }
+    return { url: value, title: "", showPlayer: true, backgroundAudio: true }
   }
 }
 
@@ -153,7 +157,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
   const handleEnter = () => {
     setHasEntered(true)
-    if (audioRef.current) {
+    if (audioRef.current && audioSettings.backgroundAudio) {
       audioRef.current.volume = isMuted ? 0 : volume
       audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
     }
@@ -184,9 +188,9 @@ export default function PublicProfile({ params }: { params: { username: string }
   const hasMediaBg = (profile.background_type === "image" || profile.background_type === "video") && profile.background_value;
   const bgUrl = hasMediaBg ? safeMediaUrl(profile.background_value) : "";
   const avatarUrl = safeMediaUrl(profile.avatar_url) || "https://i.imgur.com/1X6g1YH.jpeg";
-  const audioMeta = splitAudioMeta(safeMediaUrl(profile.audio_url));
-  const audioUrl = audioMeta.url;
-  const audioTitle = audioMeta.title || mediaName(audioUrl);
+  const audioSettings = splitAudioMeta(safeMediaUrl(profile.audio_url));
+  const audioUrl = audioSettings.url;
+  const audioTitle = audioSettings.title || mediaName(audioUrl);
 
   return (
     <div className="container">
@@ -454,7 +458,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           ))}
         </div>
 
-        {audioUrl && (
+        {audioUrl && audioSettings.showPlayer && (
           <div className="media-player">
             <button className="media-btn" onClick={toggleAudio} aria-label={isPlaying ? "Pause audio" : "Play audio"}>
               {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
