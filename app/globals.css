@@ -1227,3 +1227,150 @@ body::before {
     margin-top: 44px;
   }
 }
+
+/* Final landing alignment pass */
+.sx-main::before {
+  left: 18%;
+  bottom: 20%;
+  width: 150px;
+  opacity: 0.16;
+}
+
+.sx-main::after {
+  opacity: 0.14;
+}
+
+.sx-nav {
+  display: grid;
+  grid-template-columns: 220px 1fr 220px;
+  align-items: center;
+  width: min(1180px, calc(100vw - 56px));
+  padding-top: 30px;
+}
+
+.sx-nav::before,
+.sx-nav::after {
+  display: none;
+}
+
+.sx-logo {
+  min-width: 0;
+}
+
+.sx-nav-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(26px, 4vw, 54px);
+}
+
+.sx-nav-links a {
+  position: relative;
+  padding: 8px 0 14px;
+  color: rgba(240, 236, 255, 0.62);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sx-nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 32px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #9b6cff, #ff5cff);
+  transform: translateX(-50%) scaleX(0);
+  opacity: 0;
+  transition: 0.18s ease;
+}
+
+.sx-nav-links a:hover,
+.sx-nav-links a.is-active {
+  color: rgba(240, 236, 255, 0.92);
+}
+
+.sx-nav-links a:hover::after,
+.sx-nav-links a.is-active::after {
+  opacity: 1;
+  transform: translateX(-50%) scaleX(1);
+}
+
+.sx-nav > a {
+  justify-self: end;
+}
+
+.sx-hero {
+  min-height: calc(100vh - 88px);
+  width: min(980px, calc(100vw - 48px));
+  padding: 10px 0 90px;
+  justify-content: center;
+}
+
+.sx-kicker {
+  margin-bottom: 18px;
+  letter-spacing: 0.34em;
+  color: rgba(205, 176, 255, 0.9);
+}
+
+.sx-title {
+  font-size: clamp(76px, 12vw, 142px);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+}
+
+.sx-sub {
+  max-width: 610px;
+  margin-top: 24px;
+  color: rgba(240, 236, 255, 0.5);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.sx-actions {
+  margin-top: 30px;
+}
+
+.sx-feature-grid {
+  width: min(720px, 100%);
+  margin-top: 54px;
+  grid-template-columns: repeat(3, max-content);
+  justify-content: center;
+  column-gap: clamp(36px, 6vw, 86px);
+}
+
+.sx-feature {
+  min-height: 30px;
+  padding: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .sx-nav {
+    display: flex;
+    width: min(100vw - 32px, 1180px);
+  }
+
+  .sx-nav-links {
+    display: none;
+  }
+
+  .sx-hero {
+    width: min(100vw - 32px, 980px);
+    padding-bottom: 58px;
+  }
+
+  .sx-feature-grid {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+    gap: 12px;
+  }
+
+  .sx-feature {
+    justify-content: center;
+  }
+}

@@ -10,12 +10,26 @@ const font = Space_Grotesk({
 });
 
 export default function Home() {
+  const navItems = ["Home", "Features", "Dashboard", "Support", "Credits"];
+
   return (
     <main className={`sx-main ${font.className}`}>
       <nav className="sx-nav">
         <div className="sx-logo">
           <Heart size={18} fill="currentColor" />
           softcard.cc
+        </div>
+
+        <div className="sx-nav-links">
+          {navItems.map((item, index) => (
+            <a
+              key={item}
+              href={item === "Dashboard" ? "/login" : item === "Home" ? "/" : "/more"}
+              className={index === 0 ? "is-active" : ""}
+            >
+              {item}
+            </a>
+          ))}
         </div>
 
         <Link href="/login">
