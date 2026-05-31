@@ -122,7 +122,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
   if (!profile) return null
 
-  const socials = profile.links?.filter((l: any) => safeExternalUrl(l.url)) || []
+  const socials = profile.links?.filter((l: any) => l.enabled !== false && safeExternalUrl(l.url)) || []
   const accent = safeColor(profile.accent_color, '#7000ff');
   const nameColor = safeColor(profile.name_color, '#ffffff');
   const bioColor = safeColor(profile.bio_color, '#d1d5db');
@@ -347,7 +347,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         </div>
 
         <div className="featured-links">
-          {socials.filter((l: any) => l.label).slice(0, 4).map((l: any) => (
+          {socials.filter((l: any) => l.label && l.featured).slice(0, 4).map((l: any) => (
             <a key={`featured-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noopener noreferrer" className="featured-link">
               <span>{String(l.label).slice(0, 40)}</span>
               <img src={getIcon(l)} alt="" />

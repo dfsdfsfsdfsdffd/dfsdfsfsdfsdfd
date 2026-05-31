@@ -1,6 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
+const WINDOW_MS = 10 * 60 * 1000;
+const MAX_ATTEMPTS = 30;
+const attempts = new Map<string, { count: number; resetAt: number }>();
+
 type BadgePayload = {
   id?: string;
   badges?: {
@@ -11,11 +15,44 @@ type BadgePayload = {
 };
 
 function adminPassword() {
-  return process.env.ADMIN_PASSWORD || "123";
+  if (process.env.ADMIN_PASSWORD) return process.env.ADMIN_PASSWORD;
+  return process.env.NODE_ENV === "production" ? "" : "123";
 }
 
 function isAuthorized(request: Request) {
-  return request.headers.get("x-admin-password") === adminPassword();
+  const password = adminPassword();
+  return Boolean(password) && request.headers.get("x-admin-password") === password;
+}
+
+function getClientIp(request: Request) {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) return forwardedFor.split(",")[0]?.trim() || "unknown";
+  return request.headers.get("x-real-ip") || "unknown";
+}
+
+function hitLimit(key: string) {
+  const now = Date.now();
+  const existing = attempts.get(key);
+
+  if (!existing || existing.resetAt <= now) {
+    attempts.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    return false;
+  }
+
+  existing.count += 1;
+  return existing.count > MAX_ATTEMPTS;
+}
+
+function isSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  const host = request.headers.get("host");
+  if (!origin || !host) return true;
+
+  try {
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
 }
 
 function json(data: unknown, status = 200) {
@@ -29,6 +66,14 @@ function json(data: unknown, status = 200) {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOrigin(request)) {
+    return json({ error: "Invalid request." }, 403);
+  }
+
+  if (hitLimit(`admin-badges:${getClientIp(request)}`)) {
+    return json({ error: "Too many admin requests." }, 429);
+  }
+
   if (!isAuthorized(request)) {
     return json({ error: "Unauthorized." }, 401);
   }

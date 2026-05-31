@@ -15,6 +15,7 @@ export default function Login() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,8 +30,6 @@ export default function Login() {
     return createBrowserClient(url, key);
   }, []);
 
-  // 🔄 AUTO-LOGIN LOGIC
-  // If they are already logged in, send them to dashboard immediately
   useEffect(() => {
     const checkUser = async () => {
       if (!supabase) return;
@@ -59,6 +58,18 @@ export default function Login() {
 
         if (cleanedUsername.length < 3) {
           setError("Username must be at least 3 characters.");
+          setLoading(false);
+          return;
+        }
+
+        if (password.length < 6) {
+          setError("Password must be at least 6 characters.");
+          setLoading(false);
+          return;
+        }
+
+        if (password !== passwordConfirm) {
+          setError("Passwords do not match.");
           setLoading(false);
           return;
         }
@@ -194,6 +205,17 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+
+          {mode === "signup" && (
+            <input
+              className="lx-input"
+              type="password"
+              placeholder="Confirm password"
+              required
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+            />
+          )}
 
           <button className="lx-primary" disabled={loading}>
             {loading ? "Processing..." : (mode === "signin" ? "Sign In" : "Sign Up")}

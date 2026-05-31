@@ -27,6 +27,8 @@ interface SocialLink {
   type: string;
   url: string;
   label?: string;
+  featured?: boolean;
+  enabled?: boolean;
 }
 
 interface Badges {
@@ -54,6 +56,28 @@ const badgeInfo = {
   user: { label: "Verified User", description: "This profile belongs to a verified Softcard user." },
   dev: { label: "Developer", description: "This user is marked as a Softcard developer." },
   staff: { label: "Staff", description: "This user is marked as Softcard staff." },
+}
+
+function safeExternalUrl(value: unknown) {
+  if (typeof value !== "string") return "";
+  try {
+    const url = new URL(value.startsWith("http") ? value : `https://${value}`);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function normalizeLinks(items: SocialLink[]) {
+  return items
+    .map((link) => ({
+      ...link,
+      label: (link.label || "").trim().slice(0, 40),
+      url: safeExternalUrl(link.url),
+      enabled: link.enabled !== false,
+      featured: Boolean(link.featured),
+    }))
+    .filter((link) => link.url);
 }
 
 export default function SoftcardDashboard() {
@@ -175,7 +199,7 @@ export default function SoftcardDashboard() {
         sexuality: profileData.sexuality,
         birthday: profileData.birthday,
         timezone: profileData.timezone,
-        links: links,
+        links: normalizeLinks(links),
         accent_color: profileData.accent,
         name_color: profileData.nameColor,
         bio_color: profileData.bioColor,
@@ -203,9 +227,9 @@ export default function SoftcardDashboard() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const addLink = () => setLinks([...links, { id: Date.now(), type: "website", url: "", label: "" }])
+  const addLink = () => setLinks([...links, { id: Date.now(), type: "website", url: "", label: "", featured: false, enabled: true }])
   const removeLink = (id: number) => setLinks(links.filter(l => l.id !== id))
-  const updateLink = (index: number, key: keyof SocialLink, val: string) => {
+  const updateLink = (index: number, key: keyof SocialLink, val: string | boolean) => {
     const updated = [...links]
     updated[index] = { ...updated[index], [key]: val }
     setLinks(updated)
@@ -405,6 +429,13 @@ export default function SoftcardDashboard() {
           color: white; text-decoration: none; font-size: 13px; font-weight: 700;
         }
         .sx-feature-link img { width: 18px; height: 18px; opacity: 0.82; }
+        .sx-check-row {
+          display: flex; align-items: center; gap: 8px;
+          color: rgba(255,255,255,0.68); font-size: 12px; font-weight: 700;
+          background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07);
+          padding: 9px 10px; border-radius: 10px;
+        }
+        .sx-check-row input { width: 16px; height: 16px; accent-color: ${profileData.accent}; }
 
         .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; opacity: 0.5; font-size: 13px; font-weight: 600; }
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
@@ -523,6 +554,14 @@ export default function SoftcardDashboard() {
                     </select>
                     <input className="sx-input" value={l.label || ""} onChange={e => updateLink(i, "label", e.target.value)} placeholder="Display label (optional)" maxLength={40} />
                     <input className="sx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="https://..." />
+                    <label className="sx-check-row">
+                      <input type="checkbox" checked={l.enabled !== false} onChange={e => updateLink(i, "enabled", e.target.checked)} />
+                      <span>Show on profile</span>
+                    </label>
+                    <label className="sx-check-row">
+                      <input type="checkbox" checked={Boolean(l.featured)} onChange={e => updateLink(i, "featured", e.target.checked)} />
+                      <span>Feature as large button</span>
+                    </label>
                     </div>
                 </div>
                 ))}
@@ -720,15 +759,15 @@ export default function SoftcardDashboard() {
           <div className="sx-bio" style={{ color: profileData.bioColor }}>{profileData.bio || "No bio yet."}</div>
           
           <div className="sx-links-row">
-            {links.map(l => l.url && (
-              <a key={l.id} href={l.url} target="_blank" rel="noreferrer" className="sx-icon-link">
+            {links.map(l => l.url && l.enabled !== false && safeExternalUrl(l.url) && (
+              <a key={l.id} href={safeExternalUrl(l.url)} target="_blank" rel="noreferrer" className="sx-icon-link">
                 <img src={iconMap[l.type] || iconMap.website} alt={l.type} />
               </a>
             ))}
           </div>
           <div className="sx-feature-links">
-            {links.filter(l => l.url && l.label).slice(0, 4).map(l => (
-              <a key={`feature-${l.id}`} href={l.url} target="_blank" rel="noreferrer" className="sx-feature-link">
+            {links.filter(l => l.url && l.label && l.enabled !== false && l.featured && safeExternalUrl(l.url)).slice(0, 4).map(l => (
+              <a key={`feature-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noreferrer" className="sx-feature-link">
                 <span>{l.label}</span>
                 <img src={iconMap[l.type] || iconMap.website} alt="" />
               </a>
