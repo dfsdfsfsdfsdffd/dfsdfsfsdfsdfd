@@ -19,20 +19,20 @@ export default function Home() {
         </div>
 
         <Link href="/login">
-          <button className="sx-nav-btn">Dashboard</button>
+          <button className="sx-nav-btn">Login</button>
         </Link>
       </nav>
 
       <section className="sx-hero">
         <div className="sx-kicker">
           <Sparkles size={14} />
-          <span>Clean profile pages for every link</span>
+          <span>Built for personal links</span>
         </div>
 
-        <h1 className="sx-title">Build a sharper home for your online presence.</h1>
+        <h1 className="sx-title">SOFTCARD</h1>
 
         <p className="sx-sub">
-          Claim your softcard.cc link, customize the look, add socials, and publish a fast public profile from one dashboard.
+          A focused profile utility for socials, badges, media, and a clean softcard.cc link.
         </p>
 
         <div className="sx-actions">
