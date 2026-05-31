@@ -25,7 +25,8 @@ import {
   Upload,
   Image as ImageIcon,
   Video,
-  Music
+  Music,
+  Play
 } from "lucide-react"
 
 // Types
@@ -574,6 +575,26 @@ export default function SoftcardDashboard() {
         .sx-feature-link-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
         .sx-feature-link-text small { opacity: 0.58; font-size: 11px; font-weight: 600; line-height: 1.25; }
         .sx-feature-link img { width: 18px; height: 18px; opacity: 0.82; }
+        .sx-preview-player {
+          width: 100%; max-width: 300px; margin-top: 11px;
+          display: flex; align-items: center; gap: 10px;
+          padding: 10px 12px; border-radius: 14px;
+          background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .sx-preview-player-btn {
+          width: 34px; height: 34px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.14);
+          display: inline-flex; align-items: center; justify-content: center;
+          background: ${profileData.accent}; color: white; flex: 0 0 auto;
+        }
+        .sx-preview-player-text {
+          min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; text-align: left;
+        }
+        .sx-preview-player-text strong {
+          font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .sx-preview-player-text span {
+          font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.48;
+        }
         .sx-check-row {
           display: flex; align-items: center; gap: 8px;
           color: rgba(255,255,255,0.68); font-size: 12px; font-weight: 700;
@@ -1042,6 +1063,17 @@ export default function SoftcardDashboard() {
               </a>
             ))}
           </div>
+          {profileData.bgAudio && (
+            <div className="sx-preview-player">
+              <span className="sx-preview-player-btn">
+                <Play size={15} fill="currentColor" />
+              </span>
+              <span className="sx-preview-player-text">
+                <strong>{profileData.bgAudioName || fileTitle(profileData.bgAudio.split("/").pop()?.split("?")[0] || "Profile audio") || "Profile audio"}</strong>
+                <span>Profile audio</span>
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
