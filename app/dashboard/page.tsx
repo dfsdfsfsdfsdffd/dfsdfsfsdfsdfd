@@ -687,19 +687,19 @@ export default function SoftcardDashboard() {
           backdrop-filter: blur(18px);
         }
         .sx-editor-brand {
-          display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px;
+          display: grid; grid-template-columns: minmax(0, 1fr) 34px; align-items: center; gap: 10px; margin-bottom: 12px;
         }
-        .sx-editor-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
-        .sx-editor-logo {
-          width: 32px; height: 32px; border-radius: 12px; display: grid; place-items: center;
-          background: linear-gradient(135deg, ${profileData.accent}, #ff4df0);
-          box-shadow: 0 14px 32px ${profileData.accent}33;
+        .sx-editor-title { min-width: 0; }
+        .sx-editor-title strong {
+          display: block; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.1;
         }
-        .sx-editor-title strong { display: block; font-size: 14px; letter-spacing: -0.01em; }
-        .sx-editor-title span { display: block; margin-top: 2px; color: rgba(255,255,255,0.46); font-size: 11px; font-weight: 700; }
+        .sx-editor-title span {
+          display: block; margin-top: 5px; color: rgba(255,255,255,0.46); font-size: 11px; font-weight: 700;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
         .sx-editor-link {
-          cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
-          min-height: 32px; padding: 0 10px; border-radius: 10px;
+          cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+          width: 34px; height: 34px; padding: 0; border-radius: 10px;
           color: rgba(255,255,255,0.56); background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.08);
           font-size: 12px; font-weight: 800;
         }
@@ -836,16 +836,11 @@ export default function SoftcardDashboard() {
         <div className="sx-editor-head">
           <div className="sx-editor-brand">
             <div className="sx-editor-title">
-              <div className="sx-editor-logo">
-                <Palette size={18} />
-              </div>
-              <div>
-                <strong>Page editor</strong>
-                <span>softcard.cc/{profileData.username || "username"}</span>
-              </div>
+              <strong>Page editor</strong>
+              <span>softcard.cc/{profileData.username || "username"}</span>
             </div>
-            <button className="sx-editor-link" onClick={() => setView("hub")}>
-              <X size={15} /> Close
+            <button className="sx-editor-link" onClick={() => setView("hub")} aria-label="Close editor" title="Close editor">
+              <X size={16} />
             </button>
           </div>
 
