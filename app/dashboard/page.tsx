@@ -564,7 +564,7 @@ export default function SoftcardDashboard() {
         .sx-sidebar {
           width: 430px; background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.028)), rgba(8, 3, 15, 0.92);
           backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 255, 255, 0.1);
-          padding: 18px; overflow-y: auto; box-shadow: 24px 0 80px rgba(0,0,0,0.38);
+          padding: 16px; overflow-y: auto; box-shadow: 24px 0 80px rgba(0,0,0,0.38);
         }
         .sx-preview-pane {
           flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;
@@ -675,16 +675,16 @@ export default function SoftcardDashboard() {
 
         .sx-editor-head {
           position: sticky; top: -18px; z-index: 30;
-          padding: 18px 0 14px; margin-bottom: 12px;
+          padding: 14px 0 12px; margin-bottom: 10px;
           background: linear-gradient(180deg, rgba(8,3,15,0.98), rgba(8,3,15,0.88) 74%, transparent);
           backdrop-filter: blur(18px);
         }
         .sx-editor-brand {
-          display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px;
+          display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px;
         }
         .sx-editor-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
         .sx-editor-logo {
-          width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center;
+          width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center;
           background: linear-gradient(135deg, ${profileData.accent}, #ff4df0);
           box-shadow: 0 14px 32px ${profileData.accent}33;
         }
@@ -699,7 +699,7 @@ export default function SoftcardDashboard() {
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
 
         .sx-publish-btn {
-            width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 900; letter-spacing: 0.02em;
+            width: 100%; padding: 12px; border-radius: 13px; border: none; font-weight: 900; letter-spacing: 0.02em;
             background: linear-gradient(90deg, #ff008c, #ff4df0); color: white; cursor: pointer;
             box-shadow: 0 12px 30px rgba(255, 0, 128, 0.25); margin-bottom: 0; transition: 0.2s;
         }
@@ -707,11 +707,11 @@ export default function SoftcardDashboard() {
         .sx-publish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .sx-tabs-row {
-          display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-bottom: 16px;
-          background: rgba(255,255,255,0.035); padding: 6px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.07);
+          display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; margin-bottom: 12px;
+          background: rgba(255,255,255,0.035); padding: 5px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.07);
         }
         .sx-tab {
-          min-height: 46px; border-radius: 12px; cursor: pointer; opacity: 0.68; text-align: center; transition: 0.2s;
+          min-height: 42px; border-radius: 10px; cursor: pointer; opacity: 0.68; text-align: center; transition: 0.2s;
           font-size: 10px; font-weight: 900; text-transform: uppercase; display: flex; flex-direction: column;
           align-items: center; justify-content: center; gap: 5px; color: rgba(255,255,255,0.72);
           border: 0; background: transparent;
@@ -720,10 +720,10 @@ export default function SoftcardDashboard() {
         .sx-tab-active { background: linear-gradient(135deg, ${profileData.accent}, #ec4899); opacity: 1; color: white; box-shadow: 0 10px 24px ${profileData.accent}28; }
         
         .sx-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-bottom: 8px; display: block; font-weight: 800; }
-        .sx-input-group { margin-bottom: 14px; }
+        .sx-input-group { margin-bottom: 12px; }
         
         .sx-input {
-            width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.04);
+            width: 100%; padding: 10px 11px; border-radius: 11px; background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.08); color: white; outline: none; transition: 0.2s; font-size: 14px;
             appearance: none;
         }
@@ -748,7 +748,7 @@ export default function SoftcardDashboard() {
         .sx-link-card {
             background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.026));
             border: 1px solid rgba(255,255,255,0.09);
-            border-radius: 16px; padding: 14px; margin-bottom: 12px; position: relative;
+            border-radius: 14px; padding: 12px; margin-bottom: 10px; position: relative;
         }
         .sx-remove-link {
             position: absolute; top: -10px; right: -10px;
@@ -757,7 +757,7 @@ export default function SoftcardDashboard() {
             cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
         .sx-link-actions {
-          display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
         }
         .sx-select-wrap { position: relative; }
         .sx-select-wrap .sx-input { padding-right: 42px; }
@@ -773,20 +773,20 @@ export default function SoftcardDashboard() {
         }
         .sx-link-tool:disabled { opacity: 0.38; cursor: not-allowed; }
         
-        .tag-input-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .tag-input-wrapper { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
         .sx-tag-clear { 
           background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
           border-radius: 10px; padding: 10px; cursor: pointer; color: #ff4d4d; transition: 0.2s;
         }
         .sx-tag-clear:hover { background: rgba(255, 77, 77, 0.2); border-color: #ff4d4d; }
         .sx-upload-grid {
-          display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px;
+          display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px;
         }
         .sx-upload-box {
-          position: relative; min-height: 96px; border-radius: 14px; cursor: pointer;
+          position: relative; min-height: 84px; border-radius: 13px; cursor: pointer;
           display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
           border: 1px dashed rgba(255,255,255,0.18); background: rgba(255,255,255,0.035);
-          color: rgba(255,255,255,0.74); text-align: center; padding: 14px; transition: 0.18s;
+          color: rgba(255,255,255,0.74); text-align: center; padding: 12px; transition: 0.18s;
         }
         .sx-upload-box:hover { border-color: ${profileData.accent}; background: rgba(255,255,255,0.06); color: white; }
         .sx-upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
@@ -798,12 +798,12 @@ export default function SoftcardDashboard() {
           color: rgba(255,255,255,0.62); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .sx-editor-section {
-          margin-bottom: 18px; padding: 14px; border-radius: 16px;
+          margin-bottom: 12px; padding: 12px; border-radius: 15px;
           background: rgba(255,255,255,0.026); border: 1px solid rgba(255,255,255,0.07);
         }
         .sx-section-title {
           display: flex; align-items: center; justify-content: space-between; gap: 10px;
-          margin-bottom: 12px; color: rgba(255,255,255,0.86);
+          margin-bottom: 10px; color: rgba(255,255,255,0.86);
           font-size: 12px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase;
         }
         .sx-section-title span {
@@ -1022,7 +1022,7 @@ export default function SoftcardDashboard() {
                 ))}
               </div>
 
-              <div className="sx-input-group" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px', marginBottom: 0}}>
+              <div className="sx-input-group" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px', marginBottom: 0}}>
                   <input type="checkbox" id="glass" checked={profileData.showGlass} onChange={e => updateProfile("showGlass", e.target.checked)} style={{width: '18px', height: '18px'}} />
                   <label htmlFor="glass" style={{margin: 0, fontSize: '13px', cursor: 'pointer'}}>Transparent Glass Card</label>
               </div>
@@ -1087,7 +1087,7 @@ export default function SoftcardDashboard() {
               </div>
 
               {profileData.bgType === "gradient" && (
-                <div className="sx-input-group" style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="sx-input-group" style={{ background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '13px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <label className="sx-label">Background Colors</label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
                      <div>
