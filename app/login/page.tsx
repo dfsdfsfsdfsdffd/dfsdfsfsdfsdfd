@@ -15,8 +15,6 @@ export default function Login() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +29,8 @@ export default function Login() {
     return createBrowserClient(url, key);
   }, []);
 
+  // 🔄 AUTO-LOGIN LOGIC
+  // If they are already logged in, send them to dashboard immediately
   useEffect(() => {
     const checkUser = async () => {
       if (!supabase) return;
@@ -100,12 +100,6 @@ export default function Login() {
           return;
         }
 
-        if (password !== passwordConfirm) {
-          setError("Passwords do not match.");
-          setLoading(false);
-          return;
-        }
-
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -149,12 +143,12 @@ export default function Login() {
 
       <section className="lx-wrap">
         <h1 className="lx-title">
-          {mode === "signin" ? "Login" : "Create an account"}
+          {mode === "signin" ? "Welcome Back" : "Create Account"}
         </h1>
         <p className="lx-sub">
           {mode === "signin"
-            ? "Enter your account credentials."
-            : "Register a new softcard.cc profile."}
+            ? "Sign in to edit and publish your Softcard."
+            : "Pick your username, then sign in instantly after signup."}
         </p>
 
         <form className="lx-form" onSubmit={handleSubmit}>
@@ -183,56 +177,23 @@ export default function Login() {
             </div>
           )}
 
-          <label className="lx-classic-field">
-            <span>Email</span>
-            <input
-              className="lx-input"
-              type="email"
-              placeholder="prince@softcard.cc"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
+          <input
+            className="lx-input"
+            type="email"
+            placeholder="Email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-          <label className="lx-classic-field">
-            <span>Password</span>
-            <input
-              className="lx-input"
-              type="password"
-              placeholder="********"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
-
-          {mode === "signup" && (
-            <>
-              <label className="lx-classic-field">
-                <span>Password Confirmation</span>
-                <input
-                  className="lx-input"
-                  type="password"
-                  placeholder="********"
-                  required
-                  value={passwordConfirm}
-                  onChange={(e) => setPasswordConfirm(e.target.value)}
-                />
-              </label>
-
-              <label className="lx-classic-field">
-                <span>Invite Code</span>
-                <input
-                  className="lx-input"
-                  type="text"
-                  placeholder="Invite Code"
-                  value={inviteCode}
-                  onChange={(e) => setInviteCode(e.target.value)}
-                />
-              </label>
-            </>
-          )}
+          <input
+            className="lx-input"
+            type="password"
+            placeholder="Password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
           <button className="lx-primary" disabled={loading}>
             {loading ? "Processing..." : (mode === "signin" ? "Sign In" : "Sign Up")}
