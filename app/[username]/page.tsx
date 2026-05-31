@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect, useRef, useMemo } from "react"
 import { createBrowserClient } from '@supabase/ssr'
-import { ShieldCheck, Code, Star, Volume2, VolumeX, Eye, ExternalLink } from "lucide-react"
+import { ShieldCheck, Code, Star, Eye, ExternalLink, Play, Pause } from "lucide-react"
 
 const iconMap: any = {
   tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
@@ -66,11 +66,20 @@ function getIcon(linkObj: any) {
   return iconMap.website
 }
 
+function mediaName(url: string) {
+  try {
+    return decodeURIComponent(url.split("/").pop()?.split("?")[0] || "Profile audio")
+  } catch {
+    return "Profile audio"
+  }
+}
+
 export default function PublicProfile({ params }: { params: { username: string } }) {
   const [profile, setProfile] = useState<any>(null)
   const [hasEntered, setHasEntered] = useState(false)
   const [volume, setVolume] = useState(0.5)
   const [isMuted, setIsMuted] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
   
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -111,13 +120,42 @@ export default function PublicProfile({ params }: { params: { username: string }
     }
   }, [volume, isMuted])
 
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const onPlay = () => setIsPlaying(true)
+    const onPause = () => setIsPlaying(false)
+
+    audio.addEventListener("play", onPlay)
+    audio.addEventListener("pause", onPause)
+
+    return () => {
+      audio.removeEventListener("play", onPlay)
+      audio.removeEventListener("pause", onPause)
+    }
+  }, [profile?.audio_url])
+
   const handleEnter = () => {
     setHasEntered(true)
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
     }
     if (videoRef.current) videoRef.current.play().catch(() => {});
+  }
+
+  const toggleAudio = () => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    if (audio.paused) {
+      audio.volume = isMuted ? 0 : volume
+      audio.play().then(() => setIsPlaying(true)).catch(() => {})
+    } else {
+      audio.pause()
+      setIsPlaying(false)
+    }
   }
 
   if (!profile) return null
@@ -263,6 +301,60 @@ export default function PublicProfile({ params }: { params: { username: string }
         .featured-link-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
         .featured-link-text small { opacity: 0.6; font-size: 11px; line-height: 1.25; }
 
+        .media-player {
+          width: 100%;
+          max-width: 310px;
+          margin-top: 12px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px;
+          border-radius: 14px;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .media-main {
+          min-width: 0;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          text-align: left;
+        }
+        .media-title {
+          font-size: 12px;
+          font-weight: 800;
+          color: rgba(255, 255, 255, 0.9);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .media-sub {
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.46);
+        }
+        .media-btn {
+          flex: 0 0 auto;
+          width: 34px;
+          height: 34px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          background: ${accent};
+          color: white;
+          cursor: pointer;
+          box-shadow: 0 8px 20px ${accent}33;
+        }
+        .media-volume {
+          width: 72px;
+          accent-color: ${accent};
+        }
+
         .overlay {
           position: fixed; inset: 0; background: #000; z-index: 100;
           display: ${hasEntered ? 'none' : 'flex'};
@@ -274,24 +366,6 @@ export default function PublicProfile({ params }: { params: { username: string }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
-
-      {audioUrl && (
-        <div className="audio-controls">
-          <input 
-            type="range" 
-            className="volume-slider" 
-            min="0" max="1" step="0.01" 
-            value={volume} 
-            onChange={(e) => {
-              setVolume(parseFloat(e.target.value));
-              if (isMuted) setIsMuted(false);
-            }} 
-          />
-          <button className="mute-btn" onClick={() => setIsMuted(!isMuted)}>
-            {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
-          </button>
-        </div>
-      )}
 
       <div className="bg-wrapper">
         {profile.background_type === "video" && bgUrl ? (
@@ -362,6 +436,32 @@ export default function PublicProfile({ params }: { params: { username: string }
             </a>
           ))}
         </div>
+
+        {audioUrl && (
+          <div className="media-player">
+            <button className="media-btn" onClick={toggleAudio} aria-label={isPlaying ? "Pause audio" : "Play audio"}>
+              {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+            </button>
+            <div className="media-main">
+              <span className="media-title">{mediaName(audioUrl)}</span>
+              <span className="media-sub">{isPlaying ? "Now playing" : "Profile audio"}</span>
+            </div>
+            <input
+              className="media-volume"
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={isMuted ? 0 : volume}
+              onChange={(e) => {
+                const nextVolume = parseFloat(e.target.value)
+                setVolume(nextVolume)
+                setIsMuted(nextVolume === 0)
+              }}
+              aria-label="Audio volume"
+            />
+          </div>
+        )}
       </div>
     </div>
   )
