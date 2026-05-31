@@ -1,142 +1,118 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { createBrowserClient } from '@supabase/ssr';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
+import { useRouter } from "next/navigation";
 import { Space_Grotesk } from "next/font/google";
+import { ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 
-const font = Space_Grotesk({ subsets: ["latin"], weight: ["400", "600"] });
+const font = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
-// 1. Define your banned/reserved list here
-const RESERVED_USERNAMES = [
-  "setup", 
-  "dashboard", 
-  "admin", 
-  "login", 
-  "api", 
-  "settings", 
-  "hub", 
-  "edit"
-];
+const RESERVED_USERNAMES = ["setup", "dashboard", "admin", "login", "api", "settings", "hub", "edit", "www"];
 
 export default function Setup() {
   const [username, setUsername] = useState("");
   const [isTaken, setIsTaken] = useState(false);
-  const [isReserved, setIsReserved] = useState(false); // 2. New state for reserved check
+  const [isReserved, setIsReserved] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  
+
   const supabase = useMemo(() => {
     if (typeof window === "undefined") return null;
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return null;
-    return createBrowserClient(url, key);
+    return url && key ? createBrowserClient(url, key) : null;
   }, []);
 
   useEffect(() => {
-    const checkUsername = async () => {
+    async function checkUsername() {
       if (!supabase) return;
-
       const lowerUsername = username.toLowerCase();
-      
+
       if (lowerUsername.length < 3) {
         setIsReserved(false);
         setIsTaken(false);
         return;
       }
 
-      // 3. Check if it's in the reserved list first
       if (RESERVED_USERNAMES.includes(lowerUsername)) {
         setIsReserved(true);
         setIsTaken(false);
         return;
-      } else {
-        setIsReserved(false);
       }
-      
-      const { data } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', lowerUsername)
-        .single();
 
-      setIsTaken(!!data);
-    };
-
-    const timeoutId = setTimeout(checkUsername, 500);
-    return () => clearTimeout(timeoutId);
-  }, [username]);
-
-  const handleSave = async () => {
-    setLoading(true);
-    if (!supabase) {
-      alert("Supabase is not configured.");
-      setLoading(false);
-      return;
+      setIsReserved(false);
+      const { data } = await supabase.from("profiles").select("username").eq("username", lowerUsername).maybeSingle();
+      setIsTaken(Boolean(data));
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const timeoutId = setTimeout(checkUsername, 450);
+    return () => clearTimeout(timeoutId);
+  }, [supabase, username]);
 
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({ 
-        id: user?.id, 
+  async function handleSave() {
+    setLoading(true);
+    try {
+      if (!supabase) throw new Error("Supabase is not configured.");
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error("You need to sign in first.");
+
+      const { error } = await supabase.from("profiles").upsert({
+        id: user.id,
         username: username.toLowerCase(),
-        updated_at: new Date() 
+        updated_at: new Date().toISOString(),
       });
 
-    if (!error) {
-      router.push('/dashboard');
-    } else {
-      alert("Error saving: " + error.message);
+      if (error) throw error;
+      router.push("/dashboard");
+    } catch (error: any) {
+      alert(error.message || "Unable to save username.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }
 
-return (
-  <main className={`ux-root ${font.className}`}>
-    <div className="ux-card">
-      <h1 className="ux-title">Claim your link</h1>
-      <p className="ux-sub">This will be your unique Softcard URL</p>
+  const canSave = username.length >= 3 && !isTaken && !isReserved && !loading;
 
-      <div className="ux-form">
-        <div className="ux-input-wrap">
-          <span className="ux-prefix">softcard.cc/</span>
-          <input
-            className="ux-input"
-            type="text"
-            placeholder="username"
-            value={username}
-            onChange={(e) =>
-              setUsername(e.target.value.replace(/[^a-z0-9_]/gi, ""))
-            }
-          />
-        </div>
+  return (
+    <main className={`sf-setup ${font.className}`}>
+      <section className="sf-setup-card">
+        <p className="sf-kicker">Claim your link</p>
+        <h1>Choose your Softcard URL.</h1>
+        <p>This username becomes the public link people visit.</p>
+
+        <label className="sf-field">
+          <span>
+            Username
+            <small>This will be your softcard.cc/ link</small>
+          </span>
+          <div className="sf-url-field">
+            <b>softcard.cc/</b>
+            <input
+              type="text"
+              placeholder="username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
+            />
+          </div>
+        </label>
 
         {username.length > 0 && (
-          <p
-            className={`ux-status ${
-              isTaken || isReserved ? "ux-error" : "ux-success"
-            }`}
-          >
-            {isReserved
-              ? "✖ This username is reserved"
-              : isTaken
-              ? "✖ This link is already taken"
-              : "✔ Link available!"}
-          </p>
+          <div className={`sf-setup-status ${isTaken || isReserved ? "bad" : "good"}`}>
+            {isTaken || isReserved ? <XCircle size={16} /> : <CheckCircle2 size={16} />}
+            {isReserved ? "This username is reserved." : isTaken ? "This link is already taken." : "Link available."}
+          </div>
         )}
 
-        <button
-          className="ux-btn"
-          disabled={loading || isTaken || isReserved || username.length < 3}
-          onClick={handleSave}
-        >
-          {loading ? "Saving..." : "Create My Page"}
+        <button className="sf-submit" disabled={!canSave} onClick={handleSave}>
+          {loading ? "Saving..." : "Create my page"}
+          <ArrowRight size={17} />
         </button>
-      </div>
-    </div>
-  </main>
+      </section>
+    </main>
   );
 }

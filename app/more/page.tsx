@@ -1,53 +1,70 @@
 import Link from "next/link";
-import { ArrowLeft, Brush, Link as LinkIcon, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Brush, Link as LinkIcon, LockKeyhole, Music, ShieldCheck } from "lucide-react";
 
 const items = [
   {
     icon: LinkIcon,
-    title: "One clean link",
-    text: "Put your socials, bio, tags, avatar, and media in one profile people can actually scan.",
+    title: "Social links",
+    text: "Add, reorder, duplicate, hide, or feature links as large buttons from the dashboard.",
   },
   {
     icon: Brush,
-    title: "Personal styling",
-    text: "Tune your profile colors, background, font, links, badges, and card style from the dashboard.",
+    title: "Profile styling",
+    text: "Tune avatar, display name, bio, tags, colors, background image, video, gradient, and glass mode.",
+  },
+  {
+    icon: BadgeCheck,
+    title: "Badge hover text",
+    text: "User, developer, and staff badges show clear descriptions when someone hovers them.",
+  },
+  {
+    icon: Music,
+    title: "Media support",
+    text: "Use HTTPS image, video, and audio URLs while keeping public rendering filtered.",
+  },
+  {
+    icon: LockKeyhole,
+    title: "Protected tools",
+    text: "Dashboard routes require a real Supabase user session and admin tools use an httpOnly session.",
   },
   {
     icon: ShieldCheck,
-    title: "Safer defaults",
-    text: "Dashboard access is protected, signup is server-side, and public profile content is normalized before rendering.",
+    title: "Safer output",
+    text: "Profile links, colors, fonts, and media are normalized before they appear on public pages.",
   },
 ];
 
 export default function MorePage() {
   return (
-    <main className="mx-main">
-      <nav className="mx-nav">
-        <Link href="/" className="mx-back">
+    <main className="sf-root">
+      <nav className="sf-nav">
+        <Link href="/" className="sf-auth-back">
           <ArrowLeft size={16} />
-          Back
+          Home
         </Link>
-        <Link href="/login">
-          <button className="mx-action">Create page</button>
+        <Link href="/" className="sf-brand">
+          softcard.cc
+        </Link>
+        <Link href="/login" className="sf-nav-button">
+          Create
         </Link>
       </nav>
 
-      <section className="mx-wrap">
-        <p className="mx-kicker">softcard.cc</p>
-        <h1>Everything important, in one profile.</h1>
-        <p className="mx-sub">
-          Softcard gives each user a clean public page with just enough customization to feel personal without getting messy.
-        </p>
+      <section className="sf-feature-band">
+        <div className="sf-section-head">
+          <p>Features</p>
+          <h2>A cleaner profile builder with the controls users actually expect.</h2>
+        </div>
 
-        <div className="mx-grid">
+        <div className="sf-feature-grid">
           {items.map((item) => {
             const Icon = item.icon;
             return (
-              <div className="mx-card" key={item.title}>
+              <article className="sf-feature-card" key={item.title}>
                 <Icon size={20} />
-                <h2>{item.title}</h2>
+                <h3>{item.title}</h3>
                 <p>{item.text}</p>
-              </div>
+              </article>
             );
           })}
         </div>

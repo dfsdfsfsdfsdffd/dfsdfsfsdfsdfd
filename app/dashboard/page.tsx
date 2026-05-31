@@ -1,31 +1,30 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useMemo } from "react"
-import { createBrowserClient } from "@supabase/ssr"
-import { useRouter } from "next/navigation"
-import { 
-  Pencil, 
-  BarChart3, 
-  LogOut, 
-  ShieldCheck, 
-  Code, 
-  Star, 
-  Plus, 
-  X,
-  ExternalLink,
-  Copy,
+import { useEffect, useMemo, useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
+import { useRouter } from "next/navigation";
+import {
+  ArrowUpRight,
   Check,
-  Palette,
-  User as UserIcon,
-  Tag,
-  MoveUp,
-  MoveDown,
+  ChevronDown,
+  Copy,
   CopyPlus,
-  ChevronDown
-} from "lucide-react"
+  Layers,
+  Link as LinkIcon,
+  LogOut,
+  MoveDown,
+  MoveUp,
+  Palette,
+  Plus,
+  ShieldCheck,
+  Star,
+  Trash2,
+  User,
+  X,
+  Code,
+} from "lucide-react";
 
-// Types
-interface SocialLink {
+type SocialLink = {
   id: number;
   type: string;
   url: string;
@@ -34,13 +33,13 @@ interface SocialLink {
   color?: string;
   featured?: boolean;
   enabled?: boolean;
-}
+};
 
-interface Badges {
+type Badges = {
   user: boolean;
   dev: boolean;
   staff: boolean;
-}
+};
 
 type ProfileData = {
   avatar: string;
@@ -56,35 +55,64 @@ type ProfileData = {
   nameColor: string;
   bioColor: string;
   font: string;
-  bgType: string;
+  bgType: "gradient" | "video" | "image";
   gradient: string;
   bgVideo: string;
   bgImage: string;
   bgAudio: string;
   showGlass: boolean;
   views: number;
-}
+};
 
-// Social Icon Mapping
 const iconMap: Record<string, string> = {
-  tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
+  discord: "https://cdn.simpleicons.org/discord/ffffff",
   instagram: "https://cdn.simpleicons.org/instagram/ffffff",
+  tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
   x: "https://cdn.simpleicons.org/x/ffffff",
   youtube: "https://cdn.simpleicons.org/youtube/ffffff",
   twitch: "https://cdn.simpleicons.org/twitch/ffffff",
   spotify: "https://cdn.simpleicons.org/spotify/ffffff",
-  discord: "https://cdn.simpleicons.org/discord/ffffff",
   github: "https://cdn.simpleicons.org/github/ffffff",
   threads: "https://cdn.simpleicons.org/threads/ffffff",
   linkedin: "https://cdn.simpleicons.org/linkedin/ffffff",
-  website: "https://cdn.simpleicons.org/pwa/ffffff"
-}
+  website: "https://cdn.simpleicons.org/pwa/ffffff",
+};
 
 const badgeInfo = {
-  user: { label: "Verified User", description: "This profile belongs to a verified Softcard user." },
-  dev: { label: "Developer", description: "This user is marked as a Softcard developer." },
-  staff: { label: "Staff", description: "This user is marked as Softcard staff." },
-}
+  user: "Verified Softcard user",
+  dev: "Softcard developer",
+  staff: "Softcard staff",
+};
+
+const defaultProfile: ProfileData = {
+  avatar: "https://i.imgur.com/1X6g1YH.jpeg",
+  name: "User",
+  username: "",
+  bio: "",
+  age: "",
+  gender: "",
+  sexuality: "",
+  birthday: "",
+  timezone: "",
+  accent: "#a970ff",
+  nameColor: "#ffffff",
+  bioColor: "#d8d0ff",
+  font: "Inter",
+  bgType: "gradient",
+  gradient: "linear-gradient(135deg, #151026 0%, #04050a 100%)",
+  bgVideo: "",
+  bgImage: "",
+  bgAudio: "",
+  showGlass: true,
+  views: 0,
+};
+
+const themePresets = [
+  { name: "Night", accent: "#a970ff", gradient: "linear-gradient(135deg, #151026 0%, #04050a 100%)" },
+  { name: "Rose", accent: "#ff6bbd", gradient: "linear-gradient(135deg, #2a0719 0%, #050106 100%)" },
+  { name: "Ocean", accent: "#4ddcff", gradient: "linear-gradient(135deg, #042333 0%, #02060a 100%)" },
+  { name: "Mono", accent: "#ffffff", gradient: "linear-gradient(135deg, #1a1d24 0%, #030406 100%)" },
+];
 
 function safeExternalUrl(value: unknown) {
   if (typeof value !== "string") return "";
@@ -96,823 +124,527 @@ function safeExternalUrl(value: unknown) {
   }
 }
 
-function normalizeLinks(items: SocialLink[]) {
-  return items
+function safeHex(value: unknown) {
+  return typeof value === "string" && /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(value) ? value : "";
+}
+
+function normalizeLinks(links: SocialLink[]) {
+  return links
     .map((link) => ({
       ...link,
+      url: safeExternalUrl(link.url),
       label: (link.label || "").trim().slice(0, 40),
       description: (link.description || "").trim().slice(0, 80),
-      color: /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(link.color || "") ? link.color : "",
-      url: safeExternalUrl(link.url),
+      color: safeHex(link.color),
       enabled: link.enabled !== false,
       featured: Boolean(link.featured),
     }))
     .filter((link) => link.url);
 }
 
-export default function SoftcardDashboard() {
-  const router = useRouter()
-
+export default function Dashboard() {
+  const router = useRouter();
   const supabase = useMemo(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return null;
-    return createBrowserClient(url, key);
+    return url && key ? createBrowserClient(url, key) : null;
   }, []);
 
-  const [view, setView] = useState<"hub" | "editor">("hub")
-  const [copied, setCopied] = useState(false)
-  const [tab, setTab] = useState("profile")
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-
-  // Consolidated State
-  const [profileData, setProfileData] = useState<ProfileData>({
-    avatar: "https://i.imgur.com/1X6g1YH.jpeg",
-    name: "User",
-    username: "",
-    bio: "",
-    age: "",
-    gender: "",
-    sexuality: "",
-    birthday: "",
-    timezone: "",
-    accent: "#7000ff",
-    nameColor: "#ffffff",
-    bioColor: "#ffffffb3",
-    font: "Inter",
-    bgType: "gradient",
-    gradient: "linear-gradient(135deg, #1a0b1a 0%, #050106 100%)",
-    bgVideo: "",
-    bgImage: "",
-    bgAudio: "",
-    showGlass: true,
-    views: 0
-  })
-
-  const themePresets = [
-    { name: "Violet", accent: "#a970ff", nameColor: "#ffffff", bioColor: "#d8caff", gradient: "linear-gradient(135deg, #170f2f 0%, #050106 100%)" },
-    { name: "Rose", accent: "#ff6bbd", nameColor: "#fff5fb", bioColor: "#ffd6eb", gradient: "linear-gradient(135deg, #2b0719 0%, #050106 100%)" },
-    { name: "Cyan", accent: "#55d6ff", nameColor: "#f4fdff", bioColor: "#c7f2ff", gradient: "linear-gradient(135deg, #042336 0%, #02060a 100%)" },
-    { name: "Mono", accent: "#ffffff", nameColor: "#ffffff", bioColor: "#b8bcc8", gradient: "linear-gradient(135deg, #17191f 0%, #030406 100%)" },
-  ]
-
-  // Helper to extract colors from a CSS linear-gradient string
-  const gradientColors = useMemo(() => {
-    const match = profileData.gradient.match(/#(?:[0-9a-fA-F]{3}){1,2}/g);
-    return {
-      c1: match?.[0] || "#1a0b1a",
-      c2: match?.[1] || "#050106"
-    };
-  }, [profileData.gradient]);
-
-  const updateGradient = (c1: string, c2: string) => {
-    updateProfile("gradient", `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`);
-  };
-
-  const [links, setLinks] = useState<SocialLink[]>([])
-  const [badges, setBadges] = useState<Badges>({ user: true, dev: false, staff: false })
-
-  const timezones = useMemo(() => Intl.supportedValuesOf('timeZone'), []);
+  const [mode, setMode] = useState<"home" | "editor">("home");
+  const [tab, setTab] = useState<"profile" | "links" | "style" | "badges">("profile");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [profile, setProfile] = useState<ProfileData>(defaultProfile);
+  const [links, setLinks] = useState<SocialLink[]>([]);
+  const [badges, setBadges] = useState<Badges>({ user: true, dev: false, staff: false });
 
   useEffect(() => {
-    async function loadData() {
-      if (!supabase) return;
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+    async function loadProfile() {
+      if (!supabase) {
         setLoading(false);
         return;
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-      if (profile) {
-        setProfileData(prev => ({
-          ...prev,
-          avatar: profile.avatar_url || prev.avatar,
-          name: profile.display_name || prev.name,
-          username: profile.username || "",
-          bio: profile.bio || "",
-          age: profile.age || "",
-          gender: profile.gender || "",
-          sexuality: profile.sexuality || "",
-          birthday: profile.birthday || "",
-          timezone: profile.timezone || "",
-          accent: profile.accent_color || "#7000ff",
-          nameColor: profile.name_color || "#ffffff",
-          bioColor: profile.bio_color || "#ffffffb3",
-          font: profile.font_family || "Inter",
-          bgType: profile.background_type || "gradient",
-          bgAudio: profile.audio_url || "",
-          views: profile.views || 0,
-          showGlass: profile.show_glass_card ?? true,
-          gradient: profile.background_type === "gradient" ? profile.background_value : prev.gradient,
-          bgVideo: profile.background_type === "video" ? profile.background_value : "",
-          bgImage: profile.background_type === "image" ? profile.background_value : ""
-        }))
-        setLinks(profile.links || [])
-        setBadges(profile.badges || { user: true, dev: false, staff: false })
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace("/login");
+        return;
       }
-      setLoading(false)
+
+      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+
+      if (data) {
+        setProfile({
+          ...defaultProfile,
+          avatar: data.avatar_url || defaultProfile.avatar,
+          name: data.display_name || defaultProfile.name,
+          username: data.username || "",
+          bio: data.bio || "",
+          age: data.age || "",
+          gender: data.gender || "",
+          sexuality: data.sexuality || "",
+          birthday: data.birthday || "",
+          timezone: data.timezone || "",
+          accent: data.accent_color || defaultProfile.accent,
+          nameColor: data.name_color || defaultProfile.nameColor,
+          bioColor: data.bio_color || defaultProfile.bioColor,
+          font: data.font_family || defaultProfile.font,
+          bgType: data.background_type || defaultProfile.bgType,
+          gradient: data.background_type === "gradient" ? data.background_value || defaultProfile.gradient : defaultProfile.gradient,
+          bgVideo: data.background_type === "video" ? data.background_value || "" : "",
+          bgImage: data.background_type === "image" ? data.background_value || "" : "",
+          bgAudio: data.audio_url || "",
+          showGlass: data.show_glass_card ?? true,
+          views: data.views || 0,
+        });
+        setLinks(Array.isArray(data.links) ? data.links : []);
+        setBadges(data.badges || { user: true, dev: false, staff: false });
+      }
+
+      setLoading(false);
     }
-    loadData()
-  }, [supabase])
 
-  const saveChanges = async () => {
+    loadProfile();
+  }, [router, supabase]);
+
+  function updateProfile<K extends keyof ProfileData>(key: K, value: ProfileData[K]) {
+    setProfile((current) => ({ ...current, [key]: value }));
+  }
+
+  function updateLink(index: number, key: keyof SocialLink, value: string | boolean) {
+    setLinks((current) => current.map((link, i) => (i === index ? { ...link, [key]: value } : link)));
+  }
+
+  function addLink() {
+    setLinks((current) => [
+      ...current,
+      { id: Date.now(), type: "website", url: "", label: "", description: "", color: "", enabled: true, featured: false },
+    ]);
+  }
+
+  function removeLink(id: number) {
+    setLinks((current) => current.filter((link) => link.id !== id));
+  }
+
+  function moveLink(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= links.length) return;
+    const copy = [...links];
+    [copy[index], copy[target]] = [copy[target], copy[index]];
+    setLinks(copy);
+  }
+
+  function duplicateLink(index: number) {
+    const link = links[index];
+    if (!link) return;
+    const copy = [...links];
+    copy.splice(index + 1, 0, { ...link, id: Date.now(), label: link.label ? `${link.label} copy` : "" });
+    setLinks(copy);
+  }
+
+  async function saveChanges() {
     if (!supabase) return;
-    setSaving(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error("No user found");
+    setSaving(true);
 
-      const { error } = await supabase.from('profiles').update({
-        display_name: profileData.name,
-        avatar_url: profileData.avatar,
-        bio: profileData.bio,
-        age: profileData.age,
-        gender: profileData.gender,
-        sexuality: profileData.sexuality,
-        birthday: profileData.birthday,
-        timezone: profileData.timezone,
-        links: normalizeLinks(links),
-        accent_color: profileData.accent,
-        name_color: profileData.nameColor,
-        bio_color: profileData.bioColor,
-        font_family: profileData.font,
-        background_type: profileData.bgType,
-        background_value: profileData.bgType === "gradient" ? profileData.gradient : (profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage),
-        audio_url: profileData.bgAudio,
-        show_glass_card: profileData.showGlass,
-        setup_completed: true
-      }).eq('id', user.id)
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found.");
+
+      const backgroundValue =
+        profile.bgType === "gradient" ? profile.gradient : profile.bgType === "video" ? profile.bgVideo : profile.bgImage;
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          display_name: profile.name,
+          avatar_url: profile.avatar,
+          bio: profile.bio,
+          age: profile.age,
+          gender: profile.gender,
+          sexuality: profile.sexuality,
+          birthday: profile.birthday,
+          timezone: profile.timezone,
+          links: normalizeLinks(links),
+          accent_color: profile.accent,
+          name_color: profile.nameColor,
+          bio_color: profile.bioColor,
+          font_family: profile.font,
+          background_type: profile.bgType,
+          background_value: backgroundValue,
+          audio_url: profile.bgAudio,
+          show_glass_card: profile.showGlass,
+          setup_completed: true,
+        })
+        .eq("id", user.id);
 
       if (error) throw error;
-      alert("Published successfully!")
-    } catch (err: any) {
-      alert("Error: " + err.message)
+      alert("Published successfully.");
+    } catch (error: any) {
+      alert(error.message || "Could not publish.");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
-  const handleCopy = () => {
-    if (!profileData.username) return;
-    navigator.clipboard.writeText(`softcard.cc/${profileData.username}`)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  async function logout() {
+    await supabase?.auth.signOut();
+    router.replace("/login");
   }
 
-  const addLink = () => setLinks([...links, { id: Date.now(), type: "website", url: "", label: "", description: "", color: "", featured: false, enabled: true }])
-  const removeLink = (id: number) => setLinks(links.filter(l => l.id !== id))
-  const updateLink = (index: number, key: keyof SocialLink, val: string | boolean) => {
-    const updated = [...links]
-    updated[index] = { ...updated[index], [key]: val }
-    setLinks(updated)
+  function copyUrl() {
+    if (!profile.username) return;
+    navigator.clipboard.writeText(`https://softcard.cc/${profile.username}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
   }
 
-  const updateProfile = (key: string, value: any) => {
-    setProfileData(prev => ({ ...prev, [key]: value }))
-  }
-
-  const applyPreset = (preset: typeof themePresets[number]) => {
-    setProfileData(prev => ({
-      ...prev,
-      accent: preset.accent,
-      nameColor: preset.nameColor,
-      bioColor: preset.bioColor,
-      bgType: "gradient",
-      gradient: preset.gradient,
-    }))
-  }
-
-  const moveLink = (index: number, direction: -1 | 1) => {
-    const target = index + direction
-    if (target < 0 || target >= links.length) return
-    const updated = [...links]
-    const current = updated[index]
-    updated[index] = updated[target]
-    updated[target] = current
-    setLinks(updated)
-  }
-
-  const duplicateLink = (index: number) => {
-    const link = links[index]
-    if (!link) return
-    const updated = [...links]
-    updated.splice(index + 1, 0, { ...link, id: Date.now(), label: link.label ? `${link.label} copy` : "" })
-    setLinks(updated)
-  }
-
-  const handleLogout = async () => {
-    await supabase?.auth.signOut()
-    router.replace("/login")
-    router.refresh()
-  }
-
-  if (loading) return (
-    <div style={{ height: '100vh', background: '#020617', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="animate-pulse text-pink-500 font-bold tracking-widest">LOADING SOFTCARD...</div>
-    </div>
-  )
-
-  if (view === "hub") {
+  if (loading) {
     return (
-      <div className="hx-root">
-        <style>{`
-          .hx-root {
-            min-height: 100vh; width: 100%;
-            background: radial-gradient(circle at center, #1a0b1a 0%, #050106 100%);
-            color: white; display: flex; align-items: center; justify-content: center;
-            font-family: 'Inter', sans-serif;
-          }
-          .hx-container { text-align: center; width: 100%; max-width: 640px; padding: 22px; }
-          .hub-header { margin-bottom: 40px; }
-          .hx-status { font-size: 10px; letter-spacing: 2px; opacity: 0.5; margin-bottom: 8px; font-weight: 700; }
-          .hx-title { font-size: 32px; font-weight: 600; }
-          .hx-username { color: #f472b6; }
-          
-          .hx-circle-wrap { position: relative; display: inline-block; margin-bottom: 50px; width: 280px; height: 280px; }
-          .hx-circle {
-            width: 100%; height: 100%;
-            background: rgba(190, 24, 93, 0.05);
-            border-radius: 50%;
-            border: 1px solid rgba(244, 114, 182, 0.15);
-            display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(10px);
-          }
-          .hx-avatar {
-            width: 140px; height: 140px; border-radius: 50%; overflow: hidden;
-            border: 3px solid #f472b6; box-shadow: 0 0 40px rgba(244, 114, 182, 0.2);
-          }
-          .hx-avatar img { width: 100%; height: 100%; object-fit: cover; }
-          
-          .hx-btn {
-            position: absolute; top: 50%; transform: translateY(-50%);
-            background: #ec4899; border: none; color: white;
-            padding: 12px 24px; border-radius: 50px;
-            display: flex; align-items: center; gap: 10px;
-            font-weight: 700; font-size: 14px; cursor: pointer;
-            transition: all 0.3s ease; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-          }
-          .hx-btn:hover { transform: translateY(-50%) scale(1.05); background: #f472b6; }
-          .hx-left { left: -80px; }
-          .hx-right { right: -80px; }
-          
-          .hx-url {
-            display: inline-flex; align-items: center;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 8px 8px 20px; border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.1); gap: 15px;
-          }
-          .hx-small-btn {
-            background: #ec4899; border: none; color: white;
-            padding: 8px 18px; border-radius: 50px;
-            font-size: 13px; font-weight: 700; cursor: pointer;
-            display: flex; align-items: center; gap: 6px; transition: 0.2s;
-          }
-          .hx-small-btn:hover { opacity: 0.9; }
-          .hx-view { background: rgba(255,255,255,0.1); text-decoration: none; }
+      <main className="sc-screen">
+        <div className="sc-loader">Loading Softcard...</div>
+      </main>
+    );
+  }
 
-          .hx-logout { position: fixed; top: 30px; right: 30px; opacity: 0.4; cursor: pointer; transition: 0.2s; background: transparent; border: 0; color: white; padding: 0; }
-          .hx-logout:hover { opacity: 1; color: #f472b6; }
-        `}</style>
-
-        <button className="hx-logout" onClick={handleLogout} aria-label="Log out">
-          <LogOut size={20} />
+  if (mode === "home") {
+    return (
+      <main className="sc-dash-home">
+        <button className="sc-logout" onClick={logout} aria-label="Log out">
+          <LogOut size={18} />
         </button>
 
-        <div className="hx-container">
-          <div className="hub-header">
-            <p className="hx-status">DASHBOARD</p>
-            <h1 className="hx-title">Welcome back, <span className="hx-username">{profileData.username || "User"}</span></h1>
-          </div>
+        <section className="sc-hub">
+          <p className="sc-eyebrow">Dashboard</p>
+          <h1>Welcome back, {profile.username || "creator"}</h1>
 
-          <div className="hx-circle-wrap">
-            <div className="hx-circle">
-              <div className="hx-avatar">
-                <img src={profileData.avatar} alt="avatar" />
-              </div>
-            </div>
-
-            <button className="hx-btn hx-left" onClick={() => setView("editor")}>
-              <Pencil size={18} />
-              <span>Edit Page</span>
-            </button>
-
-            <button className="hx-btn hx-right">
-              <BarChart3 size={18} />
-              <span>Analytics</span>
-            </button>
-          </div>
-
-          <div>
-            <div className="hx-url">
-              <span style={{ opacity: 0.6, fontSize: '14px' }}>softcard.cc/{profileData.username || "..."}</span>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button className="hx-small-btn" onClick={handleCopy}>
-                  {copied ? <Check size={14} /> : <Copy size={14} />}
-                  {copied ? "Copied" : "Copy"}
-                </button>
-                <a href={`/${profileData.username}`} target="_blank" rel="noreferrer" className="hx-small-btn hx-view">
-                  <ExternalLink size={14} />
-                  View
-                </a>
-              </div>
+          <div className="sc-hub-card">
+            <img src={profile.avatar} alt="" />
+            <div>
+              <strong>{profile.name || "Your profile"}</strong>
+              <span>{profile.bio || "No bio yet."}</span>
             </div>
           </div>
-        </div>
-      </div>
-    )
+
+          <div className="sc-hub-actions">
+            <button onClick={() => setMode("editor")}>
+              <Layers size={17} />
+              Edit page
+            </button>
+            <a href={`/${profile.username}`} target="_blank" rel="noreferrer">
+              <ArrowUpRight size={17} />
+              View page
+            </a>
+          </div>
+
+          <div className="sc-url-bar">
+            <span>softcard.cc/{profile.username || "username"}</span>
+            <button onClick={copyUrl}>{copied ? <Check size={15} /> : <Copy size={15} />}</button>
+          </div>
+        </section>
+      </main>
+    );
   }
 
   return (
-    <div className="softcardx-dashboard" style={{ fontFamily: `${profileData.font}, system-ui, sans-serif` }}>
-      <style>{`
-        .softcardx-dashboard { display: flex; height: 100vh; background: #050106; color: white; overflow: hidden; }
-        .sx-sidebar { width: 400px; background: rgba(10, 0, 15, 0.7); backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 0, 128, 0.15); padding: 25px; overflow-y: auto; }
-        .sx-preview-pane { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #020002; }
-        
-        .sx-profile-card {
-          position: relative; z-index: 5; text-align: center;
-          display: flex; flex-direction: column; align-items: center;
-          width: 90%; max-width: 420px;
-          padding: 22px 20px; border-radius: 28px;
-          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          background: ${profileData.showGlass ? 'rgba(0, 0, 0, 0.45)' : 'transparent'};
-          backdrop-filter: ${profileData.showGlass ? 'blur(25px)' : 'none'};
-          border: ${profileData.showGlass ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
-          box-shadow: ${profileData.showGlass ? '0 25px 50px -12px rgba(0, 0, 0, 0.7)' : 'none'};
-        }
-        
-        .sx-pfp { 
-          width: 92px; height: 92px; border-radius: 50%; object-fit: cover; margin-bottom: 9px;
-          border: 2px solid ${profileData.accent}; padding: 3px;
-        }
-        
-        .sx-name { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px; }
-        
-        .sx-badge-pill { 
-          display: flex; gap: 6px; background: rgba(255, 255, 255, 0.08); 
-          padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); 
-          align-items: center; margin-bottom: 9px;
-        }
-        .sx-badge-tip { position: relative; display: inline-flex; align-items: center; justify-content: center; }
-        .sx-badge-tip::after {
-          content: attr(data-tip);
-          position: absolute; left: 50%; bottom: calc(100% + 9px);
-          transform: translateX(-50%) translateY(4px);
-          width: max-content; max-width: 190px; padding: 8px 10px;
-          border-radius: 8px; background: rgba(0, 0, 0, 0.86);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          color: white; font-size: 11px; line-height: 1.35;
-          opacity: 0; pointer-events: none; transition: 0.18s ease; z-index: 20;
-        }
-        .sx-badge-tip:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
-        
-        .sx-tags-row { 
-          display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; 
-          margin-bottom: 9px; width: 100%;
-        }
-        .sx-tag-pill {
-          background: rgba(255, 255, 255, 0.05); padding: 3px 8px; border-radius: 6px;
-          font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.6);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .sx-bio { font-size: 14px; margin-bottom: 12px; line-height: 1.35; max-width: 85%; white-space: pre-wrap; word-break: break-word; }
-        
-        .sx-links-row { display: flex; justify-content: center; gap: 13px; flex-wrap: wrap; }
-        .sx-icon-link { transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.7; }
-        .sx-icon-link:hover { opacity: 1; transform: translateY(-2px) scale(1.05); }
-        .sx-icon-link img { width: 24px; height: 24px; }
-        .sx-feature-links { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 300px; margin-top: 11px; }
-        .sx-feature-link {
-          display: flex; align-items: center; justify-content: space-between; gap: 12px;
-          padding: 10px 12px; border-radius: 10px;
-          background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
-          color: white; text-decoration: none; font-size: 13px; font-weight: 700;
-        }
-        .sx-feature-link-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
-        .sx-feature-link-text small { opacity: 0.58; font-size: 11px; font-weight: 600; line-height: 1.25; }
-        .sx-feature-link img { width: 18px; height: 18px; opacity: 0.82; }
-        .sx-check-row {
-          display: flex; align-items: center; gap: 8px;
-          color: rgba(255,255,255,0.68); font-size: 12px; font-weight: 700;
-          background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07);
-          padding: 9px 10px; border-radius: 10px;
-        }
-        .sx-check-row input { width: 16px; height: 16px; accent-color: ${profileData.accent}; }
-        .sx-preset-grid {
-          display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 10px; margin-bottom: 18px;
-        }
-        .sx-preset {
-          border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
-          min-height: 64px; padding: 10px; color: white; text-align: left;
-          cursor: pointer; display: flex; flex-direction: column; justify-content: space-between;
-        }
-        .sx-preset span { font-size: 12px; font-weight: 900; }
-        .sx-preset small { opacity: 0.62; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
-
-        .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; opacity: 0.5; font-size: 13px; font-weight: 600; }
-        .sx-editor-link:hover { opacity: 1; color: #ec4899; }
-
-        .sx-publish-btn {
-            width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700;
-            background: linear-gradient(90deg, #ff008c, #ff4df0); color: white; cursor: pointer;
-            box-shadow: 0 8px 20px rgba(255, 0, 128, 0.25); margin-bottom: 25px; transition: 0.2s;
-        }
-        .sx-publish-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
-        .sx-publish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .sx-tabs-row { display: flex; gap: 4px; margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px; }
-        .sx-tab { flex: 1; padding: 10px 5px; border-radius: 9px; cursor: pointer; opacity: 0.5; text-align: center; transition: 0.2s; font-size: 11px; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .sx-tab-active { background: #ec4899; opacity: 1; color: white; }
-        
-        .sx-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-bottom: 8px; display: block; font-weight: 800; }
-        
-        .sx-input {
-            width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08); color: white; outline: none; transition: 0.2s; font-size: 14px;
-            appearance: none;
-        }
-
-        select.sx-input {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
-            padding-right: 40px;
-        }
-
-        .sx-input option {
-            background-color: #1a0b1a; 
-            color: white;
-            padding: 10px;
-        }
-        
-        .sx-bg-layer { position: absolute; inset: 0; z-index: 1; object-fit: cover; width: 100%; height: 100%; }
-
-        .sx-link-card {
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px; padding: 15px; margin-bottom: 12px; position: relative;
-        }
-        .sx-remove-link {
-            position: absolute; top: -10px; right: -10px;
-            background: #ef4444; color: white; border: none;
-            width: 24px; height: 24px; border-radius: 50%;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .sx-link-actions {
-          display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-        }
-        .sx-select-wrap { position: relative; }
-        .sx-select-wrap .sx-input { padding-right: 42px; }
-        .sx-select-icon {
-          position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
-          pointer-events: none; opacity: 0.7; color: white;
-        }
-        .sx-link-tool {
-          display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-          min-height: 34px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
-          background: rgba(255,255,255,0.045); color: white; font-size: 12px; font-weight: 800;
-          cursor: pointer;
-        }
-        .sx-link-tool:disabled { opacity: 0.38; cursor: not-allowed; }
-        
-        .tag-input-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-        .sx-tag-clear { 
-          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-          border-radius: 10px; padding: 10px; cursor: pointer; color: #ff4d4d; transition: 0.2s;
-        }
-        .sx-tag-clear:hover { background: rgba(255, 77, 77, 0.2); border-color: #ff4d4d; }
-      `}</style>
-
-      <div className="sx-sidebar">
-        <div className="sx-editor-link" onClick={() => setView("hub")}>
-          <X size={16} /> Close Editor
+    <main className="sc-editor">
+      <aside className="sc-editor-side">
+        <div className="sc-editor-top">
+          <button className="sc-ghost" onClick={() => setMode("home")}>
+            <X size={16} />
+            Close
+          </button>
+          <button className="sc-save" onClick={saveChanges} disabled={saving}>
+            {saving ? "Publishing..." : "Publish"}
+          </button>
         </div>
-        
-        <button className="sx-publish-btn" onClick={saveChanges} disabled={saving}>
-          {saving ? "Saving Changes..." : "Save & Publish Page"}
-        </button>
 
-        <div className="sx-tabs-row">
-          <div className={`sx-tab ${tab === "profile" ? "sx-tab-active" : ""}`} onClick={() => setTab("profile")}>
-            <UserIcon size={12} /> Profile
-          </div>
-          <div className={`sx-tab ${tab === "tags" ? "sx-tab-active" : ""}`} onClick={() => setTab("tags")}>
-            <Tag size={12} /> Tags
-          </div>
-          <div className={`sx-tab ${tab === "appearance" ? "sx-tab-active" : ""}`} onClick={() => setTab("appearance")}>
-            <Palette size={12} /> Style
-          </div>
-          <div className={`sx-tab ${tab === "badges" ? "sx-tab-active" : ""}`} onClick={() => setTab("badges")}>
-            <ShieldCheck size={12} /> Badges
-          </div>
+        <div className="sc-tabs">
+          <button className={tab === "profile" ? "active" : ""} onClick={() => setTab("profile")}>
+            <User size={14} />
+            Profile
+          </button>
+          <button className={tab === "links" ? "active" : ""} onClick={() => setTab("links")}>
+            <LinkIcon size={14} />
+            Links
+          </button>
+          <button className={tab === "style" ? "active" : ""} onClick={() => setTab("style")}>
+            <Palette size={14} />
+            Style
+          </button>
+          <button className={tab === "badges" ? "active" : ""} onClick={() => setTab("badges")}>
+            <ShieldCheck size={14} />
+            Badges
+          </button>
         </div>
 
         {tab === "profile" && (
-          <div className="sx-pane">
-            <div className="sx-input-group mb-4">
-              <label className="sx-label">Avatar Image URL</label>
-              <input className="sx-input" value={profileData.avatar} onChange={e => updateProfile("avatar", e.target.value)} placeholder="https://..." />
+          <section className="sc-panel">
+            <label>
+              Avatar URL
+              <input value={profile.avatar} onChange={(event) => updateProfile("avatar", event.target.value)} />
+            </label>
+            <label>
+              Display name
+              <input value={profile.name} onChange={(event) => updateProfile("name", event.target.value)} />
+            </label>
+            <label>
+              Bio
+              <textarea rows={4} maxLength={150} value={profile.bio} onChange={(event) => updateProfile("bio", event.target.value)} />
+            </label>
+            <div className="sc-grid-2">
+              <label>
+                Age
+                <input value={profile.age} onChange={(event) => updateProfile("age", event.target.value.slice(0, 2))} />
+              </label>
+              <label>
+                Birthday
+                <input type="date" value={profile.birthday} onChange={(event) => updateProfile("birthday", event.target.value)} />
+              </label>
             </div>
-            <div className="sx-input-group mb-4">
-              <label className="sx-label">Display Name</label>
-              <input className="sx-input" value={profileData.name} onChange={e => updateProfile("name", e.target.value)} />
+            <div className="sc-grid-2">
+              <label>
+                Gender
+                <input value={profile.gender} onChange={(event) => updateProfile("gender", event.target.value)} />
+              </label>
+              <label>
+                Sexuality
+                <input value={profile.sexuality} onChange={(event) => updateProfile("sexuality", event.target.value)} />
+              </label>
             </div>
-            <div className="sx-input-group mb-4">
-              <label className="sx-label">Short Bio</label>
-              <textarea 
-                className="sx-input" 
-                rows={3} 
-                style={{resize: 'none'}} 
-                value={profileData.bio} 
-                onChange={e => updateProfile("bio", e.target.value)} 
-                placeholder="Tell the world about yourself..." 
-                maxLength={150}
-              />
-              <span className="text-[10px] opacity-30 mt-1 block text-right">{profileData.bio.length}/150</span>
-            </div>
-            
-            <div style={{marginTop: '25px'}}>
-                <label className="sx-label">Social Links</label>
-                {links.map((l, i) => (
-                <div key={l.id} className="sx-link-card">
-                    <button className="sx-remove-link" onClick={() => removeLink(l.id)}><X size={14}/></button>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div className="sx-select-wrap">
-                      <select className="sx-input" value={l.type} onChange={e => updateLink(i, "type", e.target.value)}>
-                          {Object.keys(iconMap).map(k => <option key={k} value={k}>{k.toUpperCase()}</option>)}
-                      </select>
-                      <ChevronDown className="sx-select-icon" size={18} />
-                    </div>
-                    <input className="sx-input" value={l.label || ""} onChange={e => updateLink(i, "label", e.target.value)} placeholder="Display label (optional)" maxLength={40} />
-                    <input className="sx-input" value={l.description || ""} onChange={e => updateLink(i, "description", e.target.value)} placeholder="Small description for featured button" maxLength={80} />
-                    <input className="sx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="https://..." />
-                    <div style={{display: 'grid', gridTemplateColumns: '1fr 48px', gap: '10px', alignItems: 'center'}}>
-                      <input className="sx-input" value={l.color || ""} onChange={e => updateLink(i, "color", e.target.value)} placeholder="Custom color, ex: #a970ff" maxLength={7} />
-                      <input type="color" className="sx-input" style={{height: '42px', padding: '5px'}} value={l.color || profileData.accent} onChange={e => updateLink(i, "color", e.target.value)} />
-                    </div>
-                    <div className="sx-link-actions">
-                      <button className="sx-link-tool" type="button" disabled={i === 0} onClick={() => moveLink(i, -1)}>
-                        <MoveUp size={14} /> Up
-                      </button>
-                      <button className="sx-link-tool" type="button" disabled={i === links.length - 1} onClick={() => moveLink(i, 1)}>
-                        <MoveDown size={14} /> Down
-                      </button>
-                      <button className="sx-link-tool" type="button" onClick={() => duplicateLink(i)}>
-                        <CopyPlus size={14} /> Copy
-                      </button>
-                    </div>
-                    <label className="sx-check-row">
-                      <input type="checkbox" checked={l.enabled !== false} onChange={e => updateLink(i, "enabled", e.target.checked)} />
-                      <span>Show on profile</span>
-                    </label>
-                    <label className="sx-check-row">
-                      <input type="checkbox" checked={Boolean(l.featured)} onChange={e => updateLink(i, "featured", e.target.checked)} />
-                      <span>Feature as large button</span>
-                    </label>
-                    </div>
-                </div>
-                ))}
-                <button className="sx-publish-btn" onClick={addLink} style={{background: 'rgba(255,255,255,0.05)', boxShadow: 'none', border: '1px dashed rgba(255,255,255,0.2)', marginTop: '10px'}}>
-                    <Plus size={18} /> Add New Link
+            <label>
+              Timezone
+              <input value={profile.timezone} onChange={(event) => updateProfile("timezone", event.target.value)} placeholder="America/New_York" />
+            </label>
+          </section>
+        )}
+
+        {tab === "links" && (
+          <section className="sc-panel">
+            <button className="sc-add" onClick={addLink}>
+              <Plus size={16} />
+              Add link
+            </button>
+
+            {links.map((link, index) => (
+              <article className="sc-link-card" key={link.id}>
+                <button className="sc-delete" onClick={() => removeLink(link.id)} aria-label="Remove link">
+                  <Trash2 size={15} />
                 </button>
-            </div>
-          </div>
+
+                <label>
+                  Type
+                  <span className="sc-select">
+                    <select value={link.type} onChange={(event) => updateLink(index, "type", event.target.value)}>
+                      {Object.keys(iconMap).map((key) => (
+                        <option key={key} value={key}>
+                          {key.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={17} />
+                  </span>
+                </label>
+
+                <label>
+                  Label
+                  <input value={link.label || ""} maxLength={40} onChange={(event) => updateLink(index, "label", event.target.value)} />
+                </label>
+
+                <label>
+                  URL
+                  <input value={link.url} onChange={(event) => updateLink(index, "url", event.target.value)} placeholder="https://..." />
+                </label>
+
+                <label>
+                  Featured description
+                  <input value={link.description || ""} maxLength={80} onChange={(event) => updateLink(index, "description", event.target.value)} />
+                </label>
+
+                <div className="sc-grid-2">
+                  <label>
+                    Accent
+                    <input value={link.color || ""} maxLength={7} onChange={(event) => updateLink(index, "color", event.target.value)} placeholder="#a970ff" />
+                  </label>
+                  <label>
+                    Pick
+                    <input type="color" value={safeHex(link.color) || profile.accent} onChange={(event) => updateLink(index, "color", event.target.value)} />
+                  </label>
+                </div>
+
+                <div className="sc-link-tools">
+                  <button disabled={index === 0} onClick={() => moveLink(index, -1)}>
+                    <MoveUp size={14} />
+                    Up
+                  </button>
+                  <button disabled={index === links.length - 1} onClick={() => moveLink(index, 1)}>
+                    <MoveDown size={14} />
+                    Down
+                  </button>
+                  <button onClick={() => duplicateLink(index)}>
+                    <CopyPlus size={14} />
+                    Copy
+                  </button>
+                </div>
+
+                <div className="sc-switches">
+                  <label>
+                    <input type="checkbox" checked={link.enabled !== false} onChange={(event) => updateLink(index, "enabled", event.target.checked)} />
+                    Show
+                  </label>
+                  <label>
+                    <input type="checkbox" checked={Boolean(link.featured)} onChange={(event) => updateLink(index, "featured", event.target.checked)} />
+                    Large button
+                  </label>
+                </div>
+              </article>
+            ))}
+          </section>
         )}
 
-        {tab === "tags" && (
-          <div className="sx-pane">
-            <div className="sx-input-group">
-              <label className="sx-label">Age</label>
-              <div className="tag-input-wrapper">
-                <input type="number" className="sx-input" placeholder="Age" value={profileData.age} onChange={e => updateProfile("age", e.target.value.slice(0, 2))} />
-                <button className="sx-tag-clear" onClick={() => updateProfile("age", "")}><X size={16} /></button>
-              </div>
-            </div>
-
-            <div className="sx-input-group">
-              <label className="sx-label">Gender</label>
-              <div className="tag-input-wrapper">
-                <select className="sx-input" value={profileData.gender} onChange={e => updateProfile("gender", e.target.value)}>
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Non-Binary">Non-Binary</option>
-                  <option value="Other">Other</option>
-                </select>
-                <button className="sx-tag-clear" onClick={() => updateProfile("gender", "")}><X size={16} /></button>
-              </div>
-            </div>
-
-            <div className="sx-input-group">
-              <label className="sx-label">Sexuality</label>
-              <div className="tag-input-wrapper">
-                <select className="sx-input" value={profileData.sexuality} onChange={e => updateProfile("sexuality", e.target.value)}>
-                  <option value="">Select Sexuality</option>
-                  <option value="Straight">Straight</option>
-                  <option value="Gay">Gay</option>
-                  <option value="Lesbian">Lesbian</option>
-                  <option value="Bisexual">Bisexual</option>
-                  <option value="Pansexual">Pansexual</option>
-                  <option value="Asexual">Asexual</option>
-                  <option value="Queer">Queer</option>
-                </select>
-                <button className="sx-tag-clear" onClick={() => updateProfile("sexuality", "")}><X size={16} /></button>
-              </div>
-            </div>
-
-            <div className="sx-input-group">
-              <label className="sx-label">Birthday</label>
-              <div className="tag-input-wrapper">
-                <input type="date" className="sx-input" value={profileData.birthday} onChange={e => updateProfile("birthday", e.target.value)} />
-                <button className="sx-tag-clear" onClick={() => updateProfile("birthday", "")}><X size={16} /></button>
-              </div>
-            </div>
-
-            <div className="sx-input-group">
-              <label className="sx-label">Timezone</label>
-              <div className="tag-input-wrapper">
-                <select className="sx-input" value={profileData.timezone} onChange={e => updateProfile("timezone", e.target.value)}>
-                  <option value="">Select Timezone</option>
-                  {timezones.map(tz => <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>)}
-                </select>
-                <button className="sx-tag-clear" onClick={() => updateProfile("timezone", "")}><X size={16} /></button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {tab === "appearance" && (
-          <div className="sx-pane">
-            <label className="sx-label">Quick Themes</label>
-            <div className="sx-preset-grid">
+        {tab === "style" && (
+          <section className="sc-panel">
+            <div className="sc-presets">
               {themePresets.map((preset) => (
                 <button
-                  type="button"
                   key={preset.name}
-                  className="sx-preset"
                   style={{ background: preset.gradient }}
-                  onClick={() => applyPreset(preset)}
+                  onClick={() => setProfile((current) => ({ ...current, accent: preset.accent, gradient: preset.gradient, bgType: "gradient" }))}
                 >
-                  <span>{preset.name}</span>
-                  <small>Apply theme</small>
+                  {preset.name}
                 </button>
               ))}
             </div>
 
-            <div className="sx-input-group" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px'}}>
-                <input type="checkbox" id="glass" checked={profileData.showGlass} onChange={e => updateProfile("showGlass", e.target.checked)} style={{width: '18px', height: '18px'}} />
-                <label htmlFor="glass" style={{margin: 0, fontSize: '13px', cursor: 'pointer'}}>Transparent Glass Card</label>
+            <div className="sc-grid-2">
+              <label>
+                Accent
+                <input type="color" value={profile.accent} onChange={(event) => updateProfile("accent", event.target.value)} />
+              </label>
+              <label>
+                Name
+                <input type="color" value={profile.nameColor} onChange={(event) => updateProfile("nameColor", event.target.value)} />
+              </label>
             </div>
 
-            <div className="sx-input-group" style={{marginTop: '20px'}}>
-                <label className="sx-label">Font Style</label>
-                <select className="sx-input" value={profileData.font} onChange={e => updateProfile("font", e.target.value)}>
-                  <option value="Inter">Inter (Sans)</option>
-                  <option value="Playfair Display">Playfair (Serif)</option>
-                  <option value="JetBrains Mono">JetBrains (Mono)</option>
-                  <option value="Outfit">Outfit (Modern)</option>
-                </select>
-            </div>
+            <label>
+              Bio color
+              <input type="color" value={profile.bioColor.slice(0, 7)} onChange={(event) => updateProfile("bioColor", event.target.value)} />
+            </label>
 
-            <div className="sx-input-group" style={{marginTop: '20px'}}>
-                <label className="sx-label">Background Type</label>
-                <select className="sx-input" value={profileData.bgType} onChange={e => updateProfile("bgType", e.target.value)}>
+            <label>
+              Background type
+              <span className="sc-select">
+                <select value={profile.bgType} onChange={(event) => updateProfile("bgType", event.target.value as ProfileData["bgType"])}>
                   <option value="gradient">Gradient</option>
-                  <option value="video">Video</option>
                   <option value="image">Image</option>
+                  <option value="video">Video</option>
                 </select>
-            </div>
+                <ChevronDown size={17} />
+              </span>
+            </label>
 
-            {profileData.bgType === "gradient" && (
-              <div className="sx-input-group" style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <label className="sx-label">Background Colors</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
-                   <div>
-                     <span style={{ fontSize: '10px', opacity: 0.5 }}>START</span>
-                     <input type="color" className="sx-input" style={{height: '40px', padding: '4px'}} value={gradientColors.c1} onChange={e => updateGradient(e.target.value, gradientColors.c2)} />
-                   </div>
-                   <div>
-                     <span style={{ fontSize: '10px', opacity: 0.5 }}>END</span>
-                     <input type="color" className="sx-input" style={{height: '40px', padding: '4px'}} value={gradientColors.c2} onChange={e => updateGradient(gradientColors.c1, e.target.value)} />
-                   </div>
-                </div>
-                
-                {/* Quick Presets */}
-                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '5px' }}>
-                  {[
-                    ['#1a0b1a', '#050106'], // Default Dark
-                    ['#7000ff', '#ff008c'], // Purple Pink
-                    ['#00d2ff', '#3a7bd5'], // Blue Sea
-                    ['#11e1de', '#111111'], // Neon Cyan
-                    ['#833ab4', '#fd1d1d'], // Sunset
-                  ].map(([c1, c2], i) => (
-                    <div 
-                      key={i} 
-                      onClick={() => updateGradient(c1, c2)}
-                      style={{ 
-                        flexShrink: 0, width: '24px', height: '24px', borderRadius: '6px', cursor: 'pointer',
-                        background: `linear-gradient(135deg, ${c1}, ${c2})`, border: '1px solid rgba(255,255,255,0.2)'
-                      }} 
-                    />
-                  ))}
-                </div>
-              </div>
+            {profile.bgType === "gradient" && (
+              <label>
+                Gradient
+                <input value={profile.gradient} onChange={(event) => updateProfile("gradient", event.target.value)} />
+              </label>
             )}
 
-            {(profileData.bgType === "video" || profileData.bgType === "image") && (
-              <div className="sx-input-group">
-                <label className="sx-label">{profileData.bgType === "video" ? "Video (.mp4) URL" : "Image URL"}</label>
-                <input className="sx-input" value={profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage} onChange={e => profileData.bgType === "video" ? updateProfile("bgVideo", e.target.value) : updateProfile("bgImage", e.target.value)} placeholder="Direct link..." />
-              </div>
+            {profile.bgType === "image" && (
+              <label>
+                Image URL
+                <input value={profile.bgImage} onChange={(event) => updateProfile("bgImage", event.target.value)} />
+              </label>
             )}
 
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '20px'}}>
-                <div className="sx-input-group"><label className="sx-label">Name Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.nameColor} onChange={e => updateProfile("nameColor", e.target.value)} /></div>
-                <div className="sx-input-group"><label className="sx-label">Accent Color</label><input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.accent} onChange={e => updateProfile("accent", e.target.value)} /></div>
-            </div>
-            
-            <div className="sx-input-group" style={{marginTop: '10px'}}>
-                <label className="sx-label">Bio Color</label>
-                <input type="color" className="sx-input" style={{height: '45px', padding: '5px'}} value={profileData.bioColor.length > 7 ? profileData.bioColor.substring(0,7) : profileData.bioColor} onChange={e => updateProfile("bioColor", e.target.value)} />
-            </div>
+            {profile.bgType === "video" && (
+              <label>
+                Video URL
+                <input value={profile.bgVideo} onChange={(event) => updateProfile("bgVideo", event.target.value)} />
+              </label>
+            )}
 
-            <div className="sx-input-group">
-              <label className="sx-label">Audio Background URL (.mp3)</label>
-              <input className="sx-input" value={profileData.bgAudio} onChange={e => updateProfile("bgAudio", e.target.value)} placeholder="Link to audio file" />
-            </div>
-          </div>
+            <label>
+              Audio URL
+              <input value={profile.bgAudio} onChange={(event) => updateProfile("bgAudio", event.target.value)} />
+            </label>
+
+            <label className="sc-inline-check">
+              <input type="checkbox" checked={profile.showGlass} onChange={(event) => updateProfile("showGlass", event.target.checked)} />
+              Glass profile card
+            </label>
+          </section>
         )}
 
         {tab === "badges" && (
-          <div className="sx-pane">
-            <div className="sx-input-group" style={{background: 'rgba(255,255,255,0.03)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)'}}>
-                <label className="sx-label">Badges</label>
-                <p style={{fontSize: '13px', lineHeight: 1.5, opacity: 0.62}}>Badges are managed by Softcard and cannot be changed from the dashboard.</p>
+          <section className="sc-panel">
+            <div className="sc-note">
+              <ShieldCheck size={18} />
+              Badges are managed from the admin panel.
             </div>
+          </section>
+        )}
+      </aside>
+
+      <section className="sc-live-preview">
+        <ProfilePreview profile={profile} links={links} badges={badges} />
+      </section>
+    </main>
+  );
+}
+
+function ProfilePreview({ profile, links, badges }: { profile: ProfileData; links: SocialLink[]; badges: Badges }) {
+  const visibleLinks = links.filter((link) => link.enabled !== false && safeExternalUrl(link.url));
+  const featuredLinks = visibleLinks.filter((link) => link.featured && link.label);
+  const iconLinks = visibleLinks.filter((link) => !link.featured);
+
+  return (
+    <div className="sc-profile-preview" style={{ background: profile.bgType === "gradient" ? profile.gradient : "#04050a" }}>
+      {profile.bgType === "image" && safeExternalUrl(profile.bgImage) && <img className="sc-bg-media" src={safeExternalUrl(profile.bgImage)} alt="" />}
+      {profile.bgType === "video" && safeExternalUrl(profile.bgVideo) && <video className="sc-bg-media" src={safeExternalUrl(profile.bgVideo)} muted loop autoPlay playsInline />}
+
+      <div className={`sc-profile-card ${profile.showGlass ? "is-glass" : ""}`}>
+        <img className="sc-avatar" src={profile.avatar} alt="" />
+        <h2 style={{ color: profile.nameColor }}>{profile.name}</h2>
+
+        {(badges.user || badges.dev || badges.staff) && (
+          <div className="sc-badges">
+            {badges.user && <span title={badgeInfo.user}><ShieldCheck size={14} color="#55a7ff" /></span>}
+            {badges.dev && <span title={badgeInfo.dev}><Code size={14} color={profile.accent} /></span>}
+            {badges.staff && <span title={badgeInfo.staff}><Star size={14} color="#f7b731" /></span>}
           </div>
         )}
-      </div>
 
-      <div className="sx-preview-pane">
-        {profileData.bgType === "gradient" && <div className="sx-bg-layer" style={{ background: profileData.gradient }} />}
-        {profileData.bgType === "video" && profileData.bgVideo && <video className="sx-bg-layer" src={profileData.bgVideo} autoPlay loop muted playsInline />}
-        {profileData.bgType === "image" && profileData.bgImage && <img className="sx-bg-layer" src={profileData.bgImage} alt="bg" />}
-        
-        <div className="sx-profile-card">
-          <img src={profileData.avatar} className="sx-pfp" alt="profile" />
-          
-          <div className="sx-name" style={{ color: profileData.nameColor }}>{profileData.name}</div>
+        <div className="sc-tags">
+          {profile.age && <span>{profile.age} y/o</span>}
+          {profile.gender && <span>{profile.gender}</span>}
+          {profile.sexuality && <span>{profile.sexuality}</span>}
+          {profile.timezone && <span>{profile.timezone.split("/").pop()?.replace("_", " ")}</span>}
+        </div>
 
-          {(badges.user || badges.dev || badges.staff) && (
-            <div className="sx-badge-pill">
-                {badges.user && <span className="sx-badge-tip" data-tip={badgeInfo.user.description} aria-label={badgeInfo.user.label}><ShieldCheck size={14} color="#3b82f6" /></span>}
-                {badges.dev && <span className="sx-badge-tip" data-tip={badgeInfo.dev.description} aria-label={badgeInfo.dev.label}><Code size={14} color={profileData.accent} /></span>}
-                {badges.staff && <span className="sx-badge-tip" data-tip={badgeInfo.staff.description} aria-label={badgeInfo.staff.label}><Star size={14} color="#f59e0b" /></span>}
-            </div>
-          )}
+        <p style={{ color: profile.bioColor }}>{profile.bio || "No bio yet."}</p>
 
-          <div className="sx-tags-row">
-            {profileData.age && <span className="sx-tag-pill">{profileData.age} y/o</span>}
-            {profileData.gender && <span className="sx-tag-pill">{profileData.gender}</span>}
-            {profileData.sexuality && <span className="sx-tag-pill">{profileData.sexuality}</span>}
-            {profileData.birthday && <span className="sx-tag-pill">{new Date(profileData.birthday).toLocaleDateString(undefined, {month: 'short', day: 'numeric', timeZone: 'UTC'})}</span>}
-            {profileData.timezone && <span className="sx-tag-pill">{profileData.timezone.split('/').pop()?.replace('_', ' ')}</span>}
-          </div>
+        <div className="sc-icons">
+          {iconLinks.map((link) => (
+            <a key={link.id} href={safeExternalUrl(link.url)} target="_blank" rel="noreferrer">
+              <img src={iconMap[link.type] || iconMap.website} alt={link.type} />
+            </a>
+          ))}
+        </div>
 
-          <div className="sx-bio" style={{ color: profileData.bioColor }}>{profileData.bio || "No bio yet."}</div>
-          
-          <div className="sx-links-row">
-            {links.map(l => l.url && l.enabled !== false && !l.featured && safeExternalUrl(l.url) && (
-              <a key={l.id} href={safeExternalUrl(l.url)} target="_blank" rel="noreferrer" className="sx-icon-link">
-                <img src={iconMap[l.type] || iconMap.website} alt={l.type} />
-              </a>
-            ))}
-          </div>
-          <div className="sx-feature-links">
-            {links.filter(l => l.url && l.label && l.enabled !== false && l.featured && safeExternalUrl(l.url)).slice(0, 4).map(l => (
-              <a key={`feature-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noreferrer" className="sx-feature-link" style={{ borderColor: l.color || profileData.accent }}>
-                <span className="sx-feature-link-text">
-                  <span>{l.label}</span>
-                  {l.description && <small>{l.description}</small>}
-                </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                  <img src={iconMap[l.type] || iconMap.website} alt="" />
-                  <ExternalLink size={15} />
-                </span>
-              </a>
-            ))}
-          </div>
+        <div className="sc-featured-links">
+          {featuredLinks.slice(0, 4).map((link) => (
+            <a key={link.id} href={safeExternalUrl(link.url)} target="_blank" rel="noreferrer" style={{ borderColor: safeHex(link.color) || profile.accent }}>
+              <span>
+                <strong>{link.label}</strong>
+                {link.description && <small>{link.description}</small>}
+              </span>
+              <ArrowUpRight size={16} />
+            </a>
+          ))}
         </div>
       </div>
     </div>
-  )
+  );
 }
