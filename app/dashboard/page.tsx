@@ -562,9 +562,10 @@ export default function SoftcardDashboard() {
             #040109;
         }
         .sx-sidebar {
-          width: min(500px, 42vw); background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.028)), rgba(8, 3, 15, 0.92);
+          width: 540px; flex: 0 0 540px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.028)), rgba(8, 3, 15, 0.92);
           backdrop-filter: blur(30px); border-right: 1px solid rgba(255, 255, 255, 0.1);
-          padding: 18px 20px; overflow-y: auto; box-shadow: 24px 0 80px rgba(0,0,0,0.38);
+          padding: 22px 24px; overflow-y: auto; box-shadow: 24px 0 80px rgba(0,0,0,0.38);
           scrollbar-width: thin; scrollbar-color: ${profileData.accent} rgba(255,255,255,0.06);
         }
         .sx-sidebar::-webkit-scrollbar { width: 9px; }
@@ -681,17 +682,16 @@ export default function SoftcardDashboard() {
         .sx-preset small { opacity: 0.62; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
 
         .sx-editor-head {
-          position: sticky; top: -18px; z-index: 30;
-          padding: 12px 0 14px; margin-bottom: 14px;
-          background: linear-gradient(180deg, rgba(8,3,15,0.98), rgba(8,3,15,0.88) 74%, transparent);
-          backdrop-filter: blur(18px);
+          position: static;
+          padding: 0 0 18px; margin-bottom: 18px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
         }
         .sx-editor-brand {
-          display: grid; grid-template-columns: minmax(0, 1fr) 34px; align-items: center; gap: 10px; margin-bottom: 12px;
+          display: grid; grid-template-columns: minmax(0, 1fr) 38px; align-items: center; gap: 14px; margin-bottom: 16px;
         }
         .sx-editor-title { min-width: 0; }
         .sx-editor-title strong {
-          display: block; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.1;
+          display: block; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; line-height: 1.1;
         }
         .sx-editor-title span {
           display: block; margin-top: 5px; color: rgba(255,255,255,0.46); font-size: 11px; font-weight: 700;
@@ -699,14 +699,14 @@ export default function SoftcardDashboard() {
         }
         .sx-editor-link {
           cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-          width: 34px; height: 34px; padding: 0; border-radius: 10px;
+          width: 38px; height: 38px; padding: 0; border-radius: 12px;
           color: rgba(255,255,255,0.56); background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.08);
           font-size: 12px; font-weight: 800;
         }
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
 
         .sx-publish-btn {
-            width: 100%; padding: 13px; border-radius: 13px; border: none; font-weight: 900; letter-spacing: 0.02em;
+            width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 900; letter-spacing: 0.02em;
             background: linear-gradient(90deg, #ff008c, #ff4df0); color: white; cursor: pointer;
             box-shadow: 0 12px 30px rgba(255, 0, 128, 0.25); margin-bottom: 0; transition: 0.2s;
         }
@@ -714,14 +714,14 @@ export default function SoftcardDashboard() {
         .sx-publish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .sx-tabs-row {
-          display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-bottom: 18px;
-          background: rgba(255,255,255,0.035); padding: 5px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.07);
+          display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 22px;
+          background: transparent; padding: 0; border-radius: 0; border: 0;
         }
         .sx-tab {
-          min-height: 44px; border-radius: 11px; cursor: pointer; opacity: 0.68; text-align: center; transition: 0.2s;
+          min-height: 52px; border-radius: 14px; cursor: pointer; opacity: 0.78; text-align: center; transition: 0.2s;
           font-size: 10px; font-weight: 900; text-transform: uppercase; display: flex; flex-direction: column;
           align-items: center; justify-content: center; gap: 5px; color: rgba(255,255,255,0.72);
-          border: 0; background: transparent;
+          border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.035);
         }
         .sx-tab:hover { opacity: 1; background: rgba(255,255,255,0.055); }
         .sx-tab-active { background: linear-gradient(135deg, ${profileData.accent}, #ec4899); opacity: 1; color: white; box-shadow: 0 10px 24px ${profileData.accent}28; }
@@ -730,7 +730,7 @@ export default function SoftcardDashboard() {
         .sx-input-group { margin-bottom: 12px; }
         
         .sx-input {
-            width: 100%; padding: 12px 12px; border-radius: 12px; background: rgba(255,255,255,0.04);
+            width: 100%; padding: 13px 14px; border-radius: 13px; background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.08); color: white; outline: none; transition: 0.2s; font-size: 14px;
             appearance: none;
         }
@@ -755,7 +755,7 @@ export default function SoftcardDashboard() {
         .sx-link-card {
             background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.026));
             border: 1px solid rgba(255,255,255,0.09);
-            border-radius: 14px; padding: 12px; margin-bottom: 10px; position: relative;
+            border-radius: 16px; padding: 16px; margin-bottom: 14px; position: relative;
         }
         .sx-remove-link {
             position: absolute; top: -10px; right: -10px;
@@ -787,10 +787,10 @@ export default function SoftcardDashboard() {
         }
         .sx-tag-clear:hover { background: rgba(255, 77, 77, 0.2); border-color: #ff4d4d; }
         .sx-upload-grid {
-          display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px;
+          display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px;
         }
         .sx-upload-box {
-          position: relative; min-height: 104px; border-radius: 14px; cursor: pointer;
+          position: relative; min-height: 116px; border-radius: 16px; cursor: pointer;
           display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
           border: 1px dashed rgba(255,255,255,0.18); background: rgba(255,255,255,0.035);
           color: rgba(255,255,255,0.74); text-align: center; padding: 16px; transition: 0.18s;
@@ -805,12 +805,12 @@ export default function SoftcardDashboard() {
           color: rgba(255,255,255,0.62); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .sx-editor-section {
-          margin-bottom: 16px; padding: 16px; border-radius: 17px;
+          margin-bottom: 22px; padding: 18px; border-radius: 18px;
           background: rgba(255,255,255,0.026); border: 1px solid rgba(255,255,255,0.07);
         }
         .sx-section-title {
           display: flex; align-items: center; justify-content: space-between; gap: 10px;
-          margin-bottom: 10px; color: rgba(255,255,255,0.86);
+          margin-bottom: 16px; color: rgba(255,255,255,0.86);
           font-size: 12px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase;
         }
         .sx-section-title span {
@@ -827,7 +827,7 @@ export default function SoftcardDashboard() {
         .sx-danger-mini:hover { border-color: rgba(255,77,77,0.5); background: rgba(255,77,77,0.16); }
         @media (max-width: 980px) {
           .softcardx-dashboard { flex-direction: column; height: auto; min-height: 100vh; overflow: auto; }
-          .sx-sidebar { width: 100%; max-height: none; }
+          .sx-sidebar { width: 100%; flex-basis: auto; max-height: none; }
           .sx-preview-pane { min-height: 620px; }
         }
       `}</style>
