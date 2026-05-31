@@ -1228,6 +1228,104 @@ body::before {
   }
 }
 
+/* Premium polish layer */
+body::before {
+  background:
+    radial-gradient(circle at 50% -12%, rgba(142, 91, 255, 0.22), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(255, 82, 178, 0.12), transparent 25%),
+    radial-gradient(circle at 12% 74%, rgba(68, 204, 255, 0.08), transparent 22%),
+    linear-gradient(180deg, #080910 0%, #05060a 58%, #030306 100%) !important;
+}
+
+.sx-main {
+  background: transparent !important;
+}
+
+.sx-hero {
+  width: min(1040px, calc(100vw - 40px)) !important;
+  padding-bottom: 70px !important;
+}
+
+.sx-title {
+  font-size: clamp(70px, 12vw, 146px) !important;
+  letter-spacing: -0.05em !important;
+  background: linear-gradient(180deg, #ffffff 0%, #d9ccff 74%, #9d7cff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none !important;
+}
+
+.sx-sub {
+  max-width: 630px !important;
+  color: rgba(248, 247, 255, 0.66) !important;
+}
+
+.sx-product-grid {
+  width: min(920px, 100%);
+  margin-top: 34px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sx-product-card {
+  min-height: 172px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.035));
+  text-align: left;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
+}
+
+.sx-product-card svg {
+  color: #b58cff;
+}
+
+.sx-product-card h2 {
+  margin-top: 18px;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.sx-product-card p {
+  margin-top: 8px;
+  color: rgba(248, 247, 255, 0.58);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.sx-primary,
+.lx-primary,
+.hx-btn,
+.hx-small-btn,
+.sx-publish-btn {
+  background: linear-gradient(135deg, #ffffff, #d8caff) !important;
+  color: #070910 !important;
+}
+
+.sx-secondary,
+.sx-nav-btn {
+  background: rgba(255,255,255,0.045) !important;
+  border-color: rgba(255,255,255,0.14) !important;
+}
+
+.lx-form,
+.sx-sidebar,
+.sx-link-card,
+.admin-user,
+.mx-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.04)) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+@media (max-width: 900px) {
+  .sx-product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Clean usability pass */
 :root {
   --clean-bg: #06070b;

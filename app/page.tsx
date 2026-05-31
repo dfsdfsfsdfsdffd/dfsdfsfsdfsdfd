@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Space_Grotesk } from "next/font/google";
-import { ArrowRight, Heart, Link as LinkIcon, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, BadgeCheck, Heart, Link as LinkIcon, Palette, ShieldCheck, Sparkles } from "lucide-react";
 
 const font = Space_Grotesk({
   subsets: ["latin"],
@@ -74,6 +74,24 @@ export default function Home() {
           <div className="sx-feature">
             <ShieldCheck size={18} />
             <span>Protected dashboard</span>
+          </div>
+        </div>
+
+        <div className="sx-product-grid">
+          <div className="sx-product-card">
+            <BadgeCheck size={20} />
+            <h2>Badges that mean something</h2>
+            <p>Verified, developer, and staff badges are admin-controlled and explain themselves on hover.</p>
+          </div>
+          <div className="sx-product-card">
+            <Palette size={20} />
+            <h2>Profiles with actual style</h2>
+            <p>Theme presets, glass cards, background media, audio, colors, and featured links.</p>
+          </div>
+          <div className="sx-product-card">
+            <ShieldCheck size={20} />
+            <h2>Hardened by default</h2>
+            <p>Protected dashboard, safer signup flow, sanitized public links, and locked-down admin tools.</p>
           </div>
         </div>
       </section>

@@ -21,7 +21,13 @@ function adminPassword() {
 
 function isAuthorized(request: Request) {
   const password = adminPassword();
-  return Boolean(password) && request.headers.get("x-admin-password") === password;
+  const cookie = request.headers
+    .get("cookie")
+    ?.split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith("softcard_admin="))
+    ?.split("=")[1];
+  return Boolean(password) && decodeURIComponent(cookie || "") === password;
 }
 
 function getClientIp(request: Request) {
@@ -76,6 +82,11 @@ export async function POST(request: Request) {
 
   if (!isAuthorized(request)) {
     return json({ error: "Unauthorized." }, 401);
+  }
+
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (contentLength > 4096) {
+    return json({ error: "Request is too large." }, 413);
   }
 
   if (!request.headers.get("content-type")?.includes("application/json")) {

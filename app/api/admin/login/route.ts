@@ -1,24 +1,12 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 const WINDOW_MS = 10 * 60 * 1000;
-const MAX_ATTEMPTS = 20;
+const MAX_ATTEMPTS = 8;
 const attempts = new Map<string, { count: number; resetAt: number }>();
 
 function adminPassword() {
   if (process.env.ADMIN_PASSWORD) return process.env.ADMIN_PASSWORD;
   return process.env.NODE_ENV === "production" ? "" : "123";
-}
-
-function isAuthorized(request: Request) {
-  const password = adminPassword();
-  const cookie = request.headers
-    .get("cookie")
-    ?.split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith("softcard_admin="))
-    ?.split("=")[1];
-  return Boolean(password) && decodeURIComponent(cookie || "") === password;
 }
 
 function getClientIp(request: Request) {
@@ -62,41 +50,44 @@ function json(data: unknown, status = 200) {
   });
 }
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   if (!isSameOrigin(request)) {
     return json({ error: "Invalid request." }, 403);
   }
 
-  if (hitLimit(`admin-users:${getClientIp(request)}`)) {
-    return json({ error: "Too many admin requests." }, 429);
+  if (hitLimit(`admin-login:${getClientIp(request)}`)) {
+    return json({ error: "Too many login attempts." }, 429);
   }
 
-  if (!isAuthorized(request)) {
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (contentLength > 2048) {
+    return json({ error: "Request is too large." }, 413);
+  }
+
+  if (!request.headers.get("content-type")?.includes("application/json")) {
+    return json({ error: "Invalid request." }, 415);
+  }
+
+  let body: { password?: string };
+
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "Invalid request." }, 400);
+  }
+
+  const password = adminPassword();
+  if (!password || body.password !== password) {
     return json({ error: "Unauthorized." }, 401);
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    return json({ error: "Admin is not configured." }, 500);
-  }
-
-  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+  const response = json({ ok: true });
+  response.cookies.set("softcard_admin", password, {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 2,
   });
-
-  const { data, error } = await supabaseAdmin
-    .from("profiles")
-    .select("id, username, email, display_name, avatar_url, views, badges")
-    .order("username", { ascending: true });
-
-  if (error) {
-    return json({ error: error.message }, 500);
-  }
-
-  return json({ users: data || [] });
+  return response;
 }

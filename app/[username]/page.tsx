@@ -350,7 +350,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         <div className="featured-links">
           {socials.filter((l: any) => l.label && l.featured).slice(0, 4).map((l: any) => (
-            <a key={`featured-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noopener noreferrer" className="featured-link" style={{ borderColor: l.color || accent }}>
+            <a key={`featured-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noopener noreferrer" className="featured-link" style={{ borderColor: safeColor(l.color, accent) }}>
               <span className="featured-link-text">
                 <span>{String(l.label).slice(0, 40)}</span>
                 {l.description && <small>{String(l.description).slice(0, 80)}</small>}

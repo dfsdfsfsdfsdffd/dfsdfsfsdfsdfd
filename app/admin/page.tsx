@@ -27,16 +27,12 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadUsers(nextPassword = password) {
+  async function loadUsers() {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch("/api/admin/users", {
-        headers: {
-          "x-admin-password": nextPassword,
-        },
-      });
+      const response = await fetch("/api/admin/users");
       const result = await response.json();
 
       if (!response.ok) {
@@ -52,6 +48,37 @@ export default function AdminPanel() {
     }
   }
 
+  async function login() {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to log in.");
+      }
+
+      await loadUsers();
+    } catch (err: any) {
+      setError(err.message || "Unable to log in.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function logout() {
+    await fetch("/api/admin/logout", { method: "POST" });
+    setIsAuthed(false);
+    setUsers([]);
+    setPassword("");
+  }
+
   async function updateBadges(userId: string, badges: Badges) {
     setError(null);
 
@@ -59,7 +86,6 @@ export default function AdminPanel() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-admin-password": password,
       },
       body: JSON.stringify({
         id: userId,
@@ -95,10 +121,15 @@ export default function AdminPanel() {
           Home
         </Link>
         {isAuthed && (
-          <button className="admin-ghost" onClick={() => loadUsers()} disabled={loading}>
-            <RefreshCw size={15} />
-            Refresh
-          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className="admin-ghost" onClick={() => loadUsers()} disabled={loading}>
+              <RefreshCw size={15} />
+              Refresh
+            </button>
+            <button className="admin-ghost" onClick={logout}>
+              Log out
+            </button>
+          </div>
         )}
       </nav>
 
@@ -110,7 +141,7 @@ export default function AdminPanel() {
           <form
             onSubmit={(event) => {
               event.preventDefault();
-              loadUsers();
+              login();
             }}
           >
             <input

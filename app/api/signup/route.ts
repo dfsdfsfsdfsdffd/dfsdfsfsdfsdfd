@@ -56,6 +56,11 @@ export async function POST(request: Request) {
     return json({ error: "Signup is not configured." }, 500);
   }
 
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (contentLength > 4096) {
+    return json({ error: "Signup request is too large." }, 413);
+  }
+
   const origin = request.headers.get("origin");
   const host = request.headers.get("host");
 
