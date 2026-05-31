@@ -273,19 +273,6 @@ export default function SoftcardDashboard() {
     setProfileData(prev => ({ ...prev, [key]: value }))
   }
 
-  const visibleLinks = links.filter((link) => link.url && link.enabled !== false)
-  const featuredLinks = visibleLinks.filter((link) => link.featured)
-  const profileScore = [
-    profileData.avatar,
-    profileData.name && profileData.name !== "User",
-    profileData.bio,
-    profileData.username,
-    visibleLinks.length > 0,
-    profileData.bgType !== "gradient" || profileData.gradient,
-  ].filter(Boolean).length
-
-  const profilePercent = Math.round((profileScore / 6) * 100)
-
   const applyPreset = (preset: typeof themePresets[number]) => {
     setProfileData(prev => ({
       ...prev,
@@ -337,10 +324,10 @@ export default function SoftcardDashboard() {
             color: white; display: flex; align-items: center; justify-content: center;
             font-family: 'Inter', sans-serif;
           }
-          .hx-container { text-align: center; width: 100%; max-width: 600px; padding: 20px; }
-          .hub-header { margin-bottom: 40px; }
+          .hx-container { text-align: center; width: 100%; max-width: 640px; padding: 22px; }
+          .hub-header { margin-bottom: 34px; }
           .hx-status { font-size: 10px; letter-spacing: 2px; opacity: 0.5; margin-bottom: 8px; font-weight: 700; }
-          .hx-title { font-size: 32px; font-weight: 600; }
+          .hx-title { font-size: 34px; font-weight: 700; letter-spacing: -0.03em; }
           .hx-username { color: #f472b6; }
           
           .hx-circle-wrap { position: relative; display: inline-block; margin-bottom: 50px; width: 280px; height: 280px; }
@@ -385,16 +372,9 @@ export default function SoftcardDashboard() {
           .hx-small-btn:hover { opacity: 0.9; }
           .hx-view { background: rgba(255,255,255,0.1); text-decoration: none; }
 
-          .hx-stats {
-            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px; margin: 0 auto 34px; max-width: 520px;
+          .hx-quick-actions {
+            display: flex; justify-content: center; gap: 10px; margin-bottom: 32px; flex-wrap: wrap;
           }
-          .hx-stat {
-            background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px; padding: 12px; text-align: left;
-          }
-          .hx-stat span { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.48; font-weight: 800; }
-          .hx-stat strong { display: block; margin-top: 5px; font-size: 18px; }
 
           .hx-logout { position: fixed; top: 30px; right: 30px; opacity: 0.4; cursor: pointer; transition: 0.2s; background: transparent; border: 0; color: white; padding: 0; }
           .hx-logout:hover { opacity: 1; color: #f472b6; }
@@ -410,19 +390,15 @@ export default function SoftcardDashboard() {
             <h1 className="hx-title">Welcome back, <span className="hx-username">{profileData.username || "User"}</span></h1>
           </div>
 
-          <div className="hx-stats">
-            <div className="hx-stat">
-              <span>Views</span>
-              <strong>{profileData.views.toLocaleString()}</strong>
-            </div>
-            <div className="hx-stat">
-              <span>Links</span>
-              <strong>{visibleLinks.length}</strong>
-            </div>
-            <div className="hx-stat">
-              <span>Profile</span>
-              <strong>{profilePercent}%</strong>
-            </div>
+          <div className="hx-quick-actions">
+            <button className="hx-small-btn" onClick={() => setView("editor")}>
+              <Pencil size={14} />
+              Edit profile
+            </button>
+            <a href={`/${profileData.username}`} target="_blank" rel="noreferrer" className="hx-small-btn hx-view">
+              <ExternalLink size={14} />
+              Open page
+            </a>
           </div>
 
           <div className="hx-circle-wrap">
@@ -553,21 +529,12 @@ export default function SoftcardDashboard() {
         .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; opacity: 0.5; font-size: 13px; font-weight: 600; }
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
 
-        .sx-editor-stats {
-          display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 8px; margin-bottom: 18px;
+        .sx-editor-head {
+          display: flex; align-items: center; justify-content: space-between; gap: 12px;
+          margin-bottom: 18px;
         }
-        .sx-editor-stat {
-          background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 12px; padding: 10px;
-        }
-        .sx-editor-stat span { display: block; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.45; font-weight: 900; }
-        .sx-editor-stat strong { display: block; margin-top: 4px; font-size: 15px; }
-        .sx-progress {
-          height: 8px; border-radius: 999px; overflow: hidden; margin-bottom: 18px;
-          background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08);
-        }
-        .sx-progress div { height: 100%; background: linear-gradient(90deg, ${profileData.accent}, #ff4df0); }
+        .sx-editor-title { font-size: 20px; font-weight: 900; letter-spacing: -0.03em; }
+        .sx-editor-sub { font-size: 12px; opacity: 0.48; margin-top: 3px; }
         
         .sx-publish-btn {
             width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700;
@@ -635,26 +602,14 @@ export default function SoftcardDashboard() {
       `}</style>
 
       <div className="sx-sidebar">
-        <div className="sx-editor-link" onClick={() => setView("hub")}>
-          <X size={16} /> Close Editor
-        </div>
-
-        <div className="sx-editor-stats">
-          <div className="sx-editor-stat">
-            <span>Views</span>
-            <strong>{profileData.views.toLocaleString()}</strong>
+        <div className="sx-editor-head">
+          <div>
+            <div className="sx-editor-title">Edit page</div>
+            <div className="sx-editor-sub">Make changes, preview, then publish.</div>
           </div>
-          <div className="sx-editor-stat">
-            <span>Links</span>
-            <strong>{visibleLinks.length}</strong>
-          </div>
-          <div className="sx-editor-stat">
-            <span>Done</span>
-            <strong>{profilePercent}%</strong>
-          </div>
-        </div>
-        <div className="sx-progress" aria-label={`Profile ${profilePercent}% complete`}>
-          <div style={{ width: `${profilePercent}%` }} />
+          <button className="sx-editor-link" onClick={() => setView("hub")}>
+            <X size={16} /> Close
+          </button>
         </div>
         
         <button className="sx-publish-btn" onClick={saveChanges} disabled={saving}>
