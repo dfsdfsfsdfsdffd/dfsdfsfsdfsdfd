@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, type ReactNode } from "react"
 import { createBrowserClient } from "@supabase/ssr"
 import { useRouter } from "next/navigation"
 import { 
@@ -21,7 +21,11 @@ import {
   MoveUp,
   MoveDown,
   CopyPlus,
-  ChevronDown
+  ChevronDown,
+  Upload,
+  Image as ImageIcon,
+  Video,
+  Music
 } from "lucide-react"
 
 // Types
@@ -61,6 +65,7 @@ type ProfileData = {
   bgVideo: string;
   bgImage: string;
   bgAudio: string;
+  bgAudioName: string;
   showGlass: boolean;
   views: number;
 }
@@ -77,7 +82,7 @@ const iconMap: Record<string, string> = {
   github: "https://cdn.simpleicons.org/github/ffffff",
   threads: "https://cdn.simpleicons.org/threads/ffffff",
   linkedin: "https://cdn.simpleicons.org/linkedin/ffffff",
-  website: "https://cdn.simpleicons.org/pwa/ffffff"
+  website: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E"
 }
 
 const badgeInfo = {
@@ -108,6 +113,38 @@ function normalizeLinks(items: SocialLink[]) {
       featured: Boolean(link.featured),
     }))
     .filter((link) => link.url);
+}
+
+function splitAudioMeta(value: string) {
+  if (!value) return { url: "", title: "" };
+
+  try {
+    const parsed = new URL(value);
+    const title = parsed.hash.startsWith("#softcardTitle=")
+      ? decodeURIComponent(parsed.hash.replace("#softcardTitle=", ""))
+      : "";
+    parsed.hash = "";
+    return { url: parsed.toString(), title };
+  } catch {
+    return { url: value, title: "" };
+  }
+}
+
+function audioUrlWithTitle(url: string, title: string) {
+  if (!url.trim()) return "";
+
+  try {
+    const parsed = new URL(url.trim());
+    const cleanedTitle = title.trim().slice(0, 60);
+    parsed.hash = cleanedTitle ? `softcardTitle=${encodeURIComponent(cleanedTitle)}` : "";
+    return parsed.toString();
+  } catch {
+    return url.trim();
+  }
+}
+
+function fileTitle(name: string) {
+  return name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim().slice(0, 60);
 }
 
 export default function SoftcardDashboard() {
@@ -146,6 +183,7 @@ export default function SoftcardDashboard() {
     bgVideo: "",
     bgImage: "",
     bgAudio: "",
+    bgAudioName: "",
     showGlass: true,
     views: 0
   })
@@ -191,6 +229,8 @@ export default function SoftcardDashboard() {
         .single()
 
       if (profile) {
+        const audioMeta = splitAudioMeta(profile.audio_url || "");
+
         setProfileData(prev => ({
           ...prev,
           avatar: profile.avatar_url || prev.avatar,
@@ -207,7 +247,8 @@ export default function SoftcardDashboard() {
           bioColor: profile.bio_color || "#ffffffb3",
           font: profile.font_family || "Inter",
           bgType: profile.background_type || "gradient",
-          bgAudio: profile.audio_url || "",
+          bgAudio: audioMeta.url,
+          bgAudioName: audioMeta.title,
           views: profile.views || 0,
           showGlass: profile.show_glass_card ?? true,
           gradient: profile.background_type === "gradient" ? profile.background_value : prev.gradient,
@@ -245,7 +286,7 @@ export default function SoftcardDashboard() {
         font_family: profileData.font,
         background_type: profileData.bgType,
         background_value: profileData.bgType === "gradient" ? profileData.gradient : (profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage),
-        audio_url: profileData.bgAudio,
+        audio_url: audioUrlWithTitle(profileData.bgAudio, profileData.bgAudioName),
         show_glass_card: profileData.showGlass,
         setup_completed: true
       }).eq('id', user.id)
@@ -276,6 +317,40 @@ export default function SoftcardDashboard() {
 
   const updateProfile = (key: string, value: any) => {
     setProfileData(prev => ({ ...prev, [key]: value }))
+  }
+
+  const uploadMedia = async (kind: "image" | "video" | "audio", file: File) => {
+    const body = new FormData()
+    body.append("kind", kind)
+    body.append("file", file)
+
+    const response = await fetch("/api/media/discord", {
+      method: "POST",
+      body,
+    })
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.error || "Upload failed.")
+    }
+
+    if (kind === "image") {
+      setProfileData(prev => ({ ...prev, bgType: "image", bgImage: result.url }))
+    }
+
+    if (kind === "video") {
+      setProfileData(prev => ({ ...prev, bgType: "video", bgVideo: result.url }))
+    }
+
+    if (kind === "audio") {
+      setProfileData(prev => ({
+        ...prev,
+        bgAudio: result.url,
+        bgAudioName: prev.bgAudioName || fileTitle(result.name || file.name),
+      }))
+    }
+
+    return result.url as string
   }
 
   const applyPreset = (preset: typeof themePresets[number]) => {
@@ -590,6 +665,24 @@ export default function SoftcardDashboard() {
           border-radius: 10px; padding: 10px; cursor: pointer; color: #ff4d4d; transition: 0.2s;
         }
         .sx-tag-clear:hover { background: rgba(255, 77, 77, 0.2); border-color: #ff4d4d; }
+        .sx-upload-grid {
+          display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px;
+        }
+        .sx-upload-box {
+          position: relative; min-height: 96px; border-radius: 14px; cursor: pointer;
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+          border: 1px dashed rgba(255,255,255,0.18); background: rgba(255,255,255,0.035);
+          color: rgba(255,255,255,0.74); text-align: center; padding: 14px; transition: 0.18s;
+        }
+        .sx-upload-box:hover { border-color: ${profileData.accent}; background: rgba(255,255,255,0.06); color: white; }
+        .sx-upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .sx-upload-box strong { font-size: 12px; }
+        .sx-upload-box span { font-size: 10px; opacity: 0.58; line-height: 1.35; }
+        .sx-media-current {
+          margin-top: 8px; padding: 9px 10px; border-radius: 10px;
+          background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07);
+          color: rgba(255,255,255,0.62); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
       `}</style>
 
       <div className="sx-sidebar">
@@ -792,6 +885,24 @@ export default function SoftcardDashboard() {
                 </select>
             </div>
 
+            <label className="sx-label">Upload Background</label>
+            <div className="sx-upload-grid">
+              <MediaDrop
+                kind="image"
+                icon={<ImageIcon size={20} />}
+                title="Drop image"
+                hint="PNG, JPG, WEBP, GIF"
+                onUpload={uploadMedia}
+              />
+              <MediaDrop
+                kind="video"
+                icon={<Video size={20} />}
+                title="Drop video"
+                hint="MP4, WEBM, MOV"
+                onUpload={uploadMedia}
+              />
+            </div>
+
             {profileData.bgType === "gradient" && (
               <div className="sx-input-group" style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <label className="sx-label">Background Colors</label>
@@ -832,6 +943,9 @@ export default function SoftcardDashboard() {
               <div className="sx-input-group">
                 <label className="sx-label">{profileData.bgType === "video" ? "Video (.mp4) URL" : "Image URL"}</label>
                 <input className="sx-input" value={profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage} onChange={e => profileData.bgType === "video" ? updateProfile("bgVideo", e.target.value) : updateProfile("bgImage", e.target.value)} placeholder="Direct link..." />
+                {(profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage) && (
+                  <div className="sx-media-current">{profileData.bgType === "video" ? profileData.bgVideo : profileData.bgImage}</div>
+                )}
               </div>
             )}
 
@@ -846,8 +960,25 @@ export default function SoftcardDashboard() {
             </div>
 
             <div className="sx-input-group">
-              <label className="sx-label">Audio Background URL (.mp3)</label>
+              <label className="sx-label">Audio Player Name</label>
+              <input className="sx-input" value={profileData.bgAudioName} onChange={e => updateProfile("bgAudioName", e.target.value.slice(0, 60))} placeholder="Song name shown on profile" />
+            </div>
+
+            <div className="sx-input-group">
+              <label className="sx-label">Upload Audio</label>
+              <MediaDrop
+                kind="audio"
+                icon={<Music size={20} />}
+                title="Drop audio"
+                hint="MP3, WAV, OGG, WEBM"
+                onUpload={uploadMedia}
+              />
+            </div>
+
+            <div className="sx-input-group">
+              <label className="sx-label">Audio URL</label>
               <input className="sx-input" value={profileData.bgAudio} onChange={e => updateProfile("bgAudio", e.target.value)} placeholder="Link to audio file" />
+              {profileData.bgAudio && <div className="sx-media-current">{profileData.bgAudio}</div>}
             </div>
           </div>
         )}
@@ -914,5 +1045,53 @@ export default function SoftcardDashboard() {
         </div>
       </div>
     </div>
+  )
+}
+
+function MediaDrop({
+  kind,
+  icon,
+  title,
+  hint,
+  onUpload,
+}: {
+  kind: "image" | "video" | "audio";
+  icon: ReactNode;
+  title: string;
+  hint: string;
+  onUpload: (kind: "image" | "video" | "audio", file: File) => Promise<string>;
+}) {
+  const [uploading, setUploading] = useState(false)
+
+  async function handleFile(file?: File) {
+    if (!file || uploading) return
+    setUploading(true)
+    try {
+      await onUpload(kind, file)
+    } catch (error: any) {
+      alert(error.message || "Upload failed.")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <label
+      className="sx-upload-box"
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={(event) => {
+        event.preventDefault()
+        handleFile(event.dataTransfer.files?.[0])
+      }}
+    >
+      {uploading ? <Upload size={20} /> : icon}
+      <strong>{uploading ? "Uploading..." : title}</strong>
+      <span>{hint}</span>
+      <input
+        type="file"
+        accept={kind === "image" ? "image/*" : kind === "video" ? "video/*" : "audio/*"}
+        onChange={(event) => handleFile(event.target.files?.[0])}
+      />
+    </label>
   )
 }

@@ -14,7 +14,7 @@ const iconMap: any = {
   github: "https://cdn.simpleicons.org/github/ffffff",
   threads: "https://cdn.simpleicons.org/threads/ffffff",
   linkedin: "https://cdn.simpleicons.org/linkedin/ffffff",
-  website: "https://cdn.simpleicons.org/pwa/ffffff"
+  website: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E"
 }
 
 const badgeInfo = {
@@ -71,6 +71,21 @@ function mediaName(url: string) {
     return decodeURIComponent(url.split("/").pop()?.split("?")[0] || "Profile audio")
   } catch {
     return "Profile audio"
+  }
+}
+
+function splitAudioMeta(value: string) {
+  if (!value) return { url: "", title: "" }
+
+  try {
+    const parsed = new URL(value)
+    const title = parsed.hash.startsWith("#softcardTitle=")
+      ? decodeURIComponent(parsed.hash.replace("#softcardTitle=", ""))
+      : ""
+    parsed.hash = ""
+    return { url: parsed.toString(), title }
+  } catch {
+    return { url: value, title: "" }
   }
 }
 
@@ -169,7 +184,9 @@ export default function PublicProfile({ params }: { params: { username: string }
   const hasMediaBg = (profile.background_type === "image" || profile.background_type === "video") && profile.background_value;
   const bgUrl = hasMediaBg ? safeMediaUrl(profile.background_value) : "";
   const avatarUrl = safeMediaUrl(profile.avatar_url) || "https://i.imgur.com/1X6g1YH.jpeg";
-  const audioUrl = safeMediaUrl(profile.audio_url);
+  const audioMeta = splitAudioMeta(safeMediaUrl(profile.audio_url));
+  const audioUrl = audioMeta.url;
+  const audioTitle = audioMeta.title || mediaName(audioUrl);
 
   return (
     <div className="container">
@@ -443,7 +460,7 @@ export default function PublicProfile({ params }: { params: { username: string }
               {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
             </button>
             <div className="media-main">
-              <span className="media-title">{mediaName(audioUrl)}</span>
+              <span className="media-title">{audioTitle}</span>
               <span className="media-sub">{isPlaying ? "Now playing" : "Profile audio"}</span>
             </div>
             <input
