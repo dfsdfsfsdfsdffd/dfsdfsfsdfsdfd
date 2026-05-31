@@ -15,10 +15,12 @@ import {
   ExternalLink,
   Copy,
   Check,
-  Type,
   Palette,
   User as UserIcon,
-  Tag
+  Tag,
+  MoveUp,
+  MoveDown,
+  CopyPlus
 } from "lucide-react"
 
 // Types
@@ -35,6 +37,29 @@ interface Badges {
   user: boolean;
   dev: boolean;
   staff: boolean;
+}
+
+type ProfileData = {
+  avatar: string;
+  name: string;
+  username: string;
+  bio: string;
+  age: string;
+  gender: string;
+  sexuality: string;
+  birthday: string;
+  timezone: string;
+  accent: string;
+  nameColor: string;
+  bioColor: string;
+  font: string;
+  bgType: string;
+  gradient: string;
+  bgVideo: string;
+  bgImage: string;
+  bgAudio: string;
+  showGlass: boolean;
+  views: number;
 }
 
 // Social Icon Mapping
@@ -97,7 +122,7 @@ export default function SoftcardDashboard() {
   const [saving, setSaving] = useState(false)
 
   // Consolidated State
-  const [profileData, setProfileData] = useState({
+  const [profileData, setProfileData] = useState<ProfileData>({
     avatar: "https://i.imgur.com/1X6g1YH.jpeg",
     name: "User",
     username: "",
@@ -116,8 +141,16 @@ export default function SoftcardDashboard() {
     bgVideo: "",
     bgImage: "",
     bgAudio: "",
-    showGlass: true
+    showGlass: true,
+    views: 0
   })
+
+  const themePresets = [
+    { name: "Violet", accent: "#a970ff", nameColor: "#ffffff", bioColor: "#d8caff", gradient: "linear-gradient(135deg, #170f2f 0%, #050106 100%)" },
+    { name: "Rose", accent: "#ff6bbd", nameColor: "#fff5fb", bioColor: "#ffd6eb", gradient: "linear-gradient(135deg, #2b0719 0%, #050106 100%)" },
+    { name: "Cyan", accent: "#55d6ff", nameColor: "#f4fdff", bioColor: "#c7f2ff", gradient: "linear-gradient(135deg, #042336 0%, #02060a 100%)" },
+    { name: "Mono", accent: "#ffffff", nameColor: "#ffffff", bioColor: "#b8bcc8", gradient: "linear-gradient(135deg, #17191f 0%, #030406 100%)" },
+  ]
 
   // Helper to extract colors from a CSS linear-gradient string
   const gradientColors = useMemo(() => {
@@ -170,6 +203,7 @@ export default function SoftcardDashboard() {
           font: profile.font_family || "Inter",
           bgType: profile.background_type || "gradient",
           bgAudio: profile.audio_url || "",
+          views: profile.views || 0,
           showGlass: profile.show_glass_card ?? true,
           gradient: profile.background_type === "gradient" ? profile.background_value : prev.gradient,
           bgVideo: profile.background_type === "video" ? profile.background_value : "",
@@ -237,6 +271,48 @@ export default function SoftcardDashboard() {
 
   const updateProfile = (key: string, value: any) => {
     setProfileData(prev => ({ ...prev, [key]: value }))
+  }
+
+  const visibleLinks = links.filter((link) => link.url && link.enabled !== false)
+  const featuredLinks = visibleLinks.filter((link) => link.featured)
+  const profileScore = [
+    profileData.avatar,
+    profileData.name && profileData.name !== "User",
+    profileData.bio,
+    profileData.username,
+    visibleLinks.length > 0,
+    profileData.bgType !== "gradient" || profileData.gradient,
+  ].filter(Boolean).length
+
+  const profilePercent = Math.round((profileScore / 6) * 100)
+
+  const applyPreset = (preset: typeof themePresets[number]) => {
+    setProfileData(prev => ({
+      ...prev,
+      accent: preset.accent,
+      nameColor: preset.nameColor,
+      bioColor: preset.bioColor,
+      bgType: "gradient",
+      gradient: preset.gradient,
+    }))
+  }
+
+  const moveLink = (index: number, direction: -1 | 1) => {
+    const target = index + direction
+    if (target < 0 || target >= links.length) return
+    const updated = [...links]
+    const current = updated[index]
+    updated[index] = updated[target]
+    updated[target] = current
+    setLinks(updated)
+  }
+
+  const duplicateLink = (index: number) => {
+    const link = links[index]
+    if (!link) return
+    const updated = [...links]
+    updated.splice(index + 1, 0, { ...link, id: Date.now(), label: link.label ? `${link.label} copy` : "" })
+    setLinks(updated)
   }
 
   const handleLogout = async () => {
@@ -309,6 +385,17 @@ export default function SoftcardDashboard() {
           .hx-small-btn:hover { opacity: 0.9; }
           .hx-view { background: rgba(255,255,255,0.1); text-decoration: none; }
 
+          .hx-stats {
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px; margin: 0 auto 34px; max-width: 520px;
+          }
+          .hx-stat {
+            background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px; padding: 12px; text-align: left;
+          }
+          .hx-stat span { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.48; font-weight: 800; }
+          .hx-stat strong { display: block; margin-top: 5px; font-size: 18px; }
+
           .hx-logout { position: fixed; top: 30px; right: 30px; opacity: 0.4; cursor: pointer; transition: 0.2s; background: transparent; border: 0; color: white; padding: 0; }
           .hx-logout:hover { opacity: 1; color: #f472b6; }
         `}</style>
@@ -321,6 +408,21 @@ export default function SoftcardDashboard() {
           <div className="hub-header">
             <p className="hx-status">DASHBOARD</p>
             <h1 className="hx-title">Welcome back, <span className="hx-username">{profileData.username || "User"}</span></h1>
+          </div>
+
+          <div className="hx-stats">
+            <div className="hx-stat">
+              <span>Views</span>
+              <strong>{profileData.views.toLocaleString()}</strong>
+            </div>
+            <div className="hx-stat">
+              <span>Links</span>
+              <strong>{visibleLinks.length}</strong>
+            </div>
+            <div className="hx-stat">
+              <span>Profile</span>
+              <strong>{profilePercent}%</strong>
+            </div>
           </div>
 
           <div className="hx-circle-wrap">
@@ -436,9 +538,36 @@ export default function SoftcardDashboard() {
           padding: 9px 10px; border-radius: 10px;
         }
         .sx-check-row input { width: 16px; height: 16px; accent-color: ${profileData.accent}; }
+        .sx-preset-grid {
+          display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px; margin-bottom: 18px;
+        }
+        .sx-preset {
+          border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+          min-height: 64px; padding: 10px; color: white; text-align: left;
+          cursor: pointer; display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .sx-preset span { font-size: 12px; font-weight: 900; }
+        .sx-preset small { opacity: 0.62; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
 
         .sx-editor-link { cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; opacity: 0.5; font-size: 13px; font-weight: 600; }
         .sx-editor-link:hover { opacity: 1; color: #ec4899; }
+
+        .sx-editor-stats {
+          display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 8px; margin-bottom: 18px;
+        }
+        .sx-editor-stat {
+          background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px; padding: 10px;
+        }
+        .sx-editor-stat span { display: block; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.45; font-weight: 900; }
+        .sx-editor-stat strong { display: block; margin-top: 4px; font-size: 15px; }
+        .sx-progress {
+          height: 8px; border-radius: 999px; overflow: hidden; margin-bottom: 18px;
+          background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08);
+        }
+        .sx-progress div { height: 100%; background: linear-gradient(90deg, ${profileData.accent}, #ff4df0); }
         
         .sx-publish-btn {
             width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700;
@@ -486,6 +615,16 @@ export default function SoftcardDashboard() {
             width: 24px; height: 24px; border-radius: 50%;
             cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
+        .sx-link-actions {
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+        }
+        .sx-link-tool {
+          display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+          min-height: 34px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.045); color: white; font-size: 12px; font-weight: 800;
+          cursor: pointer;
+        }
+        .sx-link-tool:disabled { opacity: 0.38; cursor: not-allowed; }
         
         .tag-input-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .sx-tag-clear { 
@@ -498,6 +637,24 @@ export default function SoftcardDashboard() {
       <div className="sx-sidebar">
         <div className="sx-editor-link" onClick={() => setView("hub")}>
           <X size={16} /> Close Editor
+        </div>
+
+        <div className="sx-editor-stats">
+          <div className="sx-editor-stat">
+            <span>Views</span>
+            <strong>{profileData.views.toLocaleString()}</strong>
+          </div>
+          <div className="sx-editor-stat">
+            <span>Links</span>
+            <strong>{visibleLinks.length}</strong>
+          </div>
+          <div className="sx-editor-stat">
+            <span>Done</span>
+            <strong>{profilePercent}%</strong>
+          </div>
+        </div>
+        <div className="sx-progress" aria-label={`Profile ${profilePercent}% complete`}>
+          <div style={{ width: `${profilePercent}%` }} />
         </div>
         
         <button className="sx-publish-btn" onClick={saveChanges} disabled={saving}>
@@ -554,6 +711,17 @@ export default function SoftcardDashboard() {
                     </select>
                     <input className="sx-input" value={l.label || ""} onChange={e => updateLink(i, "label", e.target.value)} placeholder="Display label (optional)" maxLength={40} />
                     <input className="sx-input" value={l.url} onChange={e => updateLink(i, "url", e.target.value)} placeholder="https://..." />
+                    <div className="sx-link-actions">
+                      <button className="sx-link-tool" type="button" disabled={i === 0} onClick={() => moveLink(i, -1)}>
+                        <MoveUp size={14} /> Up
+                      </button>
+                      <button className="sx-link-tool" type="button" disabled={i === links.length - 1} onClick={() => moveLink(i, 1)}>
+                        <MoveDown size={14} /> Down
+                      </button>
+                      <button className="sx-link-tool" type="button" onClick={() => duplicateLink(i)}>
+                        <CopyPlus size={14} /> Copy
+                      </button>
+                    </div>
                     <label className="sx-check-row">
                       <input type="checkbox" checked={l.enabled !== false} onChange={e => updateLink(i, "enabled", e.target.checked)} />
                       <span>Show on profile</span>
@@ -636,6 +804,22 @@ export default function SoftcardDashboard() {
 
         {tab === "appearance" && (
           <div className="sx-pane">
+            <label className="sx-label">Quick Themes</label>
+            <div className="sx-preset-grid">
+              {themePresets.map((preset) => (
+                <button
+                  type="button"
+                  key={preset.name}
+                  className="sx-preset"
+                  style={{ background: preset.gradient }}
+                  onClick={() => applyPreset(preset)}
+                >
+                  <span>{preset.name}</span>
+                  <small>Apply theme</small>
+                </button>
+              ))}
+            </div>
+
             <div className="sx-input-group" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px'}}>
                 <input type="checkbox" id="glass" checked={profileData.showGlass} onChange={e => updateProfile("showGlass", e.target.checked)} style={{width: '18px', height: '18px'}} />
                 <label htmlFor="glass" style={{margin: 0, fontSize: '13px', cursor: 'pointer'}}>Transparent Glass Card</label>
