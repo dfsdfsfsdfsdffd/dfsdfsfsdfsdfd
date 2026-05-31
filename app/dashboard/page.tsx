@@ -440,7 +440,7 @@ export default function SoftcardDashboard() {
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
           width: 90%; max-width: 420px;
-          padding: 25px 20px; border-radius: 28px;
+          padding: 22px 20px; border-radius: 28px;
           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
           background: ${profileData.showGlass ? 'rgba(0, 0, 0, 0.45)' : 'transparent'};
           backdrop-filter: ${profileData.showGlass ? 'blur(25px)' : 'none'};
@@ -449,16 +449,16 @@ export default function SoftcardDashboard() {
         }
         
         .sx-pfp { 
-          width: 95px; height: 95px; border-radius: 50%; object-fit: cover; margin-bottom: 12px;
+          width: 92px; height: 92px; border-radius: 50%; object-fit: cover; margin-bottom: 9px;
           border: 2px solid ${profileData.accent}; padding: 3px;
         }
         
-        .sx-name { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; }
+        .sx-name { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px; }
         
         .sx-badge-pill { 
           display: flex; gap: 6px; background: rgba(255, 255, 255, 0.08); 
           padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); 
-          align-items: center; margin-bottom: 12px;
+          align-items: center; margin-bottom: 9px;
         }
         .sx-badge-tip { position: relative; display: inline-flex; align-items: center; justify-content: center; }
         .sx-badge-tip::after {
@@ -475,7 +475,7 @@ export default function SoftcardDashboard() {
         
         .sx-tags-row { 
           display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; 
-          margin-bottom: 12px; width: 100%;
+          margin-bottom: 9px; width: 100%;
         }
         .sx-tag-pill {
           background: rgba(255, 255, 255, 0.05); padding: 3px 8px; border-radius: 6px;
@@ -483,13 +483,13 @@ export default function SoftcardDashboard() {
           border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .sx-bio { font-size: 14px; margin-bottom: 15px; line-height: 1.4; max-width: 85%; white-space: pre-wrap; word-break: break-word; }
+        .sx-bio { font-size: 14px; margin-bottom: 12px; line-height: 1.35; max-width: 85%; white-space: pre-wrap; word-break: break-word; }
         
-        .sx-links-row { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .sx-links-row { display: flex; justify-content: center; gap: 13px; flex-wrap: wrap; }
         .sx-icon-link { transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.7; }
         .sx-icon-link:hover { opacity: 1; transform: translateY(-2px) scale(1.05); }
         .sx-icon-link img { width: 24px; height: 24px; }
-        .sx-feature-links { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 300px; margin-top: 16px; }
+        .sx-feature-links { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 300px; margin-top: 11px; }
         .sx-feature-link {
           display: flex; align-items: center; justify-content: space-between; gap: 12px;
           padding: 10px 12px; border-radius: 10px;

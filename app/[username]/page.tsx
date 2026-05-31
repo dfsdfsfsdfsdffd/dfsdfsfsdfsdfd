@@ -175,7 +175,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
           width: 90%; max-width: 420px;
-          padding: 35px 20px;
+          padding: 28px 20px;
           border-radius: 28px;
           background: ${profile.show_glass_card ? 'rgba(0, 0, 0, 0.45)' : 'transparent'};
           backdrop-filter: ${profile.show_glass_card ? 'blur(25px)' : 'none'};
@@ -199,14 +199,14 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         .pfp {
-          width: 100px; height: 100px; object-fit: cover; margin-bottom: 15px;
+          width: 96px; height: 96px; object-fit: cover; margin-bottom: 10px;
           border-radius: 50%; border: 2px solid ${accent};
           box-shadow: 0 0 30px ${accent}44;
           padding: 3px;
         }
 
         .display-name { 
-          font-size: 28px; font-weight: 800; margin-bottom: 5px;
+          font-size: 28px; font-weight: 800; margin-bottom: 4px;
           color: ${nameColor};
           letter-spacing: -0.03em;
         }
@@ -215,7 +215,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           display: flex; gap: 6px; background: rgba(255, 255, 255, 0.08);
           padding: 4px 10px; border-radius: 12px; 
           border: 1px solid rgba(255, 255, 255, 0.1);
-          align-items: center; margin-bottom: 12px;
+          align-items: center; margin-bottom: 10px;
         }
         .badge-tip { position: relative; display: inline-flex; align-items: center; justify-content: center; }
         .badge-tip::after {
@@ -232,7 +232,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         .tags-row { 
           display: flex; flex-wrap: wrap; align-items: center; justify-content: center; 
-          gap: 4px; margin-bottom: 15px; width: 100%;
+          gap: 4px; margin-bottom: 10px; width: 100%;
         }
         .tag-pill {
           background: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 8px;
@@ -241,16 +241,16 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         .bio { 
-          font-size: 14px; margin-bottom: 22px; line-height: 1.4;
+          font-size: 14px; margin-bottom: 14px; line-height: 1.35;
           color: ${bioColor}; 
           max-width: 85%; white-space: pre-wrap; word-break: break-word;
         }
 
-        .social-row { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; }
+        .social-row { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 2px; }
         .social-link { transition: 0.3s; opacity: 0.75; }
         .social-link:hover { opacity: 1; transform: scale(1.1) translateY(-2px); }
         .social-icon { width: 24px; height: 24px; }
-        .featured-links { display: flex; flex-direction: column; gap: 9px; width: 100%; max-width: 310px; margin-top: 18px; }
+        .featured-links { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 310px; margin-top: 12px; }
         .featured-link {
           display: flex; align-items: center; justify-content: space-between; gap: 12px;
           padding: 11px 13px; border-radius: 10px;
