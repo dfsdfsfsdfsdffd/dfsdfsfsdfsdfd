@@ -400,6 +400,42 @@ export default function SoftcardDashboard() {
     return publicUrl
   }
 
+  const uploadAvatar = async (_kind: "image" | "video" | "audio", file: File) => {
+    if (!supabase) throw new Error("Uploads are not configured.")
+    if (!file.type.startsWith("image/")) throw new Error("Profile pictures must be image files.")
+
+    const limit = uploadLimit("image")
+    if (file.size > limit) {
+      throw new Error(`Image is too large. Use a file under ${formatMb(limit)}.`)
+    }
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error("You need to be signed in to upload a profile picture.")
+
+    const path = `${user.id}/avatar/${Date.now()}-${safeFileName(file.name)}`
+    const { error } = await supabase.storage
+      .from("media")
+      .upload(path, file, {
+        cacheControl: "31536000",
+        contentType: file.type,
+        upsert: false,
+      })
+
+    if (error) {
+      throw new Error(
+        error.message.includes("Bucket not found")
+          ? "Create a public Supabase Storage bucket named media first."
+          : error.message.includes("row-level security")
+          ? "Supabase Storage blocked this upload. Add the media bucket RLS policies first."
+          : error.message
+      )
+    }
+
+    const { data } = supabase.storage.from("media").getPublicUrl(path)
+    setProfileData(prev => ({ ...prev, avatar: data.publicUrl }))
+    return data.publicUrl
+  }
+
   const applyPreset = (preset: typeof themePresets[number]) => {
     setProfileData(prev => ({
       ...prev,
@@ -799,6 +835,16 @@ export default function SoftcardDashboard() {
         .sx-upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
         .sx-upload-box strong { font-size: 12px; }
         .sx-upload-box span { font-size: 10px; opacity: 0.58; line-height: 1.35; }
+        .sx-avatar-editor {
+          display: grid; grid-template-columns: 86px minmax(0, 1fr); gap: 14px; align-items: stretch;
+        }
+        .sx-avatar-editor > img {
+          width: 86px; height: 86px; border-radius: 50%; object-fit: cover;
+          border: 2px solid ${profileData.accent}; padding: 3px; background: rgba(255,255,255,0.04);
+        }
+        .sx-avatar-editor .sx-upload-box {
+          min-height: 86px; padding: 12px;
+        }
         .sx-media-current {
           margin-top: 8px; padding: 9px 10px; border-radius: 10px;
           background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07);
@@ -829,6 +875,8 @@ export default function SoftcardDashboard() {
           .softcardx-dashboard { flex-direction: column; height: auto; min-height: 100vh; overflow: auto; }
           .sx-sidebar { width: 100%; flex-basis: auto; max-height: none; }
           .sx-preview-pane { min-height: 620px; }
+          .sx-avatar-editor { grid-template-columns: 74px minmax(0, 1fr); }
+          .sx-avatar-editor > img { width: 74px; height: 74px; }
         }
       `}</style>
 
@@ -872,8 +920,25 @@ export default function SoftcardDashboard() {
                 <small>profile basics</small>
               </div>
               <div className="sx-input-group">
+                <label className="sx-label">Profile Picture</label>
+                <div className="sx-avatar-editor">
+                  <img src={profileData.avatar} alt="Current profile picture" />
+                  <MediaDrop
+                    kind="image"
+                    icon={<ImageIcon size={20} />}
+                    title="Drop profile picture"
+                    hint="PNG, JPG, WEBP, GIF up to 50MB"
+                    onUpload={uploadAvatar}
+                  />
+                </div>
+              </div>
+              <div className="sx-input-group">
                 <label className="sx-label">Avatar Image URL</label>
-                <input className="sx-input" value={profileData.avatar} onChange={e => updateProfile("avatar", e.target.value)} placeholder="https://..." />
+                <div className="tag-input-wrapper">
+                  <input className="sx-input" value={profileData.avatar} onChange={e => updateProfile("avatar", e.target.value)} placeholder="https://..." />
+                  <button className="sx-tag-clear" onClick={() => updateProfile("avatar", "")} aria-label="Clear avatar URL"><X size={16} /></button>
+                </div>
+                {profileData.avatar && <div className="sx-media-current">{profileData.avatar}</div>}
               </div>
               <div className="sx-input-group">
                 <label className="sx-label">Display Name</label>
