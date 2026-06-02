@@ -11,6 +11,7 @@ import {
   Code,
   Copy,
   CopyPlus,
+  Eye,
   ExternalLink,
   Image as ImageIcon,
   Link as LinkIcon,
@@ -847,6 +848,10 @@ function ProfilePreview({
 
   return (
     <div className="classic-profile-card">
+      <div className="classic-view-count">
+        <Eye size={14} strokeWidth={2.5} />
+        {Number(profile.views || 0).toLocaleString()}
+      </div>
       <img className="classic-pfp" src={profile.avatar || defaultProfile.avatar} alt="Profile" />
       <div className="classic-name" style={{ color: profile.nameColor }}>{profile.name || "User"}</div>
       {(badges.user || badges.dev || badges.staff) && (
@@ -884,7 +889,10 @@ function ProfilePreview({
               <strong>{link.label}</strong>
               {link.description && <small>{link.description}</small>}
             </span>
-            <ArrowUpRight size={15} />
+            <span className="classic-feature-action">
+              <img src={iconMap[link.type] || iconMap.website} alt="" />
+              <ArrowUpRight size={15} />
+            </span>
           </a>
         ))}
       </div>
@@ -1309,19 +1317,31 @@ function classicStyles(profile: ProfileData) {
     .classic-profile-card {
       position: relative;
       z-index: 5;
-      width: min(420px, 92vw);
-      min-height: 540px;
+      width: 90%;
+      max-width: 420px;
       padding: 28px 20px;
-      border-radius: 22px;
+      border-radius: 28px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       text-align: center;
       background: ${profile.showGlass ? "rgba(0,0,0,0.45)" : "transparent"};
       backdrop-filter: ${profile.showGlass ? "blur(25px)" : "none"};
       border: ${profile.showGlass ? "1px solid rgba(255,255,255,0.1)" : "0"};
-      box-shadow: ${profile.showGlass ? "0 30px 100px rgba(0,0,0,0.45)" : "none"};
+      box-shadow: ${profile.showGlass ? "0 25px 50px rgba(0,0,0,0.6)" : "none"};
+    }
+    .classic-view-count {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.85);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      letter-spacing: 0.02em;
     }
     .classic-pfp {
       width: 96px;
@@ -1329,13 +1349,16 @@ function classicStyles(profile: ProfileData) {
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid ${profile.accent};
+      box-shadow: 0 0 30px ${profile.accent}44;
       padding: 3px;
       margin-bottom: 10px;
     }
     .classic-name {
       font-size: 28px;
-      font-weight: 900;
+      font-weight: 800;
       line-height: 1.1;
+      margin-bottom: 4px;
+      letter-spacing: -0.03em;
     }
     .classic-badges,
     .classic-tags,
@@ -1354,6 +1377,7 @@ function classicStyles(profile: ProfileData) {
       border: 1px solid rgba(255,255,255,0.1);
       background: rgba(255,255,255,0.08);
       margin-bottom: 10px;
+      margin-top: 0;
     }
     .classic-badge,
     .classic-tags span {
@@ -1373,53 +1397,63 @@ function classicStyles(profile: ProfileData) {
     }
     .classic-tags span {
       gap: 5px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.075);
-      padding: 5px 8px;
+      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.05);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+    }
+    .classic-tags {
+      gap: 4px;
+      margin-top: 0;
+      margin-bottom: 10px;
+      width: 100%;
     }
     .classic-bio {
-      max-width: 310px;
-      margin-top: 12px;
+      max-width: 85%;
+      margin-bottom: 14px;
       font-size: 14px;
-      line-height: 1.5;
+      line-height: 1.35;
       white-space: pre-wrap;
       word-break: break-word;
     }
+    .classic-socials {
+      gap: 14px;
+      margin-top: 2px;
+    }
     .classic-socials a {
-      width: 34px;
-      height: 34px;
+      width: 24px;
+      height: 24px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.08);
+      opacity: 0.75;
     }
     .classic-socials img {
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
     }
     .classic-features {
       width: 100%;
       max-width: 310px;
-      margin-top: 14px;
+      margin-top: 12px;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
     .sx-feature-link {
-      min-height: 48px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      border-radius: 13px;
-      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
       color: white;
       text-decoration: none;
-      padding: 10px 12px;
+      padding: 11px 13px;
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 700;
       text-align: left;
     }
     .sx-feature-link span {
@@ -1435,10 +1469,23 @@ function classicStyles(profile: ProfileData) {
       white-space: nowrap;
     }
     .sx-feature-link small {
-      opacity: 0.64;
+      opacity: 0.6;
       font-size: 11px;
+      line-height: 1.25;
     }
-    .sx-feature-glass { background: rgba(255,255,255,0.08); }
+    .classic-feature-action {
+      display: inline-flex;
+      align-items: center;
+      flex-direction: row;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .classic-feature-action img {
+      width: 18px;
+      height: 18px;
+      opacity: 0.84;
+    }
+    .sx-feature-glass { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
     .sx-feature-filled { background: ${profile.accent}; border-color: ${profile.accent}; }
     .sx-feature-outline { background: transparent; border-color: currentColor; }
     .sx-feature-soft { background: ${profile.accent}24; border-color: ${profile.accent}66; }
@@ -1446,11 +1493,10 @@ function classicStyles(profile: ProfileData) {
       width: 100%;
       max-width: 310px;
       margin-top: 12px;
-      min-height: 46px;
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 9px 11px;
+      padding: 10px 12px;
       border-radius: 14px;
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.1);
@@ -1464,6 +1510,8 @@ function classicStyles(profile: ProfileData) {
       align-items: center;
       justify-content: center;
       background: ${profile.accent};
+      color: white;
+      box-shadow: 0 8px 20px ${profile.accent}33;
       flex: 0 0 auto;
     }
     .classic-player div {
@@ -1473,10 +1521,11 @@ function classicStyles(profile: ProfileData) {
       gap: 2px;
     }
     .classic-player small {
-      color: rgba(255,255,255,0.58);
-      font-size: 11px;
+      color: rgba(255,255,255,0.46);
+      font-size: 10px;
       text-transform: uppercase;
       font-weight: 800;
+      letter-spacing: 0.08em;
     }
     @media (max-width: 900px) {
       .classic-editor {
