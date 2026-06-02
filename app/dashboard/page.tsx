@@ -1412,6 +1412,7 @@ function classicStyles(profile: ProfileData) {
     }
     .classic-bio {
       max-width: 85%;
+      margin-top: 0;
       margin-bottom: 14px;
       font-size: 14px;
       line-height: 1.35;
@@ -1429,6 +1430,11 @@ function classicStyles(profile: ProfileData) {
       align-items: center;
       justify-content: center;
       opacity: 0.75;
+      transition: 0.3s;
+    }
+    .classic-socials a:hover {
+      opacity: 1;
+      transform: scale(1.1) translateY(-2px);
     }
     .classic-socials img {
       width: 24px;
@@ -1467,6 +1473,10 @@ function classicStyles(profile: ProfileData) {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+    .sx-feature-link strong {
+      font-size: 13px;
+      line-height: 1.2;
     }
     .sx-feature-link small {
       opacity: 0.6;
@@ -1516,9 +1526,18 @@ function classicStyles(profile: ProfileData) {
     }
     .classic-player div {
       min-width: 0;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
+    }
+    .classic-player strong {
+      font-size: 12px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.9);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .classic-player small {
       color: rgba(255,255,255,0.46);
