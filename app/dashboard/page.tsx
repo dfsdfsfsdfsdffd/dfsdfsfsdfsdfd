@@ -4,31 +4,34 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import {
+  ArrowLeft,
   ArrowUpRight,
   BarChart3,
   Check,
   Code,
   Copy,
   CopyPlus,
-  Eye,
+  ExternalLink,
   Image as ImageIcon,
   Link as LinkIcon,
   LogOut,
   Music,
   Palette,
+  Pencil,
+  Play,
   Plus,
   Save,
   ShieldCheck,
-  Sparkles,
   Star,
+  Tag,
   Trash2,
   Upload,
-  User,
+  User as UserIcon,
   X,
 } from "lucide-react";
 
 type LinkStyle = "glass" | "filled" | "outline" | "soft";
-type Tab = "profile" | "links" | "style" | "media" | "stats";
+type EditorTab = "profile" | "links" | "appearance" | "media" | "stats";
 
 type SocialLink = {
   id: number;
@@ -115,9 +118,9 @@ const iconMap: Record<string, string> = {
 };
 
 const badgeInfo = {
-  user: { label: "Verified User", icon: ShieldCheck, color: "#54a9ff" },
-  dev: { label: "Developer", icon: Code, color: "#72e0b1" },
-  staff: { label: "Staff", icon: Star, color: "#f4c95d" },
+  user: { label: "Verified User", description: "This profile belongs to a verified Softcard user.", color: "#3b82f6", icon: ShieldCheck },
+  dev: { label: "Developer", description: "This user is marked as a Softcard developer.", color: "#a970ff", icon: Code },
+  staff: { label: "Staff", description: "This user is marked as Softcard staff.", color: "#f59e0b", icon: Star },
 };
 
 const defaultProfile: ProfileData = {
@@ -130,12 +133,12 @@ const defaultProfile: ProfileData = {
   sexuality: "",
   birthday: "",
   timezone: "",
-  accent: "#72e0b1",
+  accent: "#a970ff",
   nameColor: "#ffffff",
-  bioColor: "#d8dee8",
+  bioColor: "#ffffffb3",
   font: "Inter",
   bgType: "gradient",
-  gradient: "linear-gradient(135deg, #101820 0%, #07090d 100%)",
+  gradient: "linear-gradient(135deg, #170f2f 0%, #050106 100%)",
   bgVideo: "",
   bgImage: "",
   bgAudio: "",
@@ -147,12 +150,12 @@ const defaultProfile: ProfileData = {
 };
 
 const baseThemes: ThemePreset[] = [
-  { name: "Studio", accent: "#72e0b1", nameColor: "#ffffff", bioColor: "#d8dee8", gradient: "linear-gradient(135deg, #101820 0%, #07090d 100%)" },
-  { name: "Signal", accent: "#66c7f4", nameColor: "#f7fdff", bioColor: "#ccefff", gradient: "linear-gradient(135deg, #082536 0%, #05090d 100%)" },
-  { name: "Coral", accent: "#ff8b70", nameColor: "#fff5f1", bioColor: "#ffd7ca", gradient: "linear-gradient(135deg, #32120c 0%, #080504 100%)" },
-  { name: "Ink", accent: "#ffffff", nameColor: "#ffffff", bioColor: "#b7bfcc", gradient: "linear-gradient(135deg, #1a1d25 0%, #050608 100%)" },
-  { name: "Canopy", accent: "#96d65c", nameColor: "#f7fff2", bioColor: "#d8f2c5", gradient: "linear-gradient(135deg, #102818 0%, #050906 100%)" },
-  { name: "Gold", accent: "#e8c766", nameColor: "#fff8df", bioColor: "#f1ddb0", gradient: "linear-gradient(135deg, #2b220c 0%, #070604 100%)" },
+  { name: "Violet", accent: "#a970ff", nameColor: "#ffffff", bioColor: "#d8caff", gradient: "linear-gradient(135deg, #170f2f 0%, #050106 100%)" },
+  { name: "Rose", accent: "#ff6bbd", nameColor: "#fff5fb", bioColor: "#ffd6eb", gradient: "linear-gradient(135deg, #2b0719 0%, #050106 100%)" },
+  { name: "Cyan", accent: "#55d6ff", nameColor: "#f4fdff", bioColor: "#c7f2ff", gradient: "linear-gradient(135deg, #042336 0%, #02060a 100%)" },
+  { name: "Mono", accent: "#ffffff", nameColor: "#ffffff", bioColor: "#b8bcc8", gradient: "linear-gradient(135deg, #17191f 0%, #030406 100%)" },
+  { name: "Ember", accent: "#ff7a4d", nameColor: "#fff4ed", bioColor: "#ffd2bd", gradient: "linear-gradient(135deg, #341107 0%, #050201 100%)" },
+  { name: "Forest", accent: "#46d39a", nameColor: "#f1fff8", bioColor: "#bff5db", gradient: "linear-gradient(135deg, #06251a 0%, #020806 100%)" },
 ];
 
 function safeExternalUrl(value: unknown) {
@@ -169,6 +172,10 @@ function safeFileName(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 90) || "softcard-media";
 }
 
+function fileTitle(name: string) {
+  return name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim().slice(0, 60);
+}
+
 function uploadLimit() {
   return 50 * 1024 * 1024;
 }
@@ -177,12 +184,9 @@ function formatMb(bytes: number) {
   return `${Math.floor(bytes / 1024 / 1024)}MB`;
 }
 
-function fileTitle(name: string) {
-  return name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim().slice(0, 60);
-}
-
 function splitAudioMeta(value: string) {
   if (!value) return { url: "", title: "", showPlayer: true, backgroundAudio: true };
+
   try {
     const parsed = new URL(value);
     const params = new URLSearchParams(parsed.hash.startsWith("#") ? parsed.hash.slice(1) : parsed.hash);
@@ -201,11 +205,12 @@ function splitAudioMeta(value: string) {
 
 function audioUrlWithMeta(url: string, title: string, showPlayer: boolean, backgroundAudio: boolean) {
   if (!url.trim()) return "";
+
   try {
     const parsed = new URL(url.trim());
     const params = new URLSearchParams();
-    const cleanTitle = title.trim().slice(0, 60);
-    if (cleanTitle) params.set("title", cleanTitle);
+    const cleanedTitle = title.trim().slice(0, 60);
+    if (cleanedTitle) params.set("title", cleanedTitle);
     if (!showPlayer) params.set("player", "0");
     if (!backgroundAudio) params.set("bg", "0");
     parsed.hash = params.toString();
@@ -231,7 +236,7 @@ function normalizeLinks(items: SocialLink[]) {
     .filter((link) => link.url);
 }
 
-export default function DashboardEditor() {
+export default function SoftcardDashboard() {
   const router = useRouter();
   const supabase = useMemo(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -239,7 +244,8 @@ export default function DashboardEditor() {
     return url && key ? createBrowserClient(url, key) : null;
   }, []);
 
-  const [tab, setTab] = useState<Tab>("profile");
+  const [view, setView] = useState<"hub" | "editor">("hub");
+  const [tab, setTab] = useState<EditorTab>("profile");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -251,10 +257,10 @@ export default function DashboardEditor() {
   const [badges, setBadges] = useState<Badges>({ user: true, dev: false, staff: false });
   const [customThemes, setCustomThemes] = useState<ThemePreset[]>([]);
 
-  const allThemes = [...baseThemes, ...customThemes];
+  const themes = [...baseThemes, ...customThemes];
   const totalClicks = links.reduce((sum, link) => sum + Number(link.clicks || 0), 0);
   const topLinks = [...links].sort((a, b) => Number(b.clicks || 0) - Number(a.clicks || 0)).slice(0, 5);
-  const gradientColors = profile.gradient.match(/#(?:[0-9a-fA-F]{3}){1,2}/g) || ["#101820", "#07090d"];
+  const gradientColors = profile.gradient.match(/#(?:[0-9a-fA-F]{3}){1,2}/g) || ["#170f2f", "#050106"];
   const publicUrl = `softcard.cc/${profile.username || "username"}`;
 
   useEffect(() => {
@@ -272,6 +278,7 @@ export default function DashboardEditor() {
       }
 
       setCurrentUserId(user.id);
+
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       if (data) {
         const audioMeta = splitAudioMeta(data.audio_url || "");
@@ -298,13 +305,14 @@ export default function DashboardEditor() {
           bgAudioName: audioMeta.title,
           showAudioPlayer: audioMeta.showPlayer,
           backgroundAudio: audioMeta.backgroundAudio,
-          showGlass: data.show_glass_card ?? true,
           views: data.views || 0,
+          showGlass: data.show_glass_card ?? true,
         });
         setLinks(Array.isArray(data.links) ? data.links : []);
         setBadges(data.badges || { user: true, dev: false, staff: false });
         setOriginalUsername(data.username || "");
       }
+
       setLoading(false);
     }
 
@@ -352,8 +360,8 @@ export default function DashboardEditor() {
     setProfile((current) => ({ ...current, [key]: value }));
   }
 
-  function updateGradient(c1: string, c2: string) {
-    updateProfile("gradient", `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`);
+  function updateLink(index: number, patch: Partial<SocialLink>) {
+    setLinks((current) => current.map((link, i) => (i === index ? { ...link, ...patch } : link)));
   }
 
   function addLink() {
@@ -361,14 +369,6 @@ export default function DashboardEditor() {
       ...current,
       { id: Date.now(), type: "website", url: "", label: "", description: "", color: "", style: "glass", featured: false, enabled: true, clicks: 0 },
     ]);
-  }
-
-  function updateLink(index: number, patch: Partial<SocialLink>) {
-    setLinks((current) => current.map((link, i) => (i === index ? { ...link, ...patch } : link)));
-  }
-
-  function removeLink(id: number) {
-    setLinks((current) => current.filter((link) => link.id !== id));
   }
 
   function duplicateLink(index: number) {
@@ -379,6 +379,38 @@ export default function DashboardEditor() {
       next.splice(index + 1, 0, { ...link, id: Date.now(), label: link.label ? `${link.label} copy` : "" });
       return next;
     });
+  }
+
+  function removeLink(id: number) {
+    setLinks((current) => current.filter((link) => link.id !== id));
+  }
+
+  function applyTheme(theme: ThemePreset) {
+    setProfile((current) => ({
+      ...current,
+      accent: theme.accent,
+      nameColor: theme.nameColor,
+      bioColor: theme.bioColor,
+      bgType: "gradient",
+      gradient: theme.gradient,
+    }));
+  }
+
+  function saveTheme() {
+    const nextTheme = {
+      name: `Custom ${customThemes.length + 1}`,
+      accent: profile.accent,
+      nameColor: profile.nameColor,
+      bioColor: profile.bioColor,
+      gradient: profile.gradient,
+    };
+    const nextThemes = [nextTheme, ...customThemes].slice(0, 8);
+    setCustomThemes(nextThemes);
+    window.localStorage.setItem("softcard_custom_themes", JSON.stringify(nextThemes));
+  }
+
+  function updateGradient(c1: string, c2: string) {
+    updateProfile("gradient", `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`);
   }
 
   async function uploadMedia(kind: "avatar" | "image" | "video" | "audio", file: File) {
@@ -436,9 +468,9 @@ export default function DashboardEditor() {
       if (!USERNAME_REGEX.test(username)) throw new Error("Username must be 3-30 characters and may only include letters, numbers, underscores, or hyphens.");
       if (RESERVED_USERNAMES.has(username)) throw new Error("That username is reserved.");
       if (username !== originalUsername) {
-        const { data: existing, error } = await supabase.from("profiles").select("id").eq("username", username).maybeSingle();
+        const { data, error } = await supabase.from("profiles").select("id").eq("username", username).maybeSingle();
         if (error) throw error;
-        if (existing && existing.id !== user.id) throw new Error("That username is already taken.");
+        if (data && data.id !== user.id) throw new Error("That username is already taken.");
       }
 
       const { error } = await supabase
@@ -468,7 +500,7 @@ export default function DashboardEditor() {
 
       if (error) throw error;
       setOriginalUsername(username);
-      alert("Saved.");
+      alert("Published successfully!");
     } catch (error: any) {
       alert(error.message || "Unable to save.");
     } finally {
@@ -487,659 +519,81 @@ export default function DashboardEditor() {
     window.setTimeout(() => setCopied(false), 1600);
   }
 
-  function applyTheme(theme: ThemePreset) {
-    setProfile((current) => ({
-      ...current,
-      accent: theme.accent,
-      nameColor: theme.nameColor,
-      bioColor: theme.bioColor,
-      bgType: "gradient",
-      gradient: theme.gradient,
-    }));
-  }
-
-  function saveTheme() {
-    const nextTheme = {
-      name: `Custom ${customThemes.length + 1}`,
-      accent: profile.accent,
-      nameColor: profile.nameColor,
-      bioColor: profile.bioColor,
-      gradient: profile.gradient,
-    };
-    const nextThemes = [nextTheme, ...customThemes].slice(0, 8);
-    setCustomThemes(nextThemes);
-    window.localStorage.setItem("softcard_custom_themes", JSON.stringify(nextThemes));
-  }
-
-  const featuredClass = (style?: LinkStyle) => `rx-feature rx-feature-${style || "glass"}`;
-  const previewBackground = profile.bgType === "gradient" ? profile.gradient : "#07090d";
+  const featureClass = (style?: LinkStyle) => `sx-feature-link sx-feature-${style || "glass"}`;
 
   if (loading) {
     return (
-      <main className="rx-loading">
-        <Sparkles size={22} />
-        <span>Loading editor</span>
+      <main className="classic-loading">
+        <Palette size={22} />
+        Loading dashboard
+      </main>
+    );
+  }
+
+  if (view === "hub") {
+    return (
+      <main className="classic-hub">
+        <style>{classicStyles(profile)}</style>
+        <div className="classic-hub-shell">
+          <nav className="classic-hub-nav">
+            <button className="classic-ghost" onClick={signOut}><LogOut size={16} /> Log out</button>
+          </nav>
+
+          <section className="classic-hub-center">
+            <p className="classic-kicker">Dashboard</p>
+            <h1>Welcome back, <span>{profile.username || "User"}</span></h1>
+            <div className="classic-avatar-ring">
+              <img src={profile.avatar || defaultProfile.avatar} alt="Profile" />
+            </div>
+
+            <div className="classic-hub-actions">
+              <button className="classic-primary" onClick={() => setView("editor")}><Pencil size={18} /> Edit page</button>
+              <a className="classic-secondary" href={`/${profile.username}`} target="_blank" rel="noreferrer"><ExternalLink size={18} /> View page</a>
+            </div>
+
+            <div className="classic-url-card">
+              <span>{publicUrl}</span>
+              <button onClick={copyUrl}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? "Copied" : "Copy"}</button>
+            </div>
+          </section>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="rx-shell">
-      <style jsx>{`
-        .rx-shell {
-          min-height: 100vh;
-          display: grid;
-          grid-template-columns: 420px minmax(0, 1fr) 390px;
-          background: #080a0e;
-          color: #f4f7fb;
-          font-family: ${profile.font}, Inter, system-ui, sans-serif;
-        }
-        .rx-loading {
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          background: #080a0e;
-          color: #f4f7fb;
-          font-weight: 800;
-        }
-        .rx-sidebar,
-        .rx-inspector {
-          min-height: 100vh;
-          background: #0d1117;
-          border-color: rgba(255,255,255,0.1);
-        }
-        .rx-sidebar {
-          border-right: 1px solid rgba(255,255,255,0.1);
-          padding: 22px;
-          overflow-y: auto;
-        }
-        .rx-inspector {
-          border-left: 1px solid rgba(255,255,255,0.1);
-          padding: 22px;
-          overflow-y: auto;
-        }
-        .rx-main {
-          position: relative;
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 36px;
-          overflow: hidden;
-          background:
-            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
-            linear-gradient(180deg, rgba(255,255,255,0.02) 1px, transparent 1px),
-            #080a0e;
-          background-size: 56px 56px;
-        }
-        .rx-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          margin-bottom: 18px;
-        }
-        .rx-brand {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-        .rx-brand strong {
-          font-size: 18px;
-          letter-spacing: 0;
-        }
-        .rx-brand span,
-        .rx-muted {
-          color: rgba(244,247,251,0.56);
-          font-size: 12px;
-          line-height: 1.4;
-        }
-        .rx-actions,
-        .rx-inline {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .rx-icon,
-        .rx-button,
-        .rx-secondary,
-        .rx-chip,
-        .rx-tab,
-        .rx-mini {
-          border: 1px solid rgba(255,255,255,0.12);
-          background: rgba(255,255,255,0.055);
-          color: #f4f7fb;
-          border-radius: 8px;
-          font-weight: 800;
-        }
-        .rx-icon {
-          width: 38px;
-          height: 38px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .rx-button {
-          min-height: 42px;
-          padding: 0 14px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          background: #f4f7fb;
-          color: #091016;
-          border: 0;
-        }
-        .rx-secondary {
-          min-height: 40px;
-          padding: 0 12px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
-        .rx-tabs {
-          display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
-          gap: 6px;
-          margin-bottom: 18px;
-        }
-        .rx-tab {
-          min-height: 44px;
-          display: inline-flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 4px;
-          color: rgba(244,247,251,0.58);
-          font-size: 10px;
-          letter-spacing: 0;
-        }
-        .rx-tab-active {
-          background: ${profile.accent};
-          color: #07100c;
-          border-color: transparent;
-        }
-        .rx-section {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-        .rx-group {
-          display: flex;
-          flex-direction: column;
-          gap: 7px;
-        }
-        .rx-label {
-          color: rgba(244,247,251,0.54);
-          font-size: 11px;
-          font-weight: 900;
-          letter-spacing: 0;
-          text-transform: uppercase;
-        }
-        .rx-input,
-        .rx-select,
-        .rx-textarea {
-          width: 100%;
-          border: 1px solid rgba(255,255,255,0.13);
-          background: rgba(255,255,255,0.06);
-          color: #f4f7fb;
-          border-radius: 8px;
-          padding: 12px 12px;
-          outline: 0;
-        }
-        .rx-textarea {
-          min-height: 92px;
-          resize: vertical;
-          line-height: 1.5;
-        }
-        .rx-input:focus,
-        .rx-select:focus,
-        .rx-textarea:focus {
-          border-color: ${profile.accent};
-          box-shadow: 0 0 0 4px ${profile.accent}22;
-        }
-        .rx-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-        }
-        .rx-url-row {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) 38px;
-          gap: 8px;
-        }
-        .rx-status {
-          font-size: 12px;
-          font-weight: 800;
-          color: rgba(244,247,251,0.56);
-        }
-        .rx-status.available { color: #72e0b1; }
-        .rx-status.taken,
-        .rx-status.reserved,
-        .rx-status.invalid { color: #ff927e; }
-        .rx-upload {
-          position: relative;
-          min-height: 96px;
-          border: 1px dashed rgba(255,255,255,0.2);
-          background: rgba(255,255,255,0.04);
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-direction: column;
-          gap: 7px;
-          text-align: center;
-          color: rgba(244,247,251,0.66);
-          padding: 12px;
-        }
-        .rx-upload input {
-          position: absolute;
-          inset: 0;
-          opacity: 0;
-          cursor: pointer;
-        }
-        .rx-avatar-box {
-          display: grid;
-          grid-template-columns: 86px minmax(0, 1fr);
-          gap: 12px;
-          align-items: stretch;
-        }
-        .rx-avatar-box img {
-          width: 86px;
-          height: 86px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid ${profile.accent};
-          padding: 3px;
-          background: rgba(255,255,255,0.06);
-        }
-        .rx-link-card,
-        .rx-stat-card,
-        .rx-theme {
-          border: 1px solid rgba(255,255,255,0.1);
-          background: rgba(255,255,255,0.045);
-          border-radius: 8px;
-        }
-        .rx-link-card {
-          padding: 12px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .rx-link-head {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-        }
-        .rx-link-tools {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 8px;
-        }
-        .rx-mini {
-          min-height: 34px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          font-size: 12px;
-        }
-        .rx-check {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          color: rgba(244,247,251,0.72);
-          font-size: 13px;
-          font-weight: 750;
-        }
-        .rx-check input {
-          width: 16px;
-          height: 16px;
-          accent-color: ${profile.accent};
-        }
-        .rx-theme-grid,
-        .rx-stat-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 10px;
-        }
-        .rx-theme {
-          min-height: 74px;
-          padding: 12px;
-          color: #fff;
-          text-align: left;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          gap: 3px;
-        }
-        .rx-theme span,
-        .rx-stat-card strong {
-          font-weight: 900;
-        }
-        .rx-theme small,
-        .rx-stat-card span {
-          color: rgba(255,255,255,0.66);
-          font-size: 11px;
-          font-weight: 800;
-        }
-        .rx-stat-card {
-          padding: 14px;
-        }
-        .rx-stat-card strong {
-          display: block;
-          font-size: 28px;
-          line-height: 1;
-        }
-        .rx-stat-card span {
-          display: block;
-          margin-top: 8px;
-          text-transform: uppercase;
-        }
-        .rx-top-link {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 10px 0;
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-        .rx-top-link:last-child {
-          border-bottom: 0;
-        }
-        .rx-top-link span {
-          min-width: 0;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          color: rgba(244,247,251,0.72);
-          font-size: 13px;
-        }
-        .rx-preview-bg {
-          position: absolute;
-          inset: 0;
-          background: ${previewBackground};
-        }
-        .rx-preview-media {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .rx-device {
-          position: relative;
-          z-index: 2;
-          width: min(430px, 100%);
-          min-height: 620px;
-          border: 1px solid rgba(255,255,255,0.14);
-          border-radius: 28px;
-          background: rgba(0,0,0,0.22);
-          padding: 18px;
-          box-shadow: 0 32px 100px rgba(0,0,0,0.4);
-        }
-        .rx-card {
-          min-height: 100%;
-          border-radius: 22px;
-          padding: 26px 20px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          background: ${profile.showGlass ? "rgba(8,10,14,0.58)" : "transparent"};
-          border: ${profile.showGlass ? "1px solid rgba(255,255,255,0.12)" : "0"};
-          backdrop-filter: ${profile.showGlass ? "blur(18px)" : "none"};
-        }
-        .rx-pfp {
-          width: 104px;
-          height: 104px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid ${profile.accent};
-          padding: 3px;
-          margin-bottom: 12px;
-        }
-        .rx-name {
-          color: ${profile.nameColor};
-          font-size: 28px;
-          font-weight: 900;
-          letter-spacing: 0;
-          line-height: 1.1;
-        }
-        .rx-bio {
-          max-width: 310px;
-          color: ${profile.bioColor};
-          margin-top: 10px;
-          font-size: 14px;
-          line-height: 1.5;
-          white-space: pre-wrap;
-          word-break: break-word;
-        }
-        .rx-badges,
-        .rx-tags,
-        .rx-socials {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-wrap: wrap;
-          gap: 7px;
-          margin-top: 10px;
-        }
-        .rx-badge,
-        .rx-tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          border: 1px solid rgba(255,255,255,0.12);
-          background: rgba(255,255,255,0.075);
-          border-radius: 999px;
-          padding: 5px 8px;
-          font-size: 11px;
-          font-weight: 800;
-          color: rgba(244,247,251,0.72);
-        }
-        .rx-socials a {
-          width: 34px;
-          height: 34px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 999px;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.1);
-        }
-        .rx-socials img {
-          width: 19px;
-          height: 19px;
-        }
-        .rx-features {
-          width: 100%;
-          max-width: 320px;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          margin-top: 14px;
-        }
-        .rx-feature {
-          min-height: 48px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          border-radius: 8px;
-          border: 1px solid rgba(255,255,255,0.12);
-          color: #fff;
-          text-decoration: none;
-          padding: 10px 12px;
-          font-size: 13px;
-          font-weight: 800;
-        }
-        .rx-feature-glass { background: rgba(255,255,255,0.08); }
-        .rx-feature-filled { background: ${profile.accent}; border-color: ${profile.accent}; color: #06100b; }
-        .rx-feature-outline { background: transparent; border-color: currentColor; }
-        .rx-feature-soft { background: ${profile.accent}24; border-color: ${profile.accent}66; }
-        .rx-feature-text {
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          text-align: left;
-        }
-        .rx-feature-text span,
-        .rx-feature-text small {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-        .rx-feature-text small {
-          opacity: 0.66;
-          font-size: 11px;
-        }
-        .rx-player {
-          width: 100%;
-          max-width: 320px;
-          margin-top: 12px;
-          min-height: 46px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 9px 11px;
-          border-radius: 10px;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.1);
-          text-align: left;
-        }
-        .rx-player-icon {
-          width: 30px;
-          height: 30px;
-          border-radius: 999px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          background: ${profile.accent};
-          color: #06100b;
-          flex: 0 0 auto;
-        }
-        .rx-panel-title {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          margin-bottom: 14px;
-        }
-        .rx-panel-title strong {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 14px;
-        }
-        .rx-danger {
-          color: #ffb09f;
-          border-color: rgba(255,146,126,0.3);
-          background: rgba(255,146,126,0.1);
-        }
-        @media (max-width: 1180px) {
-          .rx-shell {
-            grid-template-columns: 390px minmax(0, 1fr);
-          }
-          .rx-inspector {
-            grid-column: 1 / -1;
-            min-height: auto;
-            border-left: 0;
-            border-top: 1px solid rgba(255,255,255,0.1);
-          }
-        }
-        @media (max-width: 840px) {
-          .rx-shell {
-            grid-template-columns: 1fr;
-          }
-          .rx-sidebar,
-          .rx-inspector {
-            min-height: auto;
-          }
-          .rx-main {
-            min-height: 720px;
-            padding: 18px;
-          }
-          .rx-tabs {
-            grid-template-columns: repeat(5, minmax(52px, 1fr));
-            overflow-x: auto;
-          }
-          .rx-row,
-          .rx-theme-grid,
-          .rx-stat-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-
-      <aside className="rx-sidebar">
-        <div className="rx-top">
-          <div className="rx-brand">
-            <strong>Softcard editor</strong>
-            <span>{publicUrl}</span>
-          </div>
-          <div className="rx-actions">
-            <button className="rx-icon" onClick={copyUrl} title="Copy public URL">
-              {copied ? <Check size={17} /> : <Copy size={17} />}
-            </button>
-            <button className="rx-icon" onClick={signOut} title="Sign out">
-              <LogOut size={17} />
-            </button>
-          </div>
+    <main className="classic-editor" style={{ fontFamily: `${profile.font}, Inter, system-ui, sans-serif` }}>
+      <style>{classicStyles(profile)}</style>
+      <aside className="classic-sidebar">
+        <div className="classic-editor-head">
+          <button className="classic-back" onClick={() => setView("hub")}><ArrowLeft size={16} /> Dashboard</button>
+          <button className="classic-primary classic-save" onClick={saveChanges} disabled={saving}><Save size={16} /> {saving ? "Saving..." : "Save & Publish"}</button>
         </div>
 
-        <button className="rx-button" onClick={saveChanges} disabled={saving} style={{ width: "100%", marginBottom: 16 }}>
-          <Save size={17} />
-          {saving ? "Saving" : "Save changes"}
-        </button>
-
-        <div className="rx-tabs">
-          {[
-            ["profile", User, "Profile"],
-            ["links", LinkIcon, "Links"],
-            ["style", Palette, "Style"],
-            ["media", Music, "Media"],
-            ["stats", BarChart3, "Stats"],
-          ].map(([value, Icon, label]) => {
-            const TabIcon = Icon as typeof User;
-            return (
-              <button key={value as string} className={`rx-tab ${tab === value ? "rx-tab-active" : ""}`} onClick={() => setTab(value as Tab)}>
-                <TabIcon size={14} />
-                {label as string}
-              </button>
-            );
-          })}
+        <div className="classic-tabs">
+          <button className={tab === "profile" ? "is-active" : ""} onClick={() => setTab("profile")}><UserIcon size={14} /> Profile</button>
+          <button className={tab === "links" ? "is-active" : ""} onClick={() => setTab("links")}><LinkIcon size={14} /> Links</button>
+          <button className={tab === "appearance" ? "is-active" : ""} onClick={() => setTab("appearance")}><Palette size={14} /> Style</button>
+          <button className={tab === "media" ? "is-active" : ""} onClick={() => setTab("media")}><Music size={14} /> Media</button>
+          <button className={tab === "stats" ? "is-active" : ""} onClick={() => setTab("stats")}><BarChart3 size={14} /> Stats</button>
         </div>
 
         {tab === "profile" && (
-          <section className="rx-section">
-            <div className="rx-avatar-box">
+          <Panel>
+            <div className="classic-avatar-edit">
               <img src={profile.avatar || defaultProfile.avatar} alt="Profile" />
-              <MediaDrop kind="avatar" icon={<ImageIcon size={20} />} title="Drop profile picture" hint="Image up to 50MB" onUpload={uploadMedia} />
+              <MediaDrop kind="avatar" icon={<ImageIcon size={20} />} title="Drop profile picture" hint="PNG, JPG, WEBP, GIF up to 50MB" onUpload={uploadMedia} />
             </div>
-            <Field label="Avatar URL">
-              <div className="rx-url-row">
-                <input className="rx-input" value={profile.avatar} onChange={(e) => updateProfile("avatar", e.target.value)} placeholder="https://..." />
-                <button className="rx-icon" onClick={() => updateProfile("avatar", "")} title="Clear avatar">
-                  <X size={16} />
-                </button>
+            <Field label="Avatar Image URL">
+              <div className="classic-inline-input">
+                <input value={profile.avatar} onChange={(e) => updateProfile("avatar", e.target.value)} placeholder="https://..." />
+                <button onClick={() => updateProfile("avatar", "")}><X size={16} /></button>
               </div>
             </Field>
             <Field label="Username">
-              <input
-                className="rx-input"
-                value={profile.username}
-                onChange={(e) => updateProfile("username", e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30))}
-                placeholder="username"
-              />
-              <div className={`rx-status ${usernameStatus}`}>
-                {usernameStatus === "checking" && "Checking availability"}
+              <input value={profile.username} onChange={(e) => updateProfile("username", e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30))} placeholder="username" />
+              <div className={`classic-status ${usernameStatus}`}>
+                {usernameStatus === "checking" && "Checking availability..."}
                 {usernameStatus === "available" && "Available"}
                 {usernameStatus === "taken" && "Already taken"}
                 {usernameStatus === "reserved" && "Reserved username"}
@@ -1147,24 +601,20 @@ export default function DashboardEditor() {
                 {usernameStatus === "idle" && publicUrl}
               </div>
             </Field>
-            <Field label="Display name">
-              <input className="rx-input" value={profile.name} onChange={(e) => updateProfile("name", e.target.value.slice(0, 60))} />
+            <Field label="Display Name">
+              <input value={profile.name} onChange={(e) => updateProfile("name", e.target.value.slice(0, 60))} />
             </Field>
-            <Field label="Bio">
-              <textarea className="rx-textarea" value={profile.bio} maxLength={150} onChange={(e) => updateProfile("bio", e.target.value)} placeholder="Tell people who you are." />
-              <span className="rx-muted">{profile.bio.length}/150</span>
+            <Field label="Short Bio">
+              <textarea value={profile.bio} maxLength={150} onChange={(e) => updateProfile("bio", e.target.value)} placeholder="Tell the world about yourself..." />
+              <small>{profile.bio.length}/150</small>
             </Field>
-            <div className="rx-row">
-              <Field label="Age">
-                <input className="rx-input" type="number" value={profile.age} onChange={(e) => updateProfile("age", e.target.value.slice(0, 2))} />
-              </Field>
-              <Field label="Birthday">
-                <input className="rx-input" type="date" value={profile.birthday} onChange={(e) => updateProfile("birthday", e.target.value)} />
-              </Field>
+            <div className="classic-grid-2">
+              <Field label="Age"><input type="number" value={profile.age} onChange={(e) => updateProfile("age", e.target.value.slice(0, 2))} /></Field>
+              <Field label="Birthday"><input type="date" value={profile.birthday} onChange={(e) => updateProfile("birthday", e.target.value)} /></Field>
             </div>
-            <div className="rx-row">
+            <div className="classic-grid-2">
               <Field label="Gender">
-                <select className="rx-select" value={profile.gender} onChange={(e) => updateProfile("gender", e.target.value)}>
+                <select value={profile.gender} onChange={(e) => updateProfile("gender", e.target.value)}>
                   <option value="">None</option>
                   <option>Male</option>
                   <option>Female</option>
@@ -1173,7 +623,7 @@ export default function DashboardEditor() {
                 </select>
               </Field>
               <Field label="Sexuality">
-                <select className="rx-select" value={profile.sexuality} onChange={(e) => updateProfile("sexuality", e.target.value)}>
+                <select value={profile.sexuality} onChange={(e) => updateProfile("sexuality", e.target.value)}>
                   <option value="">None</option>
                   <option>Straight</option>
                   <option>Gay</option>
@@ -1186,207 +636,150 @@ export default function DashboardEditor() {
               </Field>
             </div>
             <Field label="Timezone">
-              <select className="rx-select" value={profile.timezone} onChange={(e) => updateProfile("timezone", e.target.value)}>
+              <select value={profile.timezone} onChange={(e) => updateProfile("timezone", e.target.value)}>
                 <option value="">None</option>
-                {Intl.supportedValuesOf("timeZone").map((tz) => (
-                  <option key={tz} value={tz}>{tz.replace(/_/g, " ")}</option>
+                {Intl.supportedValuesOf("timeZone").map((timezone) => (
+                  <option key={timezone} value={timezone}>{timezone.replace(/_/g, " ")}</option>
                 ))}
               </select>
             </Field>
-          </section>
+          </Panel>
         )}
 
         {tab === "links" && (
-          <section className="rx-section">
+          <Panel>
             {links.map((link, index) => (
-              <div className="rx-link-card" key={link.id}>
-                <div className="rx-link-head">
-                  <strong>{link.label || link.type || "Link"}</strong>
-                  <button className="rx-icon rx-danger" onClick={() => removeLink(link.id)} title="Remove link">
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-                <div className="rx-row">
-                  <select className="rx-select" value={link.type} onChange={(e) => updateLink(index, { type: e.target.value })}>
+              <div className="classic-link-card" key={link.id}>
+                <button className="classic-remove" onClick={() => removeLink(link.id)}><Trash2 size={14} /></button>
+                <div className="classic-grid-2">
+                  <select value={link.type} onChange={(e) => updateLink(index, { type: e.target.value })}>
                     {Object.keys(iconMap).map((key) => <option key={key} value={key}>{key.toUpperCase()}</option>)}
                   </select>
-                  <select className="rx-select" value={link.style || "glass"} onChange={(e) => updateLink(index, { style: e.target.value as LinkStyle })}>
+                  <select value={link.style || "glass"} onChange={(e) => updateLink(index, { style: e.target.value as LinkStyle })}>
                     <option value="glass">Glass</option>
                     <option value="filled">Filled</option>
                     <option value="outline">Outline</option>
                     <option value="soft">Soft</option>
                   </select>
                 </div>
-                <input className="rx-input" value={link.url} onChange={(e) => updateLink(index, { url: e.target.value })} placeholder="https://..." />
-                <input className="rx-input" value={link.label || ""} maxLength={40} onChange={(e) => updateLink(index, { label: e.target.value })} placeholder="Button label" />
-                <input className="rx-input" value={link.description || ""} maxLength={80} onChange={(e) => updateLink(index, { description: e.target.value })} placeholder="Short description" />
-                <div className="rx-row">
-                  <input className="rx-input" value={link.color || ""} maxLength={7} onChange={(e) => updateLink(index, { color: e.target.value })} placeholder="#72e0b1" />
-                  <input className="rx-input" type="color" value={link.color || profile.accent} onChange={(e) => updateLink(index, { color: e.target.value })} style={{ padding: 5 }} />
+                <input value={link.url} onChange={(e) => updateLink(index, { url: e.target.value })} placeholder="https://..." />
+                <input value={link.label || ""} maxLength={40} onChange={(e) => updateLink(index, { label: e.target.value })} placeholder="Display label" />
+                <input value={link.description || ""} maxLength={80} onChange={(e) => updateLink(index, { description: e.target.value })} placeholder="Featured button description" />
+                <div className="classic-grid-2">
+                  <input value={link.color || ""} maxLength={7} onChange={(e) => updateLink(index, { color: e.target.value })} placeholder="#a970ff" />
+                  <input type="color" value={link.color || profile.accent} onChange={(e) => updateLink(index, { color: e.target.value })} />
                 </div>
-                <div className="rx-link-tools">
-                  <button className="rx-mini" onClick={() => duplicateLink(index)}><CopyPlus size={14} /> Copy</button>
-                  <label className="rx-check"><input type="checkbox" checked={link.enabled !== false} onChange={(e) => updateLink(index, { enabled: e.target.checked })} /> Show</label>
-                  <label className="rx-check"><input type="checkbox" checked={Boolean(link.featured)} onChange={(e) => updateLink(index, { featured: e.target.checked })} /> Feature</label>
+                <div className="classic-tools">
+                  <button onClick={() => duplicateLink(index)}><CopyPlus size={14} /> Copy</button>
+                  <label><input type="checkbox" checked={link.enabled !== false} onChange={(e) => updateLink(index, { enabled: e.target.checked })} /> Show</label>
+                  <label><input type="checkbox" checked={Boolean(link.featured)} onChange={(e) => updateLink(index, { featured: e.target.checked })} /> Feature</label>
                 </div>
               </div>
             ))}
-            <button className="rx-secondary" onClick={addLink}>
-              <Plus size={16} />
-              Add link
-            </button>
-          </section>
+            <button className="classic-secondary classic-add" onClick={addLink}><Plus size={16} /> Add New Link</button>
+          </Panel>
         )}
 
-        {tab === "style" && (
-          <section className="rx-section">
-            <div className="rx-theme-grid">
-              {allThemes.map((theme) => (
-                <button key={theme.name} className="rx-theme" style={{ background: theme.gradient }} onClick={() => applyTheme(theme)}>
+        {tab === "appearance" && (
+          <Panel>
+            <div className="classic-theme-grid">
+              {themes.map((theme) => (
+                <button key={theme.name} className="classic-theme" style={{ background: theme.gradient }} onClick={() => applyTheme(theme)}>
                   <span>{theme.name}</span>
                   <small>Apply theme</small>
                 </button>
               ))}
             </div>
-            <button className="rx-secondary" onClick={saveTheme}><CopyPlus size={16} /> Save current theme</button>
-            <Field label="Font">
-              <select className="rx-select" value={profile.font} onChange={(e) => updateProfile("font", e.target.value)}>
+            <button className="classic-secondary classic-add" onClick={saveTheme}><CopyPlus size={16} /> Save Current Theme</button>
+            <Field label="Font Style">
+              <select value={profile.font} onChange={(e) => updateProfile("font", e.target.value)}>
                 <option value="Inter">Inter</option>
                 <option value="Playfair Display">Playfair Display</option>
                 <option value="JetBrains Mono">JetBrains Mono</option>
                 <option value="Outfit">Outfit</option>
               </select>
             </Field>
-            <div className="rx-row">
-              <Field label="Name color">
-                <input className="rx-input" type="color" value={profile.nameColor.slice(0, 7)} onChange={(e) => updateProfile("nameColor", e.target.value)} />
-              </Field>
-              <Field label="Accent">
-                <input className="rx-input" type="color" value={profile.accent.slice(0, 7)} onChange={(e) => updateProfile("accent", e.target.value)} />
-              </Field>
+            <div className="classic-grid-2">
+              <Field label="Name Color"><input type="color" value={profile.nameColor.slice(0, 7)} onChange={(e) => updateProfile("nameColor", e.target.value)} /></Field>
+              <Field label="Accent Color"><input type="color" value={profile.accent.slice(0, 7)} onChange={(e) => updateProfile("accent", e.target.value)} /></Field>
             </div>
-            <Field label="Bio color">
-              <input className="rx-input" type="color" value={profile.bioColor.slice(0, 7)} onChange={(e) => updateProfile("bioColor", e.target.value)} />
-            </Field>
-            <label className="rx-check"><input type="checkbox" checked={profile.showGlass} onChange={(e) => updateProfile("showGlass", e.target.checked)} /> Glass profile panel</label>
-          </section>
+            <Field label="Bio Color"><input type="color" value={profile.bioColor.slice(0, 7)} onChange={(e) => updateProfile("bioColor", e.target.value)} /></Field>
+            <label className="classic-check"><input type="checkbox" checked={profile.showGlass} onChange={(e) => updateProfile("showGlass", e.target.checked)} /> Transparent Glass Card</label>
+          </Panel>
         )}
 
         {tab === "media" && (
-          <section className="rx-section">
-            <Field label="Background type">
-              <select className="rx-select" value={profile.bgType} onChange={(e) => updateProfile("bgType", e.target.value as ProfileData["bgType"])}>
+          <Panel>
+            <Field label="Background Type">
+              <select value={profile.bgType} onChange={(e) => updateProfile("bgType", e.target.value as ProfileData["bgType"])}>
                 <option value="gradient">Gradient</option>
                 <option value="image">Image</option>
                 <option value="video">Video</option>
               </select>
             </Field>
-            <div className="rx-row">
-              <MediaDrop kind="image" icon={<ImageIcon size={20} />} title="Drop background image" hint="Image up to 50MB" onUpload={uploadMedia} />
-              <MediaDrop kind="video" icon={<Upload size={20} />} title="Drop background video" hint="Video up to 50MB" onUpload={uploadMedia} />
+            <div className="classic-grid-2">
+              <MediaDrop kind="image" icon={<ImageIcon size={20} />} title="Drop image" hint="PNG, JPG, WEBP, GIF up to 50MB" onUpload={uploadMedia} />
+              <MediaDrop kind="video" icon={<Upload size={20} />} title="Drop video" hint="MP4, WEBM, MOV up to 50MB" onUpload={uploadMedia} />
             </div>
             {profile.bgType === "gradient" && (
-              <div className="rx-row">
-                <Field label="Start color">
-                  <input className="rx-input" type="color" value={gradientColors[0]} onChange={(e) => updateGradient(e.target.value, gradientColors[1])} />
-                </Field>
-                <Field label="End color">
-                  <input className="rx-input" type="color" value={gradientColors[1]} onChange={(e) => updateGradient(gradientColors[0], e.target.value)} />
-                </Field>
+              <div className="classic-grid-2">
+                <Field label="Start Color"><input type="color" value={gradientColors[0]} onChange={(e) => updateGradient(e.target.value, gradientColors[1])} /></Field>
+                <Field label="End Color"><input type="color" value={gradientColors[1]} onChange={(e) => updateGradient(gradientColors[0], e.target.value)} /></Field>
               </div>
             )}
             {profile.bgType !== "gradient" && (
               <Field label={profile.bgType === "video" ? "Video URL" : "Image URL"}>
-                <input
-                  className="rx-input"
-                  value={profile.bgType === "video" ? profile.bgVideo : profile.bgImage}
-                  onChange={(e) => profile.bgType === "video" ? updateProfile("bgVideo", e.target.value) : updateProfile("bgImage", e.target.value)}
-                  placeholder="https://..."
-                />
+                <input value={profile.bgType === "video" ? profile.bgVideo : profile.bgImage} onChange={(e) => profile.bgType === "video" ? updateProfile("bgVideo", e.target.value) : updateProfile("bgImage", e.target.value)} placeholder="https://..." />
               </Field>
             )}
-            <MediaDrop kind="audio" icon={<Music size={20} />} title="Drop profile audio" hint="Audio up to 50MB" onUpload={uploadMedia} />
-            <Field label="Audio title">
-              <input className="rx-input" value={profile.bgAudioName} onChange={(e) => updateProfile("bgAudioName", e.target.value.slice(0, 60))} />
-            </Field>
-            <Field label="Audio URL">
-              <input className="rx-input" value={profile.bgAudio} onChange={(e) => updateProfile("bgAudio", e.target.value)} placeholder="https://..." />
-            </Field>
-            <label className="rx-check"><input type="checkbox" checked={profile.showAudioPlayer} onChange={(e) => updateProfile("showAudioPlayer", e.target.checked)} /> Show audio player</label>
-            <label className="rx-check"><input type="checkbox" checked={profile.backgroundAudio} onChange={(e) => updateProfile("backgroundAudio", e.target.checked)} /> Use as click-to-enter audio</label>
-          </section>
+            <MediaDrop kind="audio" icon={<Music size={20} />} title="Drop audio" hint="MP3, WAV, OGG, WEBM up to 50MB" onUpload={uploadMedia} />
+            <Field label="Audio Player Name"><input value={profile.bgAudioName} onChange={(e) => updateProfile("bgAudioName", e.target.value.slice(0, 60))} /></Field>
+            <Field label="Audio URL"><input value={profile.bgAudio} onChange={(e) => updateProfile("bgAudio", e.target.value)} placeholder="https://..." /></Field>
+            <label className="classic-check"><input type="checkbox" checked={profile.showAudioPlayer} onChange={(e) => updateProfile("showAudioPlayer", e.target.checked)} /> Show audio player</label>
+            <label className="classic-check"><input type="checkbox" checked={profile.backgroundAudio} onChange={(e) => updateProfile("backgroundAudio", e.target.checked)} /> Use as background audio after click-to-enter</label>
+          </Panel>
         )}
 
         {tab === "stats" && (
-          <section className="rx-section">
-            <div className="rx-stat-grid">
-              <div className="rx-stat-card"><strong>{Number(profile.views || 0).toLocaleString()}</strong><span>Profile views</span></div>
-              <div className="rx-stat-card"><strong>{totalClicks.toLocaleString()}</strong><span>Link clicks</span></div>
+          <Panel>
+            <div className="classic-stat-grid">
+              <div className="classic-stat"><strong>{Number(profile.views || 0).toLocaleString()}</strong><span>Profile views</span></div>
+              <div className="classic-stat"><strong>{totalClicks.toLocaleString()}</strong><span>Link clicks</span></div>
             </div>
-            <div className="rx-link-card">
-              <div className="rx-link-head"><strong>Top links</strong><span className="rx-muted">tracked redirects</span></div>
+            <div className="classic-link-card">
+              <h3>Top Links</h3>
               {topLinks.length ? topLinks.map((link) => (
-                <div className="rx-top-link" key={`top-${link.id}`}>
+                <div className="classic-top-link" key={`top-${link.id}`}>
                   <span>{link.label || link.type || link.url}</span>
                   <strong>{Number(link.clicks || 0).toLocaleString()}</strong>
                 </div>
-              )) : <span className="rx-muted">No links yet.</span>}
+              )) : <p className="classic-muted">Add links to start tracking clicks.</p>}
             </div>
-          </section>
+          </Panel>
         )}
       </aside>
 
-      <section className="rx-main">
-        <div className="rx-preview-bg" />
-        {profile.bgType === "image" && profile.bgImage && <img className="rx-preview-media" src={profile.bgImage} alt="" />}
-        {profile.bgType === "video" && profile.bgVideo && <video className="rx-preview-media" src={profile.bgVideo} autoPlay muted loop playsInline />}
-        <div className="rx-device">
-          <ProfilePreview profile={profile} links={links} badges={badges} featuredClass={featuredClass} />
-        </div>
+      <section className="classic-preview">
+        {profile.bgType === "gradient" && <div className="classic-bg" style={{ background: profile.gradient }} />}
+        {profile.bgType === "image" && profile.bgImage && <img className="classic-bg" src={profile.bgImage} alt="" />}
+        {profile.bgType === "video" && profile.bgVideo && <video className="classic-bg" src={profile.bgVideo} autoPlay muted loop playsInline />}
+        <ProfilePreview profile={profile} badges={badges} links={links} featureClass={featureClass} />
       </section>
-
-      <aside className="rx-inspector">
-        <div className="rx-panel-title">
-          <strong><Eye size={16} /> Publish check</strong>
-          {profile.username && <a className="rx-secondary" href={`/${profile.username}`} target="_blank" rel="noreferrer"><ArrowUpRight size={15} /> View</a>}
-        </div>
-        <section className="rx-section">
-          <div className="rx-stat-grid">
-            <div className="rx-stat-card"><strong>{links.filter((link) => link.enabled !== false && link.url).length}</strong><span>Visible links</span></div>
-            <div className="rx-stat-card"><strong>{links.filter((link) => link.featured && link.url).length}</strong><span>Featured</span></div>
-          </div>
-          <div className="rx-link-card">
-            <div className="rx-link-head"><strong>Badges</strong><span className="rx-muted">admin managed</span></div>
-            <div className="rx-inline" style={{ flexWrap: "wrap" }}>
-              {Object.entries(badgeInfo).map(([key, item]) => {
-                const Icon = item.icon;
-                const active = badges[key as keyof Badges];
-                return (
-                  <span className="rx-badge" key={key} style={{ opacity: active ? 1 : 0.38 }}>
-                    <Icon size={14} color={item.color} />
-                    {item.label}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-          <div className="rx-link-card">
-            <div className="rx-link-head"><strong>Current URL</strong><button className="rx-mini" onClick={copyUrl}>{copied ? <Check size={14} /> : <Copy size={14} />} Copy</button></div>
-            <span className="rx-muted">{publicUrl}</span>
-          </div>
-        </section>
-      </aside>
     </main>
   );
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="rx-group">
-      <span className="rx-label">{label}</span>
+    <label className="classic-field">
+      <span>{label}</span>
       {children}
     </label>
   );
+}
+
+function Panel({ children }: { children: ReactNode }) {
+  return <div className="classic-panel">{children}</div>;
 }
 
 function MediaDrop({
@@ -1418,7 +811,7 @@ function MediaDrop({
 
   return (
     <label
-      className="rx-upload"
+      className="classic-upload"
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
         event.preventDefault();
@@ -1426,7 +819,7 @@ function MediaDrop({
       }}
     >
       {uploading ? <Upload size={20} /> : icon}
-      <strong>{uploading ? "Uploading" : title}</strong>
+      <strong>{uploading ? "Uploading..." : title}</strong>
       <span>{hint}</span>
       <input
         type="file"
@@ -1439,52 +832,57 @@ function MediaDrop({
 
 function ProfilePreview({
   profile,
-  links,
   badges,
-  featuredClass,
+  links,
+  featureClass,
 }: {
   profile: ProfileData;
-  links: SocialLink[];
   badges: Badges;
-  featuredClass: (style?: LinkStyle) => string;
+  links: SocialLink[];
+  featureClass: (style?: LinkStyle) => string;
 }) {
   const socials = links.filter((link) => link.enabled !== false && link.url && safeExternalUrl(link.url));
-  const standardLinks = socials.filter((link) => !link.featured);
-  const featuredLinks = socials.filter((link) => link.featured && link.label).slice(0, 4);
+  const iconLinks = socials.filter((link) => !link.featured);
+  const featureLinks = socials.filter((link) => link.featured && link.label).slice(0, 4);
 
   return (
-    <div className="rx-card">
-      <img className="rx-pfp" src={profile.avatar || defaultProfile.avatar} alt="Profile" />
-      <div className="rx-name">{profile.name || "User"}</div>
+    <div className="classic-profile-card">
+      <img className="classic-pfp" src={profile.avatar || defaultProfile.avatar} alt="Profile" />
+      <div className="classic-name" style={{ color: profile.nameColor }}>{profile.name || "User"}</div>
       {(badges.user || badges.dev || badges.staff) && (
-        <div className="rx-badges">
-          {Object.entries(badgeInfo).map(([key, item]) => {
+        <div className="classic-badges">
+          {Object.entries(badgeInfo).map(([key, info]) => {
             if (!badges[key as keyof Badges]) return null;
-            const Icon = item.icon;
-            return <span className="rx-badge" key={key}><Icon size={14} color={item.color} />{item.label}</span>;
+            const Icon = info.icon;
+            return (
+              <span key={key} className="classic-badge" title={info.description}>
+                <Icon size={14} color={info.color} />
+                {info.label}
+              </span>
+            );
           })}
         </div>
       )}
-      <div className="rx-tags">
-        {profile.age && <span className="rx-tag">{profile.age} y/o</span>}
-        {profile.gender && <span className="rx-tag">{profile.gender}</span>}
-        {profile.sexuality && <span className="rx-tag">{profile.sexuality}</span>}
-        {profile.birthday && <span className="rx-tag">{new Date(profile.birthday).toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" })}</span>}
-        {profile.timezone && <span className="rx-tag">{profile.timezone.split("/").pop()?.replace(/_/g, " ")}</span>}
+      <div className="classic-tags">
+        {profile.age && <span>{profile.age} y/o</span>}
+        {profile.gender && <span>{profile.gender}</span>}
+        {profile.sexuality && <span>{profile.sexuality}</span>}
+        {profile.birthday && <span>{new Date(profile.birthday).toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" })}</span>}
+        {profile.timezone && <span>{profile.timezone.split("/").pop()?.replace(/_/g, " ")}</span>}
       </div>
-      <div className="rx-bio">{profile.bio || "No bio yet."}</div>
-      <div className="rx-socials">
-        {standardLinks.map((link) => (
+      <div className="classic-bio" style={{ color: profile.bioColor }}>{profile.bio || "No bio yet."}</div>
+      <div className="classic-socials">
+        {iconLinks.map((link) => (
           <a key={link.id} href={safeExternalUrl(link.url)} target="_blank" rel="noreferrer">
             <img src={iconMap[link.type] || iconMap.website} alt={link.type} />
           </a>
         ))}
       </div>
-      <div className="rx-features">
-        {featuredLinks.map((link) => (
-          <a key={`feature-${link.id}`} className={featuredClass(link.style)} href={safeExternalUrl(link.url)} target="_blank" rel="noreferrer" style={{ borderColor: link.color || profile.accent }}>
-            <span className="rx-feature-text">
-              <span>{link.label}</span>
+      <div className="classic-features">
+        {featureLinks.map((link) => (
+          <a key={`feature-${link.id}`} className={featureClass(link.style)} href={safeExternalUrl(link.url)} target="_blank" rel="noreferrer" style={{ borderColor: link.color || profile.accent }}>
+            <span>
+              <strong>{link.label}</strong>
               {link.description && <small>{link.description}</small>}
             </span>
             <ArrowUpRight size={15} />
@@ -1492,14 +890,598 @@ function ProfilePreview({
         ))}
       </div>
       {profile.bgAudio && profile.showAudioPlayer && (
-        <div className="rx-player">
-          <span className="rx-player-icon"><Music size={15} /></span>
-          <span className="rx-feature-text">
-            <span>{profile.bgAudioName || fileTitle(profile.bgAudio.split("/").pop()?.split("?")[0] || "Profile audio")}</span>
+        <div className="classic-player">
+          <span><Play size={15} fill="currentColor" /></span>
+          <div>
+            <strong>{profile.bgAudioName || fileTitle(profile.bgAudio.split("/").pop()?.split("?")[0] || "Profile audio")}</strong>
             <small>Profile audio</small>
-          </span>
+          </div>
         </div>
       )}
     </div>
   );
+}
+
+function classicStyles(profile: ProfileData) {
+  return `
+    .classic-loading {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: #05060a;
+      color: white;
+      font-weight: 900;
+    }
+    .classic-hub,
+    .classic-editor {
+      min-height: 100vh;
+      color: white;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(169,112,255,0.16), transparent 34%),
+        #05060a;
+    }
+    .classic-hub-shell {
+      min-height: 100vh;
+      width: min(980px, calc(100vw - 36px));
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .classic-hub-nav {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .classic-hub-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding-bottom: 80px;
+    }
+    .classic-kicker {
+      color: ${profile.accent};
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+    }
+    .classic-hub h1 {
+      margin-top: 12px;
+      font-size: clamp(38px, 7vw, 72px);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+    }
+    .classic-hub h1 span {
+      color: ${profile.accent};
+    }
+    .classic-avatar-ring {
+      width: 250px;
+      height: 250px;
+      margin: 34px 0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 30px 90px rgba(0,0,0,0.34);
+    }
+    .classic-avatar-ring img {
+      width: 138px;
+      height: 138px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid ${profile.accent};
+      padding: 4px;
+    }
+    .classic-hub-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .classic-url-card {
+      margin-top: 26px;
+      min-width: min(460px, 100%);
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .classic-url-card span {
+      color: rgba(255,255,255,0.62);
+      font-size: 14px;
+    }
+    .classic-url-card button,
+    .classic-ghost,
+    .classic-primary,
+    .classic-secondary,
+    .classic-back,
+    .classic-tabs button,
+    .classic-tools button,
+    .classic-inline-input button {
+      min-height: 40px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.055);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px;
+      font-weight: 850;
+      text-decoration: none;
+    }
+    .classic-primary {
+      border: 0;
+      background: linear-gradient(135deg, #ffffff, #d8caff);
+      color: #07080d;
+      min-height: 46px;
+      padding: 0 16px;
+    }
+    .classic-editor {
+      display: grid;
+      grid-template-columns: 420px minmax(0, 1fr);
+      overflow: hidden;
+    }
+    .classic-sidebar {
+      height: 100vh;
+      overflow-y: auto;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)), #0b0c13;
+      border-right: 1px solid rgba(255,255,255,0.1);
+      padding: 22px;
+    }
+    .classic-editor-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .classic-save {
+      flex: 1;
+    }
+    .classic-tabs {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      margin-bottom: 18px;
+      padding: 5px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.075);
+    }
+    .classic-tabs button {
+      min-height: 42px;
+      flex-direction: column;
+      gap: 4px;
+      padding: 0;
+      font-size: 10px;
+      color: rgba(255,255,255,0.62);
+      background: transparent;
+    }
+    .classic-tabs button.is-active {
+      background: ${profile.accent};
+      color: white;
+      border-color: transparent;
+    }
+    .classic-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding-bottom: 34px;
+    }
+    .classic-field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .classic-field > span {
+      color: rgba(255,255,255,0.48);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .classic-field small,
+    .classic-muted {
+      color: rgba(255,255,255,0.48);
+      font-size: 12px;
+    }
+    .classic-field input,
+    .classic-field select,
+    .classic-field textarea,
+    .classic-link-card input,
+    .classic-link-card select {
+      width: 100%;
+      min-height: 44px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.055);
+      color: white;
+      outline: 0;
+      padding: 11px 12px;
+    }
+    .classic-field textarea {
+      min-height: 92px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    .classic-field input:focus,
+    .classic-field select:focus,
+    .classic-field textarea:focus,
+    .classic-link-card input:focus,
+    .classic-link-card select:focus {
+      border-color: ${profile.accent};
+      box-shadow: 0 0 0 4px ${profile.accent}22;
+    }
+    .classic-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .classic-inline-input {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 42px;
+      gap: 8px;
+    }
+    .classic-status {
+      font-size: 12px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.56);
+    }
+    .classic-status.available { color: #46d39a; }
+    .classic-status.taken,
+    .classic-status.reserved,
+    .classic-status.invalid { color: #ff8f8f; }
+    .classic-avatar-edit {
+      display: grid;
+      grid-template-columns: 86px minmax(0, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+    .classic-avatar-edit img {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid ${profile.accent};
+      padding: 3px;
+      background: rgba(255,255,255,0.04);
+    }
+    .classic-upload {
+      position: relative;
+      min-height: 92px;
+      border: 1px dashed rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.04);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      text-align: center;
+      color: rgba(255,255,255,0.68);
+      padding: 12px;
+    }
+    .classic-upload input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .classic-upload strong {
+      font-size: 12px;
+    }
+    .classic-upload span {
+      font-size: 10px;
+      line-height: 1.35;
+      opacity: 0.66;
+    }
+    .classic-link-card,
+    .classic-stat {
+      position: relative;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.045);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .classic-remove {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      border: 1px solid rgba(255,77,77,0.26);
+      background: rgba(255,77,77,0.12);
+      color: #ff9a9a;
+      border-radius: 9px;
+    }
+    .classic-tools {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .classic-tools label,
+    .classic-check {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.72);
+      font-size: 13px;
+      font-weight: 750;
+    }
+    .classic-tools input,
+    .classic-check input {
+      width: 16px;
+      height: 16px;
+      accent-color: ${profile.accent};
+    }
+    .classic-add {
+      width: 100%;
+      min-height: 44px;
+      border-style: dashed;
+    }
+    .classic-theme-grid,
+    .classic-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .classic-theme {
+      min-height: 78px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      color: white;
+      text-align: left;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 3px;
+    }
+    .classic-theme span,
+    .classic-stat strong {
+      font-weight: 900;
+    }
+    .classic-theme small,
+    .classic-stat span {
+      color: rgba(255,255,255,0.66);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .classic-stat strong {
+      font-size: 28px;
+      line-height: 1;
+    }
+    .classic-top-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .classic-top-link:last-child {
+      border-bottom: 0;
+    }
+    .classic-top-link span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: rgba(255,255,255,0.72);
+      font-size: 13px;
+    }
+    .classic-preview {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 34px;
+      background: radial-gradient(circle at 50% 16%, rgba(169,112,255,0.13), transparent 31%), #05060a;
+    }
+    .classic-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+    .classic-profile-card {
+      position: relative;
+      z-index: 5;
+      width: min(420px, 92vw);
+      min-height: 540px;
+      padding: 28px 20px;
+      border-radius: 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: ${profile.showGlass ? "rgba(0,0,0,0.45)" : "transparent"};
+      backdrop-filter: ${profile.showGlass ? "blur(25px)" : "none"};
+      border: ${profile.showGlass ? "1px solid rgba(255,255,255,0.1)" : "0"};
+      box-shadow: ${profile.showGlass ? "0 30px 100px rgba(0,0,0,0.45)" : "none"};
+    }
+    .classic-pfp {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid ${profile.accent};
+      padding: 3px;
+      margin-bottom: 10px;
+    }
+    .classic-name {
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+    .classic-badges,
+    .classic-tags,
+    .classic-socials {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      margin-top: 10px;
+    }
+    .classic-badge,
+    .classic-tags span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.075);
+      color: rgba(255,255,255,0.72);
+      padding: 5px 8px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .classic-bio {
+      max-width: 310px;
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .classic-socials a {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.08);
+    }
+    .classic-socials img {
+      width: 20px;
+      height: 20px;
+    }
+    .classic-features {
+      width: 100%;
+      max-width: 310px;
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sx-feature-link {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-radius: 13px;
+      border: 1px solid rgba(255,255,255,0.12);
+      color: white;
+      text-decoration: none;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      text-align: left;
+    }
+    .sx-feature-link span {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sx-feature-link strong,
+    .sx-feature-link small {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .sx-feature-link small {
+      opacity: 0.64;
+      font-size: 11px;
+    }
+    .sx-feature-glass { background: rgba(255,255,255,0.08); }
+    .sx-feature-filled { background: ${profile.accent}; border-color: ${profile.accent}; }
+    .sx-feature-outline { background: transparent; border-color: currentColor; }
+    .sx-feature-soft { background: ${profile.accent}24; border-color: ${profile.accent}66; }
+    .classic-player {
+      width: 100%;
+      max-width: 310px;
+      margin-top: 12px;
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 11px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      text-align: left;
+    }
+    .classic-player > span {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: ${profile.accent};
+      flex: 0 0 auto;
+    }
+    .classic-player div {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .classic-player small {
+      color: rgba(255,255,255,0.58);
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    @media (max-width: 900px) {
+      .classic-editor {
+        grid-template-columns: 1fr;
+        overflow: auto;
+      }
+      .classic-sidebar {
+        height: auto;
+        min-height: auto;
+      }
+      .classic-preview {
+        min-height: 640px;
+      }
+      .classic-grid-2,
+      .classic-theme-grid,
+      .classic-stat-grid {
+        grid-template-columns: 1fr;
+      }
+      .classic-tabs {
+        overflow-x: auto;
+      }
+    }
+  `;
 }
