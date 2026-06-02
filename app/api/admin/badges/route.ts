@@ -129,7 +129,7 @@ export async function POST(request: Request) {
     .from("profiles")
     .update({ badges })
     .eq("id", body.id)
-    .select("id, username, email, display_name, avatar_url, views, badges")
+    .select("id, username, email, display_name, avatar_url, views, badges, links, created_at")
     .single();
 
   if (error) {

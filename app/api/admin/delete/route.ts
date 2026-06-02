@@ -62,18 +62,23 @@ function json(data: unknown, status = 200) {
   });
 }
 
-export async function GET(request: Request) {
-  if (!isSameOrigin(request)) {
-    return json({ error: "Invalid request." }, 403);
+export async function POST(request: Request) {
+  if (!isSameOrigin(request)) return json({ error: "Invalid request." }, 403);
+  if (hitLimit(`admin-delete:${getClientIp(request)}`)) return json({ error: "Too many admin requests." }, 429);
+  if (!isAuthorized(request)) return json({ error: "Unauthorized." }, 401);
+
+  if (!request.headers.get("content-type")?.includes("application/json")) {
+    return json({ error: "Invalid request." }, 415);
   }
 
-  if (hitLimit(`admin-users:${getClientIp(request)}`)) {
-    return json({ error: "Too many admin requests." }, 429);
+  let body: { id?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "Invalid request." }, 400);
   }
 
-  if (!isAuthorized(request)) {
-    return json({ error: "Unauthorized." }, 401);
-  }
+  if (!body.id) return json({ error: "Missing user id." }, 400);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -89,14 +94,9 @@ export async function GET(request: Request) {
     },
   });
 
-  const { data, error } = await supabaseAdmin
-    .from("profiles")
-    .select("id, username, email, display_name, avatar_url, views, badges, links, created_at")
-    .order("username", { ascending: true });
+  await supabaseAdmin.from("profiles").delete().eq("id", body.id);
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(body.id);
 
-  if (error) {
-    return json({ error: error.message }, 500);
-  }
-
-  return json({ users: data || [] });
+  if (error) return json({ error: error.message }, 500);
+  return json({ ok: true });
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, RefreshCw, ShieldCheck, Code, Star } from "lucide-react";
+import { ArrowLeft, RefreshCw, ShieldCheck, Code, Star, Search, Trash2, ExternalLink } from "lucide-react";
 
 type Badges = {
   user?: boolean;
@@ -17,6 +17,8 @@ type AdminUser = {
   display_name: string | null;
   avatar_url: string | null;
   views: number | null;
+  links?: Array<{ clicks?: number; url?: string; label?: string }>;
+  created_at?: string | null;
   badges: Badges | null;
 };
 
@@ -24,8 +26,23 @@ export default function AdminPanel() {
   const [password, setPassword] = useState("");
   const [isAuthed, setIsAuthed] = useState(false);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const filteredUsers = users.filter((user) => {
+    const haystack = [
+      user.username,
+      user.email,
+      user.display_name,
+      user.id,
+    ].join(" ").toLowerCase();
+    return haystack.includes(query.trim().toLowerCase());
+  });
+
+  function linkClicks(user: AdminUser) {
+    return (user.links || []).reduce((sum, link) => sum + Number(link.clicks || 0), 0);
+  }
 
   async function loadUsers() {
     setLoading(true);
@@ -113,6 +130,26 @@ export default function AdminPanel() {
     });
   }
 
+  async function deleteUser(user: AdminUser) {
+    const label = user.username || user.email || user.id;
+    if (!window.confirm(`Delete ${label}? This removes the auth user and profile.`)) return;
+
+    setError(null);
+    const response = await fetch("/api/admin/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: user.id }),
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setError(result.error || "Unable to delete user.");
+      return;
+    }
+
+    setUsers((current) => current.filter((item) => item.id !== user.id));
+  }
+
   return (
     <main className="admin-main">
       <nav className="admin-nav">
@@ -161,27 +198,43 @@ export default function AdminPanel() {
               <p className="admin-kicker">Admin</p>
               <h1>Users</h1>
             </div>
-            <span>{users.length} total</span>
+            <span>{filteredUsers.length} shown / {users.length} total</span>
           </div>
 
           {error && <div className="admin-error">{error}</div>}
 
+          <div className="admin-search">
+            <Search size={16} />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search username, email, name, or id"
+            />
+          </div>
+
           <div className="admin-table">
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <div className="admin-user" key={user.id}>
                 <div className="admin-profile">
                   <img src={user.avatar_url || "https://i.imgur.com/1X6g1YH.jpeg"} alt="" />
                   <div>
                     <strong>{user.username || "No username"}</strong>
                     <span>{user.email || user.display_name || user.id}</span>
+                    {user.created_at && <small>Joined {new Date(user.created_at).toLocaleDateString()}</small>}
                   </div>
                 </div>
 
                 <div className="admin-meta">
                   <span>{Number(user.views || 0).toLocaleString()} views</span>
+                  <span>{linkClicks(user).toLocaleString()} clicks</span>
                 </div>
 
                 <div className="admin-badges">
+                  {user.username && (
+                    <a href={`/${user.username}`} target="_blank" rel="noreferrer" className="admin-mini-link" title="Open profile">
+                      <ExternalLink size={15} />
+                    </a>
+                  )}
                   <button
                     className={user.badges?.user ? "is-active" : ""}
                     onClick={() => toggleBadge(user, "user")}
@@ -202,6 +255,10 @@ export default function AdminPanel() {
                   >
                     <Star size={15} />
                     Staff
+                  </button>
+                  <button className="admin-danger" onClick={() => deleteUser(user)} title="Delete user">
+                    <Trash2 size={15} />
+                    Delete
                   </button>
                 </div>
               </div>

@@ -30,6 +30,15 @@ import {
 } from "lucide-react"
 
 // Types
+type LinkStyle = "glass" | "filled" | "outline" | "soft";
+type ThemePreset = {
+  name: string;
+  accent: string;
+  nameColor: string;
+  bioColor: string;
+  gradient: string;
+};
+
 interface SocialLink {
   id: number;
   type: string;
@@ -37,6 +46,8 @@ interface SocialLink {
   label?: string;
   description?: string;
   color?: string;
+  style?: LinkStyle;
+  clicks?: number;
   featured?: boolean;
   enabled?: boolean;
 }
@@ -94,6 +105,21 @@ const badgeInfo = {
   staff: { label: "Staff", description: "This user is marked as Softcard staff." },
 }
 
+const USERNAME_REGEX = /^[a-z0-9_-]{3,30}$/;
+const RESERVED_USERNAMES = new Set([
+  "setup",
+  "dashboard",
+  "admin",
+  "login",
+  "api",
+  "settings",
+  "hub",
+  "edit",
+  "support",
+  "credits",
+  "more",
+]);
+
 function safeExternalUrl(value: unknown) {
   if (typeof value !== "string") return "";
   try {
@@ -111,6 +137,8 @@ function normalizeLinks(items: SocialLink[]) {
       label: (link.label || "").trim().slice(0, 40),
       description: (link.description || "").trim().slice(0, 80),
       color: /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(link.color || "") ? link.color : "",
+      style: ["glass", "filled", "outline", "soft"].includes(link.style || "") ? link.style : "glass",
+      clicks: Number(link.clicks || 0),
       url: safeExternalUrl(link.url),
       enabled: link.enabled !== false,
       featured: Boolean(link.featured),
@@ -185,6 +213,10 @@ export default function SoftcardDashboard() {
   const [tab, setTab] = useState("profile")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState("")
+  const [originalUsername, setOriginalUsername] = useState("")
+  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "reserved" | "invalid">("idle")
+  const [customThemes, setCustomThemes] = useState<ThemePreset[]>([])
 
   // Consolidated State
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -213,11 +245,15 @@ export default function SoftcardDashboard() {
     views: 0
   })
 
-  const themePresets = [
+  const themePresets: ThemePreset[] = [
     { name: "Violet", accent: "#a970ff", nameColor: "#ffffff", bioColor: "#d8caff", gradient: "linear-gradient(135deg, #170f2f 0%, #050106 100%)" },
     { name: "Rose", accent: "#ff6bbd", nameColor: "#fff5fb", bioColor: "#ffd6eb", gradient: "linear-gradient(135deg, #2b0719 0%, #050106 100%)" },
     { name: "Cyan", accent: "#55d6ff", nameColor: "#f4fdff", bioColor: "#c7f2ff", gradient: "linear-gradient(135deg, #042336 0%, #02060a 100%)" },
     { name: "Mono", accent: "#ffffff", nameColor: "#ffffff", bioColor: "#b8bcc8", gradient: "linear-gradient(135deg, #17191f 0%, #030406 100%)" },
+    { name: "Ember", accent: "#ff7a4d", nameColor: "#fff4ed", bioColor: "#ffd2bd", gradient: "linear-gradient(135deg, #341107 0%, #050201 100%)" },
+    { name: "Forest", accent: "#46d39a", nameColor: "#f1fff8", bioColor: "#bff5db", gradient: "linear-gradient(135deg, #06251a 0%, #020806 100%)" },
+    { name: "Ice", accent: "#9ee7ff", nameColor: "#f7fdff", bioColor: "#c7f4ff", gradient: "linear-gradient(135deg, #102638 0%, #04080d 100%)" },
+    { name: "Gold", accent: "#f5c451", nameColor: "#fff9e8", bioColor: "#ffe6a3", gradient: "linear-gradient(135deg, #2c2208 0%, #050403 100%)" },
   ]
 
   // Helper to extract colors from a CSS linear-gradient string
@@ -235,6 +271,9 @@ export default function SoftcardDashboard() {
 
   const [links, setLinks] = useState<SocialLink[]>([])
   const [badges, setBadges] = useState<Badges>({ user: true, dev: false, staff: false })
+  const allThemePresets = [...themePresets, ...customThemes]
+  const totalClicks = links.reduce((sum, link) => sum + Number(link.clicks || 0), 0)
+  const topLinks = [...links].sort((a, b) => Number(b.clicks || 0) - Number(a.clicks || 0)).slice(0, 5)
 
   const timezones = useMemo(() => Intl.supportedValuesOf('timeZone'), []);
 
@@ -246,6 +285,7 @@ export default function SoftcardDashboard() {
         setLoading(false);
         return;
       }
+      setCurrentUserId(user.id)
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -284,11 +324,55 @@ export default function SoftcardDashboard() {
         }))
         setLinks(profile.links || [])
         setBadges(profile.badges || { user: true, dev: false, staff: false })
+        setOriginalUsername(profile.username || "")
       }
       setLoading(false)
     }
     loadData()
   }, [supabase])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      const saved = JSON.parse(window.localStorage.getItem("softcard_custom_themes") || "[]")
+      if (Array.isArray(saved)) setCustomThemes(saved.slice(0, 8))
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    async function checkUsername() {
+      if (!supabase || !profileData.username) {
+        setUsernameStatus("idle")
+        return
+      }
+
+      const username = profileData.username.trim().toLowerCase()
+      if (username === originalUsername) {
+        setUsernameStatus("idle")
+        return
+      }
+      if (!USERNAME_REGEX.test(username)) {
+        setUsernameStatus("invalid")
+        return
+      }
+      if (RESERVED_USERNAMES.has(username)) {
+        setUsernameStatus("reserved")
+        return
+      }
+
+      setUsernameStatus("checking")
+      const { data } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", username)
+        .maybeSingle()
+
+      setUsernameStatus(data && data.id !== currentUserId ? "taken" : "available")
+    }
+
+    const timeoutId = setTimeout(checkUsername, 450)
+    return () => clearTimeout(timeoutId)
+  }, [currentUserId, originalUsername, profileData.username, supabase])
 
   const saveChanges = async () => {
     if (!supabase) return;
@@ -297,7 +381,22 @@ export default function SoftcardDashboard() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("No user found");
 
+      const username = profileData.username.trim().toLowerCase()
+      if (!USERNAME_REGEX.test(username)) throw new Error("Username must be 3-30 characters and may only include letters, numbers, underscores, or hyphens.")
+      if (RESERVED_USERNAMES.has(username)) throw new Error("That username is reserved.")
+      if (username !== originalUsername) {
+        const { data: existing, error: existingError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("username", username)
+          .maybeSingle()
+
+        if (existingError) throw existingError
+        if (existing && existing.id !== user.id) throw new Error("That username is already taken.")
+      }
+
       const { error } = await supabase.from('profiles').update({
+        username,
         display_name: profileData.name,
         avatar_url: profileData.avatar,
         bio: profileData.bio,
@@ -319,6 +418,7 @@ export default function SoftcardDashboard() {
       }).eq('id', user.id)
 
       if (error) throw error;
+      setOriginalUsername(username)
       alert("Published successfully!")
     } catch (err: any) {
       alert("Error: " + err.message)
@@ -446,6 +546,24 @@ export default function SoftcardDashboard() {
       gradient: preset.gradient,
     }))
   }
+
+  const saveCustomTheme = () => {
+    const name = `Custom ${customThemes.length + 1}`
+    const nextTheme = {
+      name,
+      accent: profileData.accent,
+      nameColor: profileData.nameColor,
+      bioColor: profileData.bioColor,
+      gradient: profileData.gradient,
+    }
+    const nextThemes = [nextTheme, ...customThemes].slice(0, 8)
+    setCustomThemes(nextThemes)
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("softcard_custom_themes", JSON.stringify(nextThemes))
+    }
+  }
+
+  const linkClass = (style?: LinkStyle) => `sx-feature-link sx-feature-${style || "glass"}`
 
   const moveLink = (index: number, direction: -1 | 1) => {
     const target = index + direction
@@ -675,6 +793,10 @@ export default function SoftcardDashboard() {
           background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
           color: white; text-decoration: none; font-size: 13px; font-weight: 700;
         }
+        .sx-feature-filled { background: ${profileData.accent}; border-color: ${profileData.accent}; }
+        .sx-feature-outline { background: transparent; border-color: currentColor; }
+        .sx-feature-soft { background: ${profileData.accent}24; border-color: ${profileData.accent}66; }
+        .sx-feature-glass { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
         .sx-feature-link-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
         .sx-feature-link-text small { opacity: 0.58; font-size: 11px; font-weight: 600; line-height: 1.25; }
         .sx-feature-link img { width: 18px; height: 18px; opacity: 0.82; }
@@ -750,7 +872,7 @@ export default function SoftcardDashboard() {
         .sx-publish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .sx-tabs-row {
-          display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 22px;
+          display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-bottom: 22px;
           background: transparent; padding: 0; border-radius: 0; border: 0;
         }
         .sx-tab {
@@ -815,6 +937,29 @@ export default function SoftcardDashboard() {
           cursor: pointer;
         }
         .sx-link-tool:disabled { opacity: 0.38; cursor: not-allowed; }
+        .sx-username-status {
+          margin-top: 7px; font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.52);
+        }
+        .sx-username-status.available { color: #46d39a; }
+        .sx-username-status.taken,
+        .sx-username-status.reserved,
+        .sx-username-status.invalid { color: #ff8f8f; }
+        .sx-stat-grid {
+          display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
+        }
+        .sx-stat-card {
+          padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.09);
+        }
+        .sx-stat-card strong { display: block; font-size: 24px; line-height: 1; }
+        .sx-stat-card span { display: block; margin-top: 7px; color: rgba(255,255,255,0.56); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+        .sx-top-link {
+          display: flex; align-items: center; justify-content: space-between; gap: 12px;
+          padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .sx-top-link:last-child { border-bottom: 0; }
+        .sx-top-link span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(255,255,255,0.78); font-size: 13px; }
+        .sx-top-link strong { color: white; font-size: 13px; }
         
         .tag-input-wrapper { display: grid; grid-template-columns: minmax(0, 1fr) 40px; align-items: center; gap: 8px; margin-bottom: 10px; }
         .sx-tag-clear { 
@@ -910,6 +1055,9 @@ export default function SoftcardDashboard() {
           <button className={`sx-tab ${tab === "badges" ? "sx-tab-active" : ""}`} onClick={() => setTab("badges")}>
             <ShieldCheck size={12} /> Badges
           </button>
+          <button className={`sx-tab ${tab === "stats" ? "sx-tab-active" : ""}`} onClick={() => setTab("stats")}>
+            <BarChart3 size={12} /> Stats
+          </button>
         </div>
 
         {tab === "profile" && (
@@ -939,6 +1087,23 @@ export default function SoftcardDashboard() {
                   <button className="sx-tag-clear" onClick={() => updateProfile("avatar", "")} aria-label="Clear avatar URL"><X size={16} /></button>
                 </div>
                 {profileData.avatar && <div className="sx-media-current">{profileData.avatar}</div>}
+              </div>
+              <div className="sx-input-group">
+                <label className="sx-label">Username</label>
+                <input
+                  className="sx-input"
+                  value={profileData.username}
+                  onChange={e => updateProfile("username", e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30))}
+                  placeholder="username"
+                />
+                <div className={`sx-username-status ${usernameStatus}`}>
+                  {usernameStatus === "checking" && "Checking availability..."}
+                  {usernameStatus === "available" && "Available"}
+                  {usernameStatus === "taken" && "Already taken"}
+                  {usernameStatus === "reserved" && "Reserved username"}
+                  {usernameStatus === "invalid" && "Use 3-30 letters, numbers, underscores, or hyphens"}
+                  {usernameStatus === "idle" && `softcard.cc/${profileData.username || "username"}`}
+                </div>
               </div>
               <div className="sx-input-group">
                 <label className="sx-label">Display Name</label>
@@ -981,6 +1146,12 @@ export default function SoftcardDashboard() {
                       <input className="sx-input" value={l.color || ""} onChange={e => updateLink(i, "color", e.target.value)} placeholder="Custom color, ex: #a970ff" maxLength={7} />
                       <input type="color" className="sx-input" style={{height: '42px', padding: '5px'}} value={l.color || profileData.accent} onChange={e => updateLink(i, "color", e.target.value)} />
                     </div>
+                    <select className="sx-input" value={l.style || "glass"} onChange={e => updateLink(i, "style", e.target.value)}>
+                      <option value="glass">Glass button</option>
+                      <option value="filled">Filled button</option>
+                      <option value="outline">Outline button</option>
+                      <option value="soft">Soft tint button</option>
+                    </select>
                     <div className="sx-link-actions">
                       <button className="sx-link-tool" type="button" disabled={i === 0} onClick={() => moveLink(i, -1)}>
                         <MoveUp size={14} /> Up
@@ -1080,7 +1251,7 @@ export default function SoftcardDashboard() {
                 <small>fast presets</small>
               </div>
               <div className="sx-preset-grid">
-                {themePresets.map((preset) => (
+                {allThemePresets.map((preset) => (
                   <button
                     type="button"
                     key={preset.name}
@@ -1093,6 +1264,9 @@ export default function SoftcardDashboard() {
                   </button>
                 ))}
               </div>
+              <button className="sx-link-tool" type="button" onClick={saveCustomTheme} style={{ width: "100%", minHeight: 40, marginBottom: 12 }}>
+                <CopyPlus size={14} /> Save current theme
+              </button>
 
               <div className="sx-input-group" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px', marginBottom: 0}}>
                   <input type="checkbox" id="glass" checked={profileData.showGlass} onChange={e => updateProfile("showGlass", e.target.checked)} style={{width: '18px', height: '18px'}} />
@@ -1265,6 +1439,44 @@ export default function SoftcardDashboard() {
             </div>
           </div>
         )}
+
+        {tab === "stats" && (
+          <div className="sx-pane">
+            <section className="sx-editor-section">
+              <div className="sx-section-title">
+                <span><BarChart3 size={14} /> Analytics</span>
+                <small>views and clicks</small>
+              </div>
+              <div className="sx-stat-grid">
+                <div className="sx-stat-card">
+                  <strong>{Number(profileData.views || 0).toLocaleString()}</strong>
+                  <span>Profile views</span>
+                </div>
+                <div className="sx-stat-card">
+                  <strong>{totalClicks.toLocaleString()}</strong>
+                  <span>Link clicks</span>
+                </div>
+              </div>
+            </section>
+
+            <section className="sx-editor-section">
+              <div className="sx-section-title">
+                <span><ExternalLink size={14} /> Top Links</span>
+                <small>tracked redirects</small>
+              </div>
+              {topLinks.length ? (
+                topLinks.map((link) => (
+                  <div className="sx-top-link" key={`stats-${link.id}`}>
+                    <span>{link.label || link.type || link.url}</span>
+                    <strong>{Number(link.clicks || 0).toLocaleString()}</strong>
+                  </div>
+                ))
+              ) : (
+                <p style={{fontSize: '13px', lineHeight: 1.5, opacity: 0.62}}>Add links to start tracking clicks.</p>
+              )}
+            </section>
+          </div>
+        )}
       </div>
 
       <div className="sx-preview-pane">
@@ -1304,7 +1516,7 @@ export default function SoftcardDashboard() {
           </div>
           <div className="sx-feature-links">
             {links.filter(l => l.url && l.label && l.enabled !== false && l.featured && safeExternalUrl(l.url)).slice(0, 4).map(l => (
-              <a key={`feature-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noreferrer" className="sx-feature-link" style={{ borderColor: l.color || profileData.accent }}>
+              <a key={`feature-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noreferrer" className={linkClass(l.style)} style={{ borderColor: l.color || profileData.accent }}>
                 <span className="sx-feature-link-text">
                   <span>{l.label}</span>
                   {l.description && <small>{l.description}</small>}

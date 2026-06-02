@@ -808,6 +808,27 @@ button:disabled {
   font-size: 13px;
 }
 
+.admin-search {
+  min-height: 48px;
+  margin-bottom: 18px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--muted);
+}
+
+.admin-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+}
+
 .admin-table {
   display: flex;
   flex-direction: column;
@@ -816,7 +837,7 @@ button:disabled {
 
 .admin-user {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) 140px auto;
+  grid-template-columns: minmax(260px, 1fr) 160px auto;
   align-items: center;
   gap: 18px;
   padding: 14px;
@@ -855,9 +876,20 @@ button:disabled {
 }
 
 .admin-profile span,
+.admin-profile small,
 .admin-meta {
   color: var(--muted);
   font-size: 13px;
+}
+
+.admin-profile small {
+  font-size: 11px;
+}
+
+.admin-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .admin-badges {
@@ -866,7 +898,8 @@ button:disabled {
   gap: 8px;
 }
 
-.admin-badges button {
+.admin-badges button,
+.admin-mini-link {
   min-height: 36px;
   display: inline-flex;
   align-items: center;
@@ -878,12 +911,19 @@ button:disabled {
   color: var(--muted);
   font-size: 12px;
   font-weight: 850;
+  text-decoration: none;
 }
 
 .admin-badges button.is-active {
   border-color: rgba(139, 211, 255, 0.55);
   background: rgba(139, 211, 255, 0.14);
   color: var(--text);
+}
+
+.admin-badges .admin-danger {
+  border-color: rgba(255, 122, 138, 0.28);
+  background: rgba(255, 122, 138, 0.1);
+  color: #ffd3d8;
 }
 
 @media (max-width: 820px) {
@@ -1345,7 +1385,7 @@ body::before {
 
 .softcardx-dashboard .sx-tabs-row {
   display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   gap: 6px !important;
   padding: 5px !important;
   border-radius: 14px !important;
@@ -1420,7 +1460,7 @@ body::before {
 
 .sx-tabs-row {
   display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   gap: 6px !important;
   margin-bottom: 22px !important;
   padding: 5px !important;
@@ -1912,7 +1952,7 @@ body::before {
 
 .softcardx-dashboard .sx-tabs-row {
   display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   gap: 6px !important;
   padding: 5px !important;
   border-radius: 14px !important;
@@ -2108,7 +2148,7 @@ body::before {
 
 .softcardx-dashboard .sx-tabs-row {
   display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   gap: 6px !important;
   padding: 5px !important;
   border-radius: 14px !important;

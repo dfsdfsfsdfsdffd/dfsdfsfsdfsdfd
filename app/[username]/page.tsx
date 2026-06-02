@@ -191,6 +191,9 @@ export default function PublicProfile({ params }: { params: { username: string }
   const audioSettings = splitAudioMeta(safeMediaUrl(profile.audio_url));
   const audioUrl = audioSettings.url;
   const audioTitle = audioSettings.title || mediaName(audioUrl);
+  const clickHref = (link: any) => `/api/click?u=${encodeURIComponent(params.username)}&id=${encodeURIComponent(String(link.id))}`;
+  const featureClass = (style: any) =>
+    `featured-link featured-${["glass", "filled", "outline", "soft"].includes(style) ? style : "glass"}`;
 
   return (
     <div className="container">
@@ -318,6 +321,10 @@ export default function PublicProfile({ params }: { params: { username: string }
           transition: transform 0.2s, background 0.2s;
         }
         .featured-link:hover { transform: translateY(-1px); background: rgba(255,255,255,0.12); }
+        .featured-filled { background: ${accent}; border-color: ${accent}; }
+        .featured-outline { background: transparent; border-color: currentColor; }
+        .featured-soft { background: ${accent}24; border-color: ${accent}66; }
+        .featured-glass { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
         .featured-link img { width: 18px; height: 18px; opacity: 0.84; }
         .featured-link-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
         .featured-link-text small { opacity: 0.6; font-size: 11px; line-height: 1.25; }
@@ -437,7 +444,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         <div className="social-row">
           {socials.filter((l: any) => !l.featured).map((l: any) => (
-            <a key={l.id} href={safeExternalUrl(l.url)} target="_blank" rel="noopener noreferrer" className="social-link">
+            <a key={l.id} href={clickHref(l)} target="_blank" rel="noopener noreferrer" className="social-link">
               <img src={getIcon(l)} className="social-icon" alt="icon" />
             </a>
           ))}
@@ -445,7 +452,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         <div className="featured-links">
           {socials.filter((l: any) => l.label && l.featured).slice(0, 4).map((l: any) => (
-            <a key={`featured-${l.id}`} href={safeExternalUrl(l.url)} target="_blank" rel="noopener noreferrer" className="featured-link" style={{ borderColor: safeColor(l.color, accent) }}>
+            <a key={`featured-${l.id}`} href={clickHref(l)} target="_blank" rel="noopener noreferrer" className={featureClass(l.style)} style={{ borderColor: safeColor(l.color, accent) }}>
               <span className="featured-link-text">
                 <span>{String(l.label).slice(0, 40)}</span>
                 {l.description && <small>{String(l.description).slice(0, 80)}</small>}
