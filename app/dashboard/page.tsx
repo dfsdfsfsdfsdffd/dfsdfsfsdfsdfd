@@ -857,7 +857,6 @@ function ProfilePreview({
             return (
               <span key={key} className="classic-badge" title={info.description}>
                 <Icon size={14} color={info.color} />
-                {info.label}
               </span>
             );
           })}
@@ -1352,7 +1351,6 @@ function classicStyles(profile: ProfileData) {
     .classic-tags span {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.1);
       background: rgba(255,255,255,0.075);
@@ -1360,6 +1358,15 @@ function classicStyles(profile: ProfileData) {
       padding: 5px 8px;
       font-size: 11px;
       font-weight: 800;
+    }
+    .classic-badge {
+      width: 28px;
+      height: 28px;
+      justify-content: center;
+      padding: 0;
+    }
+    .classic-tags span {
+      gap: 5px;
     }
     .classic-bio {
       max-width: 310px;
