@@ -262,11 +262,14 @@ export default function PublicProfile({ params }: { params: { username: string }
       <style jsx>{`
         ${profileMeta.customFontUrl ? `@font-face { font-family: "SoftcardCustomFont"; src: url("${profileMeta.customFontUrl}") format("truetype"); font-display: swap; }` : ""}
         .container {
-          height: 100vh; width: 100vw; 
+          min-height: 100svh;
+          height: 100svh;
+          width: 100vw;
           background: ${profile.background_type === 'gradient' ? background : '#030712'};
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${fontFamily}, sans-serif;
           overflow: hidden; position: relative;
+          isolation: isolate;
           cursor: ${profileMeta.cursorUrl ? `url("${profileMeta.cursorUrl}") 8 8, auto` : "auto"};
         }
 
@@ -306,6 +309,8 @@ export default function PublicProfile({ params }: { params: { username: string }
           position: relative; z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
           width: 90%; max-width: 420px;
+          margin: auto;
+          flex: 0 0 auto;
           padding: 28px 20px;
           border-radius: 28px;
           background: ${profile.show_glass_card ? 'rgba(0, 0, 0, 0.45)' : 'transparent'};
@@ -350,26 +355,33 @@ export default function PublicProfile({ params }: { params: { username: string }
           z-index: 20;
         }
         .name-effect-rainbow {
-          background: linear-gradient(90deg, #ff4f8b, #ffd166, #72e0b1, #55d6ff, #a970ff, #ff4f8b);
-          background-size: 260% 100%;
+          background: linear-gradient(100deg, #ff4f8b 0%, #ffd166 18%, #72e0b1 38%, #55d6ff 58%, #a970ff 78%, #ff4f8b 100%);
+          background-size: 320% 100%;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
-          animation: public-rainbow 4s linear infinite;
+          filter: drop-shadow(0 0 14px ${accent}35);
+          animation: public-rainbow 5.5s ease-in-out infinite;
         }
         .name-effect-fuzzy {
-          text-shadow: 0 0 5px currentColor, 0 0 14px ${accent};
-          filter: blur(0.25px);
-          animation: public-fuzzy 1.7s ease-in-out infinite;
+          text-shadow:
+            0 0 4px currentColor,
+            0 0 14px ${accent},
+            1px 0 8px rgba(85,214,255,0.34),
+            -1px 0 8px rgba(255,79,139,0.32);
+          animation: public-fuzzy 2.4s ease-in-out infinite;
         }
         .name-effect-typewriter {
+          display: inline-block;
           overflow: hidden;
           white-space: nowrap;
           border-right: 2px solid currentColor;
-          animation: public-type 3.2s steps(18, end) infinite alternate, public-caret 0.8s step-end infinite;
+          vertical-align: bottom;
           max-width: 100%;
+          animation: public-type 4.2s steps(22, end) infinite, public-caret 0.8s step-end infinite;
         }
         .name-effect-glitch {
-          animation: public-glitch 1.1s steps(2, end) infinite;
+          text-shadow: 0 0 16px ${accent}44;
+          animation: public-glitch-base 3.2s steps(1, end) infinite;
         }
         .name-effect-glitch::before,
         .name-effect-glitch::after {
@@ -377,30 +389,38 @@ export default function PublicProfile({ params }: { params: { username: string }
           position: absolute;
           inset: 0;
           pointer-events: none;
-          opacity: 0.72;
+          opacity: 0;
         }
         .name-effect-glitch::before {
           color: #ff4f8b;
-          transform: translateX(-1px);
+          transform: translateX(-2px);
           clip-path: inset(0 0 48% 0);
+          animation: public-glitch-slice 2.6s steps(1, end) infinite;
         }
         .name-effect-glitch::after {
           color: #55d6ff;
-          transform: translateX(1px);
+          transform: translateX(2px);
           clip-path: inset(52% 0 0 0);
+          animation: public-glitch-slice 2.6s steps(1, end) infinite reverse;
+        }
+        .name-effect-sparkles {
+          text-shadow: 0 0 12px ${accent}40;
         }
         .name-effect-sparkles::after {
           content: "";
           position: absolute;
-          inset: -12px -22px;
+          inset: -16px -24px;
           pointer-events: none;
           background:
-            radial-gradient(circle, ${accent} 0 2px, transparent 3px) 92% 8% / 18px 18px no-repeat,
-            radial-gradient(circle, #ffffff 0 1.5px, transparent 2.5px) 6% 18% / 16px 16px no-repeat,
-            radial-gradient(circle, ${accent} 0 1.5px, transparent 2.5px) 78% 92% / 14px 14px no-repeat,
-            radial-gradient(circle, #ffffff 0 1px, transparent 2px) 18% 82% / 12px 12px no-repeat;
-          filter: drop-shadow(0 0 8px ${accent});
-          animation: public-sparkle 1.8s ease-in-out infinite;
+            radial-gradient(circle, #fff 0 1px, transparent 2px) 7% 35% / 18px 18px no-repeat,
+            radial-gradient(circle, ${accent} 0 1.5px, transparent 3px) 90% 12% / 20px 20px no-repeat,
+            radial-gradient(circle, #fff 0 1px, transparent 2px) 82% 88% / 16px 16px no-repeat,
+            radial-gradient(circle, ${accent} 0 1px, transparent 2px) 19% 83% / 14px 14px no-repeat,
+            linear-gradient(115deg, transparent 0 44%, rgba(255,255,255,0.9) 49%, transparent 54% 100%);
+          background-size: 18px 18px, 20px 20px, 16px 16px, 14px 14px, 240% 100%;
+          filter: drop-shadow(0 0 7px ${accent});
+          opacity: 0.72;
+          animation: public-sparkle 2.8s ease-in-out infinite;
         }
 
         .badges-pill {
@@ -530,72 +550,149 @@ export default function PublicProfile({ params }: { params: { username: string }
           z-index: 0;
         }
         .profile-effect-screen {
-          position: fixed;
+          position: absolute;
           inset: 0;
           border-radius: 0;
           z-index: 2;
         }
+        .profile-effect-screen::before,
+        .profile-effect-screen::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+        }
         .profile-effect span {
           position: absolute;
-          top: -18px;
-          opacity: 0.85;
+          left: var(--left, 50%);
+          top: -40px;
+          opacity: 0;
         }
-        .profile-effect span:nth-child(1) { left: 5%; animation-delay: -0.2s; }
-        .profile-effect span:nth-child(2) { left: 12%; animation-delay: -1.4s; }
-        .profile-effect span:nth-child(3) { left: 18%; animation-delay: -2.1s; }
-        .profile-effect span:nth-child(4) { left: 24%; animation-delay: -0.7s; }
-        .profile-effect span:nth-child(5) { left: 31%; animation-delay: -1.8s; }
-        .profile-effect span:nth-child(6) { left: 39%; animation-delay: -0.4s; }
-        .profile-effect span:nth-child(7) { left: 46%; animation-delay: -2.6s; }
-        .profile-effect span:nth-child(8) { left: 54%; animation-delay: -1.1s; }
-        .profile-effect span:nth-child(9) { left: 62%; animation-delay: -2.9s; }
-        .profile-effect span:nth-child(10) { left: 70%; animation-delay: -0.9s; }
-        .profile-effect span:nth-child(11) { left: 78%; animation-delay: -1.9s; }
-        .profile-effect span:nth-child(12) { left: 86%; animation-delay: -0.5s; }
-        .profile-effect span:nth-child(13) { left: 92%; animation-delay: -2.2s; }
-        .profile-effect span:nth-child(14) { left: 97%; animation-delay: -1.2s; }
         .profile-effect-snow span {
-          width: 5px;
-          height: 5px;
+          width: var(--size, 4px);
+          height: var(--size, 4px);
           border-radius: 999px;
-          background: white;
-          box-shadow: 0 0 10px rgba(255,255,255,0.8);
-          animation: public-fall 5s linear infinite;
+          background: rgba(255,255,255,0.92);
+          box-shadow: 0 0 12px rgba(255,255,255,0.52);
+          animation: public-fall var(--speed, 9s) linear infinite;
+          animation-delay: calc(var(--i, 0) * -0.43s);
+        }
+        .profile-effect-snow::before {
+          background:
+            radial-gradient(circle at 20% 15%, rgba(255,255,255,0.24), transparent 18%),
+            radial-gradient(circle at 80% 8%, rgba(85,214,255,0.16), transparent 18%);
+          opacity: 0.72;
         }
         .profile-effect-rain span {
           width: 1px;
-          height: 28px;
+          height: var(--rain-height, 40px);
           border-radius: 999px;
-          background: linear-gradient(180deg, transparent, rgba(125,190,255,0.85));
-          animation: public-rain 1.1s linear infinite;
+          background: linear-gradient(180deg, transparent, rgba(160,205,255,0.88));
+          box-shadow: 0 0 8px rgba(85,214,255,0.25);
+          transform: rotate(11deg);
+          animation: public-rain var(--rain-speed, 0.86s) linear infinite;
+          animation-delay: calc(var(--i, 0) * -0.12s);
+        }
+        .profile-effect-rain::before {
+          background: linear-gradient(180deg, rgba(10,18,32,0.08), rgba(70,120,170,0.18) 72%, rgba(255,255,255,0.08));
+        }
+        .profile-effect-rain::after {
+          background: radial-gradient(ellipse at 50% 100%, rgba(170,205,255,0.2), transparent 56%);
+          opacity: 0.55;
         }
         .profile-effect-night {
-          background: radial-gradient(circle at 72% 18%, rgba(255,255,220,0.95) 0 15px, transparent 16px), rgba(4,7,18,0.34);
+          background:
+            radial-gradient(circle at 72% 18%, rgba(255,251,214,0.95) 0 15px, rgba(255,251,214,0.18) 16px 34px, transparent 35px),
+            radial-gradient(circle at 70% 18%, rgba(255,255,255,0.2), transparent 9%),
+            linear-gradient(180deg, rgba(4,7,18,0.42), rgba(3,5,12,0.2));
         }
         .profile-effect-night span {
-          width: 2px;
-          height: 2px;
+          width: var(--size, 2px);
+          height: var(--size, 2px);
           border-radius: 999px;
-          background: white;
-          animation: public-twinkle 1.8s ease-in-out infinite;
+          background: rgba(255,255,255,0.95);
+          top: var(--star-top, 28%);
+          box-shadow: 0 0 10px rgba(255,255,255,0.62);
+          animation: public-twinkle var(--twinkle-speed, 2.8s) ease-in-out infinite;
+          animation-delay: calc(var(--i, 0) * -0.21s);
+        }
+        .profile-effect-night::after {
+          background: radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,0.32) 100%);
         }
         .profile-effect-ctv {
           background:
-            repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 4px),
-            linear-gradient(90deg, rgba(255,0,80,0.07), rgba(0,255,210,0.05));
+            repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 5px),
+            linear-gradient(90deg, rgba(255,0,80,0.08), rgba(0,255,210,0.06));
           mix-blend-mode: screen;
-          animation: public-ctv 0.18s steps(2,end) infinite;
+          opacity: 0.86;
+          animation: public-ctv 0.22s steps(2,end) infinite;
         }
-        @keyframes public-rainbow { to { background-position: 260% 0; } }
-        @keyframes public-fuzzy { 50% { filter: blur(0.8px); transform: translateX(0.5px); } }
-        @keyframes public-type { from { max-width: 0; } to { max-width: 100%; } }
+        .profile-effect-ctv::before {
+          background:
+            radial-gradient(circle at 20% 30%, rgba(255,255,255,0.06) 0 1px, transparent 1.5px),
+            radial-gradient(circle at 75% 65%, rgba(255,255,255,0.04) 0 1px, transparent 1.5px);
+          background-size: 7px 7px, 9px 9px;
+          animation: public-noise 0.36s steps(2,end) infinite;
+        }
+        .profile-effect-ctv::after {
+          background: radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,0.26));
+        }
+        @keyframes public-rainbow {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        @keyframes public-fuzzy {
+          0%, 100% { filter: blur(0); transform: translate3d(0,0,0); }
+          45% { filter: blur(0.55px); transform: translate3d(0.4px,-0.2px,0); }
+          62% { filter: blur(0.2px); transform: translate3d(-0.4px,0.2px,0); }
+        }
+        @keyframes public-type {
+          0%, 12% { max-width: 0; }
+          52%, 78% { max-width: 100%; }
+          100% { max-width: 0; }
+        }
         @keyframes public-caret { 50% { border-color: transparent; } }
-        @keyframes public-glitch { 50% { transform: skewX(-4deg) translateX(1px); text-shadow: 2px 0 #ff4f8b, -2px 0 #55d6ff; } }
-        @keyframes public-sparkle { 50% { transform: scale(1.08); opacity: 0.42; } }
-        @keyframes public-fall { to { transform: translate3d(24px, 620px, 0) rotate(180deg); } }
-        @keyframes public-rain { to { transform: translate3d(-18px, 620px, 0); } }
-        @keyframes public-twinkle { 50% { opacity: 0.25; transform: scale(1.6); } }
-        @keyframes public-ctv { 50% { filter: hue-rotate(22deg); transform: translateX(1px); } }
+        @keyframes public-glitch-base {
+          0%, 88%, 100% { transform: none; }
+          90% { transform: skewX(-3deg); }
+          92% { transform: skewX(2deg) translateX(1px); }
+          94% { transform: none; }
+        }
+        @keyframes public-glitch-slice {
+          0%, 86%, 100% { opacity: 0; }
+          88% { opacity: 0.8; transform: translate(-2px, -1px); }
+          90% { opacity: 0.55; transform: translate(2px, 1px); }
+          92% { opacity: 0.72; transform: translate(-1px, 0); }
+          94% { opacity: 0; }
+        }
+        @keyframes public-sparkle {
+          0%, 100% { background-position: 7% 35%, 90% 12%, 82% 88%, 19% 83%, 180% 0; opacity: 0.42; }
+          45% { background-position: 12% 28%, 86% 18%, 78% 84%, 22% 76%, 42% 0; opacity: 0.95; }
+          70% { opacity: 0.55; }
+        }
+        @keyframes public-fall {
+          0% { opacity: 0; transform: translate3d(0,-30px,0) rotate(0deg); }
+          12%, 88% { opacity: 0.82; }
+          100% { opacity: 0; transform: translate3d(var(--drift, 24px), 112vh, 0) rotate(220deg); }
+        }
+        @keyframes public-rain {
+          0% { opacity: 0; transform: translate3d(44px,-60px,0) rotate(11deg); }
+          14%, 82% { opacity: 0.86; }
+          100% { opacity: 0; transform: translate3d(-48px,112vh,0) rotate(11deg); }
+        }
+        @keyframes public-twinkle {
+          0%, 100% { opacity: 0.24; transform: scale(0.82); }
+          45% { opacity: 0.95; transform: scale(1.45); }
+          70% { opacity: 0.42; }
+        }
+        @keyframes public-ctv {
+          0%, 100% { filter: hue-rotate(0deg); transform: translateX(0); }
+          50% { filter: hue-rotate(18deg); transform: translateX(1px); }
+        }
+        @keyframes public-noise {
+          0% { transform: translate3d(0,0,0); opacity: 0.35; }
+          100% { transform: translate3d(-2px,1px,0); opacity: 0.55; }
+        }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
@@ -612,7 +709,22 @@ export default function PublicProfile({ params }: { params: { username: string }
 
       {profileMeta.profileEffect !== "none" && (
         <div className={`profile-effect profile-effect-${profileMeta.profileEffect} profile-effect-screen`} aria-hidden="true">
-          {Array.from({ length: profileMeta.profileEffect === "rain" ? 24 : 14 }).map((_, index) => <span key={index} />)}
+          {Array.from({ length: profileMeta.profileEffect === "rain" ? 42 : 28 }).map((_, index) => (
+            <span
+              key={index}
+              style={{
+                "--i": index,
+                "--size": `${2 + (index % 4)}px`,
+                "--speed": `${8 + (index % 6) * 0.8}s`,
+                "--rain-speed": `${0.72 + (index % 5) * 0.08}s`,
+                "--rain-height": `${32 + (index % 5) * 8}px`,
+                "--twinkle-speed": `${2 + (index % 6) * 0.3}s`,
+                "--drift": `${-18 + (index % 7) * 8}px`,
+                "--left": `${3 + ((index * 3.4) % 94)}%`,
+                "--star-top": `${7 + ((index * 3.1) % 78)}%`,
+              } as any}
+            />
+          ))}
         </div>
       )}
 

@@ -1045,7 +1045,22 @@ function EffectLayer({ effect, scope = "card" }: { effect: ProfileEffect; scope?
   if (effect === "none") return null;
   return (
     <div className={`classic-effect classic-effect-${effect} classic-effect-${scope}`} aria-hidden="true">
-      {Array.from({ length: effect === "rain" ? 24 : 14 }).map((_, index) => <span key={index} />)}
+      {Array.from({ length: effect === "rain" ? 42 : 28 }).map((_, index) => (
+        <span
+          key={index}
+          style={{
+            "--i": index,
+            "--size": `${2 + (index % 4)}px`,
+            "--speed": `${8 + (index % 6) * 0.8}s`,
+            "--rain-speed": `${0.72 + (index % 5) * 0.08}s`,
+            "--rain-height": `${32 + (index % 5) * 8}px`,
+            "--twinkle-speed": `${2 + (index % 6) * 0.3}s`,
+            "--drift": `${-18 + (index % 7) * 8}px`,
+            "--left": `${3 + ((index * 3.4) % 94)}%`,
+            "--star-top": `${7 + ((index * 3.1) % 78)}%`,
+          } as any}
+        />
+      ))}
     </div>
   );
 }
@@ -1458,6 +1473,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      isolation: isolate;
       padding: 34px;
       background: radial-gradient(circle at 50% 16%, rgba(169,112,255,0.13), transparent 31%), #05060a;
     }
@@ -1477,6 +1493,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       z-index: 5;
       width: 90%;
       max-width: 420px;
+      margin: auto;
+      flex: 0 0 auto;
       padding: 28px 20px;
       border-radius: 28px;
       display: flex;
@@ -1530,26 +1548,33 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       position: relative;
     }
     .name-effect-rainbow {
-      background: linear-gradient(90deg, #ff4f8b, #ffd166, #72e0b1, #55d6ff, #a970ff, #ff4f8b);
-      background-size: 260% 100%;
+      background: linear-gradient(100deg, #ff4f8b 0%, #ffd166 18%, #72e0b1 38%, #55d6ff 58%, #a970ff 78%, #ff4f8b 100%);
+      background-size: 320% 100%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: classic-rainbow 4s linear infinite;
+      filter: drop-shadow(0 0 14px ${profile.accent}35);
+      animation: classic-rainbow 5.5s ease-in-out infinite;
     }
     .name-effect-fuzzy {
-      text-shadow: 0 0 5px currentColor, 0 0 14px ${profile.accent};
-      filter: blur(0.25px);
-      animation: classic-fuzzy 1.7s ease-in-out infinite;
+      text-shadow:
+        0 0 4px currentColor,
+        0 0 14px ${profile.accent},
+        1px 0 8px rgba(85,214,255,0.34),
+        -1px 0 8px rgba(255,79,139,0.32);
+      animation: classic-fuzzy 2.4s ease-in-out infinite;
     }
     .name-effect-typewriter {
+      display: inline-block;
       overflow: hidden;
       white-space: nowrap;
       border-right: 2px solid currentColor;
-      animation: classic-type 3.2s steps(18, end) infinite alternate, classic-caret 0.8s step-end infinite;
+      vertical-align: bottom;
       max-width: 100%;
+      animation: classic-type 4.2s steps(22, end) infinite, classic-caret 0.8s step-end infinite;
     }
     .name-effect-glitch {
-      animation: classic-glitch 1.1s steps(2, end) infinite;
+      text-shadow: 0 0 16px ${profile.accent}44;
+      animation: classic-glitch-base 3.2s steps(1, end) infinite;
     }
     .name-effect-glitch::before,
     .name-effect-glitch::after {
@@ -1557,30 +1582,38 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      opacity: 0.72;
+      opacity: 0;
     }
     .name-effect-glitch::before {
       color: #ff4f8b;
-      transform: translateX(-1px);
+      transform: translateX(-2px);
       clip-path: inset(0 0 48% 0);
+      animation: classic-glitch-slice 2.6s steps(1, end) infinite;
     }
     .name-effect-glitch::after {
       color: #55d6ff;
-      transform: translateX(1px);
+      transform: translateX(2px);
       clip-path: inset(52% 0 0 0);
+      animation: classic-glitch-slice 2.6s steps(1, end) infinite reverse;
+    }
+    .name-effect-sparkles {
+      text-shadow: 0 0 12px ${profile.accent}40;
     }
     .name-effect-sparkles::after {
       content: "";
       position: absolute;
-      inset: -12px -22px;
+      inset: -16px -24px;
       pointer-events: none;
       background:
-        radial-gradient(circle, ${profile.accent} 0 2px, transparent 3px) 92% 8% / 18px 18px no-repeat,
-        radial-gradient(circle, #ffffff 0 1.5px, transparent 2.5px) 6% 18% / 16px 16px no-repeat,
-        radial-gradient(circle, ${profile.accent} 0 1.5px, transparent 2.5px) 78% 92% / 14px 14px no-repeat,
-        radial-gradient(circle, #ffffff 0 1px, transparent 2px) 18% 82% / 12px 12px no-repeat;
-      filter: drop-shadow(0 0 8px ${profile.accent});
-      animation: classic-sparkle 1.8s ease-in-out infinite;
+        radial-gradient(circle, #fff 0 1px, transparent 2px) 7% 35% / 18px 18px no-repeat,
+        radial-gradient(circle, ${profile.accent} 0 1.5px, transparent 3px) 90% 12% / 20px 20px no-repeat,
+        radial-gradient(circle, #fff 0 1px, transparent 2px) 82% 88% / 16px 16px no-repeat,
+        radial-gradient(circle, ${profile.accent} 0 1px, transparent 2px) 19% 83% / 14px 14px no-repeat,
+        linear-gradient(115deg, transparent 0 44%, rgba(255,255,255,0.9) 49%, transparent 54% 100%);
+      background-size: 18px 18px, 20px 20px, 16px 16px, 14px 14px, 240% 100%;
+      filter: drop-shadow(0 0 7px ${profile.accent});
+      opacity: 0.72;
+      animation: classic-sparkle 2.8s ease-in-out infinite;
     }
     .classic-badges,
     .classic-tags,
@@ -1782,71 +1815,144 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       border-radius: 0;
       z-index: 2;
     }
+    .classic-effect-screen::before,
+    .classic-effect-screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
     .classic-effect span {
       position: absolute;
-      left: calc(var(--i, 0) * 7%);
-      top: -18px;
-      width: 3px;
-      height: 3px;
-      opacity: 0.85;
+      left: var(--left, 50%);
+      top: -40px;
+      opacity: 0;
     }
-    .classic-effect span:nth-child(1) { left: 5%; animation-delay: -0.2s; }
-    .classic-effect span:nth-child(2) { left: 12%; animation-delay: -1.4s; }
-    .classic-effect span:nth-child(3) { left: 18%; animation-delay: -2.1s; }
-    .classic-effect span:nth-child(4) { left: 24%; animation-delay: -0.7s; }
-    .classic-effect span:nth-child(5) { left: 31%; animation-delay: -1.8s; }
-    .classic-effect span:nth-child(6) { left: 39%; animation-delay: -0.4s; }
-    .classic-effect span:nth-child(7) { left: 46%; animation-delay: -2.6s; }
-    .classic-effect span:nth-child(8) { left: 54%; animation-delay: -1.1s; }
-    .classic-effect span:nth-child(9) { left: 62%; animation-delay: -2.9s; }
-    .classic-effect span:nth-child(10) { left: 70%; animation-delay: -0.9s; }
-    .classic-effect span:nth-child(11) { left: 78%; animation-delay: -1.9s; }
-    .classic-effect span:nth-child(12) { left: 86%; animation-delay: -0.5s; }
-    .classic-effect span:nth-child(13) { left: 92%; animation-delay: -2.2s; }
-    .classic-effect span:nth-child(14) { left: 97%; animation-delay: -1.2s; }
     .classic-effect-snow span {
-      width: 5px;
-      height: 5px;
+      width: var(--size, 4px);
+      height: var(--size, 4px);
       border-radius: 999px;
-      background: white;
-      box-shadow: 0 0 10px rgba(255,255,255,0.8);
-      animation: classic-fall 5s linear infinite;
+      background: rgba(255,255,255,0.92);
+      box-shadow: 0 0 12px rgba(255,255,255,0.52);
+      animation: classic-fall var(--speed, 9s) linear infinite;
+      animation-delay: calc(var(--i, 0) * -0.43s);
+    }
+    .classic-effect-snow::before {
+      background:
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,0.24), transparent 18%),
+        radial-gradient(circle at 80% 8%, rgba(85,214,255,0.16), transparent 18%);
+      opacity: 0.72;
     }
     .classic-effect-rain span {
       width: 1px;
-      height: 28px;
+      height: var(--rain-height, 40px);
       border-radius: 999px;
-      background: linear-gradient(180deg, transparent, rgba(125,190,255,0.85));
-      animation: classic-rain 1.1s linear infinite;
+      background: linear-gradient(180deg, transparent, rgba(160,205,255,0.88));
+      box-shadow: 0 0 8px rgba(85,214,255,0.25);
+      transform: rotate(11deg);
+      animation: classic-rain var(--rain-speed, 0.86s) linear infinite;
+      animation-delay: calc(var(--i, 0) * -0.12s);
+    }
+    .classic-effect-rain::before {
+      background: linear-gradient(180deg, rgba(10,18,32,0.08), rgba(70,120,170,0.18) 72%, rgba(255,255,255,0.08));
+    }
+    .classic-effect-rain::after {
+      background: radial-gradient(ellipse at 50% 100%, rgba(170,205,255,0.2), transparent 56%);
+      opacity: 0.55;
     }
     .classic-effect-night {
-      background: radial-gradient(circle at 72% 18%, rgba(255,255,220,0.95) 0 15px, transparent 16px), rgba(4,7,18,0.34);
+      background:
+        radial-gradient(circle at 72% 18%, rgba(255,251,214,0.95) 0 15px, rgba(255,251,214,0.18) 16px 34px, transparent 35px),
+        radial-gradient(circle at 70% 18%, rgba(255,255,255,0.2), transparent 9%),
+        linear-gradient(180deg, rgba(4,7,18,0.42), rgba(3,5,12,0.2));
     }
     .classic-effect-night span {
-      width: 2px;
-      height: 2px;
+      width: var(--size, 2px);
+      height: var(--size, 2px);
       border-radius: 999px;
-      background: white;
-      top: calc(10% + (var(--i, 0) * 5%));
-      animation: classic-twinkle 1.8s ease-in-out infinite;
+      background: rgba(255,255,255,0.95);
+      top: var(--star-top, 28%);
+      box-shadow: 0 0 10px rgba(255,255,255,0.62);
+      animation: classic-twinkle var(--twinkle-speed, 2.8s) ease-in-out infinite;
+      animation-delay: calc(var(--i, 0) * -0.21s);
+    }
+    .classic-effect-night::after {
+      background: radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,0.32) 100%);
     }
     .classic-effect-ctv {
       background:
-        repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 4px),
-        linear-gradient(90deg, rgba(255,0,80,0.07), rgba(0,255,210,0.05));
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 5px),
+        linear-gradient(90deg, rgba(255,0,80,0.08), rgba(0,255,210,0.06));
       mix-blend-mode: screen;
-      animation: classic-ctv 0.18s steps(2,end) infinite;
+      opacity: 0.86;
+      animation: classic-ctv 0.22s steps(2,end) infinite;
     }
-    @keyframes classic-rainbow { to { background-position: 260% 0; } }
-    @keyframes classic-fuzzy { 50% { filter: blur(0.8px); transform: translateX(0.5px); } }
-    @keyframes classic-type { from { max-width: 0; } to { max-width: 100%; } }
+    .classic-effect-ctv::before {
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.06) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 75% 65%, rgba(255,255,255,0.04) 0 1px, transparent 1.5px);
+      background-size: 7px 7px, 9px 9px;
+      animation: classic-noise 0.36s steps(2,end) infinite;
+    }
+    .classic-effect-ctv::after {
+      background: radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,0.26));
+    }
+    @keyframes classic-rainbow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    @keyframes classic-fuzzy {
+      0%, 100% { filter: blur(0); transform: translate3d(0,0,0); }
+      45% { filter: blur(0.55px); transform: translate3d(0.4px,-0.2px,0); }
+      62% { filter: blur(0.2px); transform: translate3d(-0.4px,0.2px,0); }
+    }
+    @keyframes classic-type {
+      0%, 12% { max-width: 0; }
+      52%, 78% { max-width: 100%; }
+      100% { max-width: 0; }
+    }
     @keyframes classic-caret { 50% { border-color: transparent; } }
-    @keyframes classic-glitch { 50% { transform: skewX(-4deg) translateX(1px); text-shadow: 2px 0 #ff4f8b, -2px 0 #55d6ff; } }
-    @keyframes classic-sparkle { 50% { transform: scale(1.08); opacity: 0.42; } }
-    @keyframes classic-fall { to { transform: translate3d(24px, 620px, 0) rotate(180deg); } }
-    @keyframes classic-rain { to { transform: translate3d(-18px, 620px, 0); } }
-    @keyframes classic-twinkle { 50% { opacity: 0.25; transform: scale(1.6); } }
-    @keyframes classic-ctv { 50% { filter: hue-rotate(22deg); transform: translateX(1px); } }
+    @keyframes classic-glitch-base {
+      0%, 88%, 100% { transform: none; }
+      90% { transform: skewX(-3deg); }
+      92% { transform: skewX(2deg) translateX(1px); }
+      94% { transform: none; }
+    }
+    @keyframes classic-glitch-slice {
+      0%, 86%, 100% { opacity: 0; }
+      88% { opacity: 0.8; transform: translate(-2px, -1px); }
+      90% { opacity: 0.55; transform: translate(2px, 1px); }
+      92% { opacity: 0.72; transform: translate(-1px, 0); }
+      94% { opacity: 0; }
+    }
+    @keyframes classic-sparkle {
+      0%, 100% { background-position: 7% 35%, 90% 12%, 82% 88%, 19% 83%, 180% 0; opacity: 0.42; }
+      45% { background-position: 12% 28%, 86% 18%, 78% 84%, 22% 76%, 42% 0; opacity: 0.95; }
+      70% { opacity: 0.55; }
+    }
+    @keyframes classic-fall {
+      0% { opacity: 0; transform: translate3d(0,-30px,0) rotate(0deg); }
+      12%, 88% { opacity: 0.82; }
+      100% { opacity: 0; transform: translate3d(var(--drift, 24px), 112vh, 0) rotate(220deg); }
+    }
+    @keyframes classic-rain {
+      0% { opacity: 0; transform: translate3d(44px,-60px,0) rotate(11deg); }
+      14%, 82% { opacity: 0.86; }
+      100% { opacity: 0; transform: translate3d(-48px,112vh,0) rotate(11deg); }
+    }
+    @keyframes classic-twinkle {
+      0%, 100% { opacity: 0.24; transform: scale(0.82); }
+      45% { opacity: 0.95; transform: scale(1.45); }
+      70% { opacity: 0.42; }
+    }
+    @keyframes classic-ctv {
+      0%, 100% { filter: hue-rotate(0deg); transform: translateX(0); }
+      50% { filter: hue-rotate(18deg); transform: translateX(1px); }
+    }
+    @keyframes classic-noise {
+      0% { transform: translate3d(0,0,0); opacity: 0.35; }
+      100% { transform: translate3d(-2px,1px,0); opacity: 0.55; }
+    }
     @media (max-width: 900px) {
       .classic-editor {
         grid-template-columns: 1fr;
