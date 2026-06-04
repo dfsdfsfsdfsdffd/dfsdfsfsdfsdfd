@@ -1489,11 +1489,15 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       transform: ${meta.bgBlur > 0 ? "scale(1.04)" : "none"};
     }
     .classic-profile-card {
-      position: relative;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate3d(-50%, -50%, 0);
       z-index: 5;
       width: 90%;
       max-width: 420px;
-      margin: auto;
+      max-height: calc(100svh - 68px);
+      overflow-y: auto;
       flex: 0 0 auto;
       padding: 28px 20px;
       border-radius: 28px;
@@ -1501,7 +1505,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       flex-direction: column;
       align-items: center;
       text-align: center;
-      overflow: hidden;
+      overflow-x: hidden;
       background: ${profile.showGlass ? "rgba(0,0,0,0.45)" : "transparent"};
       backdrop-filter: ${profile.showGlass ? "blur(25px)" : "none"};
       border: ${profile.showGlass ? "1px solid rgba(255,255,255,0.1)" : "0"};

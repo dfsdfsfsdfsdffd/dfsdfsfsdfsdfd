@@ -306,10 +306,15 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         .profile-card {
-          position: relative; z-index: 5; text-align: center;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate3d(-50%, -50%, 0);
+          z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
           width: 90%; max-width: 420px;
-          margin: auto;
+          max-height: calc(100svh - 40px);
+          overflow-y: auto;
           flex: 0 0 auto;
           padding: 28px 20px;
           border-radius: 28px;
@@ -317,7 +322,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           backdrop-filter: ${profile.show_glass_card ? 'blur(25px)' : 'none'};
           border: ${profile.show_glass_card ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
           box-shadow: ${profile.show_glass_card ? '0 25px 50px rgba(0,0,0,0.6)' : 'none'};
-          overflow: hidden;
+          overflow-x: hidden;
         }
         .profile-card > :not(.profile-effect) { position: relative; z-index: 1; }
 
