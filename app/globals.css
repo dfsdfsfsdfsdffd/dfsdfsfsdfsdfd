@@ -60,6 +60,17 @@ textarea {
   font: inherit;
 }
 
+select {
+  color-scheme: dark;
+  background-color: #22232b;
+  color: #ffffff;
+}
+
+select option {
+  background-color: #11131b;
+  color: #ffffff;
+}
+
 button {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;

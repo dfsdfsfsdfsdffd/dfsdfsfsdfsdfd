@@ -34,7 +34,7 @@ import {
 type LinkStyle = "glass" | "filled" | "outline" | "soft";
 type EditorTab = "profile" | "links" | "appearance" | "media" | "stats";
 type ProfileEffect = "none" | "snow" | "rain" | "night" | "ctv";
-type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "shuffle" | "sparkles";
+type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "glitch" | "sparkles";
 
 type ProfileMeta = {
   cursorUrl: string;
@@ -295,7 +295,9 @@ function normalizeLinks(items: SocialLink[]) {
 
 function readMeta(items: SocialLink[]): ProfileMeta {
   const metaLink = items.find((link) => link.type === "__softcard_meta");
-  return { ...defaultMeta, ...(metaLink?.meta || {}) };
+  const meta = { ...defaultMeta, ...(metaLink?.meta || {}) };
+  if ((meta.usernameEffect as string) === "shuffle") meta.usernameEffect = "glitch";
+  return meta;
 }
 
 function writeMeta(items: SocialLink[], meta: ProfileMeta) {
@@ -811,7 +813,7 @@ export default function SoftcardDashboard() {
                 <option value="typewriter">Typewriter</option>
                 <option value="rainbow">Rainbow</option>
                 <option value="fuzzy">Fuzzy</option>
-                <option value="shuffle">Shuffle</option>
+                <option value="glitch">Glitch</option>
                 <option value="sparkles">Sparkles</option>
               </select>
             </Field>
@@ -889,6 +891,7 @@ export default function SoftcardDashboard() {
         {profile.bgType === "gradient" && <div className="classic-bg" style={{ background: profile.gradient }} />}
         {profile.bgType === "image" && profile.bgImage && <img className="classic-bg" src={profile.bgImage} alt="" />}
         {profile.bgType === "video" && profile.bgVideo && <video className="classic-bg" src={profile.bgVideo} autoPlay muted loop playsInline />}
+        <EffectLayer effect={profileMeta.profileEffect} scope="screen" />
         <ProfilePreview profile={profile} meta={profileMeta} badges={badges} links={links} featureClass={featureClass} />
       </section>
     </main>
@@ -975,7 +978,6 @@ function ProfilePreview({
 
   return (
     <div className="classic-profile-card">
-      <EffectLayer effect={meta.profileEffect} />
       <div className="classic-view-count">
         <Eye size={14} strokeWidth={2.5} />
         {Number(profile.views || 0).toLocaleString()}
@@ -1039,10 +1041,10 @@ function ProfilePreview({
   );
 }
 
-function EffectLayer({ effect }: { effect: ProfileEffect }) {
+function EffectLayer({ effect, scope = "card" }: { effect: ProfileEffect; scope?: "card" | "screen" }) {
   if (effect === "none") return null;
   return (
-    <div className={`classic-effect classic-effect-${effect}`} aria-hidden="true">
+    <div className={`classic-effect classic-effect-${effect} classic-effect-${scope}`} aria-hidden="true">
       {Array.from({ length: effect === "rain" ? 24 : 14 }).map((_, index) => <span key={index} />)}
     </div>
   );
@@ -1256,10 +1258,22 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       min-height: 44px;
       border-radius: 10px;
       border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.055);
+      background-color: #22232b;
       color: white;
       outline: 0;
       padding: 11px 12px;
+    }
+    .classic-field select,
+    .classic-link-card select {
+      color-scheme: dark;
+      appearance: auto;
+      background: #22232b !important;
+      color: #ffffff !important;
+    }
+    .classic-field option,
+    .classic-link-card option {
+      background-color: #11131b !important;
+      color: #ffffff !important;
     }
     .classic-field textarea {
       min-height: 92px;
@@ -1483,6 +1497,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       position: absolute;
       top: 18px;
       right: 22px;
+      z-index: 5;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -1491,6 +1506,9 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       color: rgba(255,255,255,0.85);
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
       letter-spacing: 0.02em;
+    }
+    .classic-profile-card .classic-view-count {
+      z-index: 20;
     }
     .classic-pfp {
       width: 96px;
@@ -1530,16 +1548,39 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       animation: classic-type 3.2s steps(18, end) infinite alternate, classic-caret 0.8s step-end infinite;
       max-width: 100%;
     }
-    .name-effect-shuffle {
-      animation: classic-shuffle 1.1s steps(2, end) infinite;
+    .name-effect-glitch {
+      animation: classic-glitch 1.1s steps(2, end) infinite;
+    }
+    .name-effect-glitch::before,
+    .name-effect-glitch::after {
+      content: attr(data-name);
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.72;
+    }
+    .name-effect-glitch::before {
+      color: #ff4f8b;
+      transform: translateX(-1px);
+      clip-path: inset(0 0 48% 0);
+    }
+    .name-effect-glitch::after {
+      color: #55d6ff;
+      transform: translateX(1px);
+      clip-path: inset(52% 0 0 0);
     }
     .name-effect-sparkles::after {
-      content: "✦";
+      content: "";
       position: absolute;
-      right: -18px;
-      top: -10px;
-      color: ${profile.accent};
-      animation: classic-sparkle 1.4s ease-in-out infinite;
+      inset: -12px -22px;
+      pointer-events: none;
+      background:
+        radial-gradient(circle, ${profile.accent} 0 2px, transparent 3px) 92% 8% / 18px 18px no-repeat,
+        radial-gradient(circle, #ffffff 0 1.5px, transparent 2.5px) 6% 18% / 16px 16px no-repeat,
+        radial-gradient(circle, ${profile.accent} 0 1.5px, transparent 2.5px) 78% 92% / 14px 14px no-repeat,
+        radial-gradient(circle, #ffffff 0 1px, transparent 2px) 18% 82% / 12px 12px no-repeat;
+      filter: drop-shadow(0 0 8px ${profile.accent});
+      animation: classic-sparkle 1.8s ease-in-out infinite;
     }
     .classic-badges,
     .classic-tags,
@@ -1735,6 +1776,12 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       border-radius: inherit;
       z-index: 0;
     }
+    .classic-effect-screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 0;
+      z-index: 2;
+    }
     .classic-effect span {
       position: absolute;
       left: calc(var(--i, 0) * 7%);
@@ -1794,8 +1841,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     @keyframes classic-fuzzy { 50% { filter: blur(0.8px); transform: translateX(0.5px); } }
     @keyframes classic-type { from { max-width: 0; } to { max-width: 100%; } }
     @keyframes classic-caret { 50% { border-color: transparent; } }
-    @keyframes classic-shuffle { 50% { transform: skewX(-4deg) translateX(1px); text-shadow: 2px 0 #ff4f8b, -2px 0 #55d6ff; } }
-    @keyframes classic-sparkle { 50% { transform: scale(1.35) rotate(18deg); opacity: 0.55; } }
+    @keyframes classic-glitch { 50% { transform: skewX(-4deg) translateX(1px); text-shadow: 2px 0 #ff4f8b, -2px 0 #55d6ff; } }
+    @keyframes classic-sparkle { 50% { transform: scale(1.08); opacity: 0.42; } }
     @keyframes classic-fall { to { transform: translate3d(24px, 620px, 0) rotate(180deg); } }
     @keyframes classic-rain { to { transform: translate3d(-18px, 620px, 0); } }
     @keyframes classic-twinkle { 50% { opacity: 0.25; transform: scale(1.6); } }

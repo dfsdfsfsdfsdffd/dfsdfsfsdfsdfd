@@ -4,7 +4,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { ShieldCheck, Code, Star, Eye, ExternalLink, Play, Pause } from "lucide-react"
 
 type ProfileEffect = "none" | "snow" | "rain" | "night" | "ctv";
-type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "shuffle" | "sparkles";
+type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "glitch" | "sparkles";
 type ProfileMeta = {
   cursorUrl: string;
   profileEffect: ProfileEffect;
@@ -121,7 +121,9 @@ function getIcon(linkObj: any) {
 
 function readMeta(items: any[]): ProfileMeta {
   const metaLink = items.find((link) => link.type === "__softcard_meta");
-  return { ...defaultMeta, ...(metaLink?.meta || {}) };
+  const meta = { ...defaultMeta, ...(metaLink?.meta || {}) };
+  if ((meta.usernameEffect as string) === "shuffle") meta.usernameEffect = "glitch";
+  return meta;
 }
 
 function mediaName(url: string) {
@@ -318,6 +320,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           position: absolute;
           top: 18px;
           right: 22px;
+          z-index: 5;
           display: flex;
           align-items: center;
           gap: 6px;
@@ -343,6 +346,9 @@ export default function PublicProfile({ params }: { params: { username: string }
           position: relative;
           font-family: ${fontFamily}, sans-serif;
         }
+        .profile-card .view-count {
+          z-index: 20;
+        }
         .name-effect-rainbow {
           background: linear-gradient(90deg, #ff4f8b, #ffd166, #72e0b1, #55d6ff, #a970ff, #ff4f8b);
           background-size: 260% 100%;
@@ -362,16 +368,39 @@ export default function PublicProfile({ params }: { params: { username: string }
           animation: public-type 3.2s steps(18, end) infinite alternate, public-caret 0.8s step-end infinite;
           max-width: 100%;
         }
-        .name-effect-shuffle {
-          animation: public-shuffle 1.1s steps(2, end) infinite;
+        .name-effect-glitch {
+          animation: public-glitch 1.1s steps(2, end) infinite;
+        }
+        .name-effect-glitch::before,
+        .name-effect-glitch::after {
+          content: attr(data-name);
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          opacity: 0.72;
+        }
+        .name-effect-glitch::before {
+          color: #ff4f8b;
+          transform: translateX(-1px);
+          clip-path: inset(0 0 48% 0);
+        }
+        .name-effect-glitch::after {
+          color: #55d6ff;
+          transform: translateX(1px);
+          clip-path: inset(52% 0 0 0);
         }
         .name-effect-sparkles::after {
-          content: "✦";
+          content: "";
           position: absolute;
-          right: -18px;
-          top: -10px;
-          color: ${accent};
-          animation: public-sparkle 1.4s ease-in-out infinite;
+          inset: -12px -22px;
+          pointer-events: none;
+          background:
+            radial-gradient(circle, ${accent} 0 2px, transparent 3px) 92% 8% / 18px 18px no-repeat,
+            radial-gradient(circle, #ffffff 0 1.5px, transparent 2.5px) 6% 18% / 16px 16px no-repeat,
+            radial-gradient(circle, ${accent} 0 1.5px, transparent 2.5px) 78% 92% / 14px 14px no-repeat,
+            radial-gradient(circle, #ffffff 0 1px, transparent 2px) 18% 82% / 12px 12px no-repeat;
+          filter: drop-shadow(0 0 8px ${accent});
+          animation: public-sparkle 1.8s ease-in-out infinite;
         }
 
         .badges-pill {
@@ -500,6 +529,12 @@ export default function PublicProfile({ params }: { params: { username: string }
           border-radius: inherit;
           z-index: 0;
         }
+        .profile-effect-screen {
+          position: fixed;
+          inset: 0;
+          border-radius: 0;
+          z-index: 2;
+        }
         .profile-effect span {
           position: absolute;
           top: -18px;
@@ -555,8 +590,8 @@ export default function PublicProfile({ params }: { params: { username: string }
         @keyframes public-fuzzy { 50% { filter: blur(0.8px); transform: translateX(0.5px); } }
         @keyframes public-type { from { max-width: 0; } to { max-width: 100%; } }
         @keyframes public-caret { 50% { border-color: transparent; } }
-        @keyframes public-shuffle { 50% { transform: skewX(-4deg) translateX(1px); text-shadow: 2px 0 #ff4f8b, -2px 0 #55d6ff; } }
-        @keyframes public-sparkle { 50% { transform: scale(1.35) rotate(18deg); opacity: 0.55; } }
+        @keyframes public-glitch { 50% { transform: skewX(-4deg) translateX(1px); text-shadow: 2px 0 #ff4f8b, -2px 0 #55d6ff; } }
+        @keyframes public-sparkle { 50% { transform: scale(1.08); opacity: 0.42; } }
         @keyframes public-fall { to { transform: translate3d(24px, 620px, 0) rotate(180deg); } }
         @keyframes public-rain { to { transform: translate3d(-18px, 620px, 0); } }
         @keyframes public-twinkle { 50% { opacity: 0.25; transform: scale(1.6); } }
@@ -575,12 +610,13 @@ export default function PublicProfile({ params }: { params: { username: string }
 
       {audioUrl && <audio ref={audioRef} src={audioUrl} loop />}
 
+      {profileMeta.profileEffect !== "none" && (
+        <div className={`profile-effect profile-effect-${profileMeta.profileEffect} profile-effect-screen`} aria-hidden="true">
+          {Array.from({ length: profileMeta.profileEffect === "rain" ? 24 : 14 }).map((_, index) => <span key={index} />)}
+        </div>
+      )}
+
       <div className="profile-card">
-        {profileMeta.profileEffect !== "none" && (
-          <div className={`profile-effect profile-effect-${profileMeta.profileEffect}`} aria-hidden="true">
-            {Array.from({ length: profileMeta.profileEffect === "rain" ? 24 : 14 }).map((_, index) => <span key={index} />)}
-          </div>
-        )}
         <div className="view-count">
           <Eye size={14} strokeWidth={2.5} />
           {/* We show current views + 1 so the user's visit is counted instantly on screen */}
@@ -589,7 +625,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         <img src={avatarUrl} className="pfp" alt="profile" />
         
-        <div className={`display-name name-effect-${profileMeta.usernameEffect}`}>{profile.display_name}</div>
+        <div className={`display-name name-effect-${profileMeta.usernameEffect}`} data-name={profile.display_name}>{profile.display_name}</div>
 
         {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
           <div className="badges-pill">
