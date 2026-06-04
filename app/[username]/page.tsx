@@ -3,8 +3,24 @@ import { useState, useEffect, useRef, useMemo } from "react"
 import { createBrowserClient } from '@supabase/ssr'
 import { ShieldCheck, Code, Star, Eye, ExternalLink, Play, Pause } from "lucide-react"
 
+type ProfileEffect = "none" | "snow" | "rain" | "night" | "ctv";
+type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "shuffle" | "sparkles";
+type ProfileMeta = {
+  cursorUrl: string;
+  profileEffect: ProfileEffect;
+  usernameEffect: UsernameEffect;
+  bgBlur: number;
+  bgOpacity: number;
+  customFontUrl: string;
+  customFontName: string;
+};
+
 const iconMap: any = {
+  snapchat: "https://cdn.simpleicons.org/snapchat/fffc00",
   tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
+  telegram: "https://cdn.simpleicons.org/telegram/26a5e4",
+  soundcloud: "https://cdn.simpleicons.org/soundcloud/ff5500",
+  paypal: "https://cdn.simpleicons.org/paypal/003087",
   instagram: "https://cdn.simpleicons.org/instagram/ffffff",
   x: "https://cdn.simpleicons.org/x/ffffff",
   youtube: "https://cdn.simpleicons.org/youtube/ffffff",
@@ -12,8 +28,36 @@ const iconMap: any = {
   spotify: "https://cdn.simpleicons.org/spotify/ffffff",
   discord: "https://cdn.simpleicons.org/discord/ffffff",
   github: "https://cdn.simpleicons.org/github/ffffff",
+  roblox: "https://cdn.simpleicons.org/roblox/ffffff",
+  cashapp: "https://cdn.simpleicons.org/cashapp/00d632",
+  venmo: "https://cdn.simpleicons.org/venmo/008cff",
+  playstation: "https://cdn.simpleicons.org/playstation/0070cc",
+  xbox: "https://cdn.simpleicons.org/xbox/107c10",
+  applemusic: "https://cdn.simpleicons.org/applemusic/fa243c",
+  gitlab: "https://cdn.simpleicons.org/gitlab/fc6d26",
+  reddit: "https://cdn.simpleicons.org/reddit/ff4500",
+  vk: "https://cdn.simpleicons.org/vk/0077ff",
+  bluesky: "https://cdn.simpleicons.org/bluesky/0285ff",
+  namemc: "https://cdn.simpleicons.org/namemc/12161a",
+  onlyfans: "https://cdn.simpleicons.org/onlyfans/00aff0",
+  linkedin: "https://cdn.simpleicons.org/linkedin/0a66c2",
+  steam: "https://cdn.simpleicons.org/steam/ffffff",
+  kick: "https://cdn.simpleicons.org/kick/53fc18",
+  pinterest: "https://cdn.simpleicons.org/pinterest/e60023",
+  osu: "https://cdn.simpleicons.org/osu/ff66aa",
+  googlemaps: "https://cdn.simpleicons.org/googlemaps/4285f4",
+  buymeacoffee: "https://cdn.simpleicons.org/buymeacoffee/ffdd00",
+  facebook: "https://cdn.simpleicons.org/facebook/0866ff",
   threads: "https://cdn.simpleicons.org/threads/ffffff",
-  linkedin: "https://cdn.simpleicons.org/linkedin/ffffff",
+  patreon: "https://cdn.simpleicons.org/patreon/ff424d",
+  signal: "https://cdn.simpleicons.org/signal/3a76f0",
+  bitcoin: "https://cdn.simpleicons.org/bitcoin/f7931a",
+  ethereum: "https://cdn.simpleicons.org/ethereum/ffffff",
+  litecoin: "https://cdn.simpleicons.org/litecoin/a6a9aa",
+  solana: "https://cdn.simpleicons.org/solana/9945ff",
+  ripple: "https://cdn.simpleicons.org/xrp/346aa9",
+  monero: "https://cdn.simpleicons.org/monero/ff6600",
+  email: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Cpath d='m3 7 9 6 9-6'/%3E%3C/svg%3E",
   website: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E"
 }
 
@@ -25,6 +69,15 @@ const badgeInfo = {
 
 const SAFE_FONTS = new Set(["Inter", "Playfair Display", "JetBrains Mono", "Outfit"]);
 const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
+const defaultMeta: ProfileMeta = {
+  cursorUrl: "",
+  profileEffect: "none",
+  usernameEffect: "none",
+  bgBlur: 0,
+  bgOpacity: 1,
+  customFontUrl: "",
+  customFontName: "",
+};
 
 function safeColor(value: unknown, fallback: string) {
   return typeof value === "string" && HEX_COLOR.test(value) ? value : fallback;
@@ -64,6 +117,11 @@ function safeExternalUrl(value: unknown) {
 function getIcon(linkObj: any) {
   if (linkObj.type && iconMap[linkObj.type]) return iconMap[linkObj.type]
   return iconMap.website
+}
+
+function readMeta(items: any[]): ProfileMeta {
+  const metaLink = items.find((link) => link.type === "__softcard_meta");
+  return { ...defaultMeta, ...(metaLink?.meta || {}) };
 }
 
 function mediaName(url: string) {
@@ -179,11 +237,13 @@ export default function PublicProfile({ params }: { params: { username: string }
 
   if (!profile) return null
 
-  const socials = profile.links?.filter((l: any) => l.enabled !== false && safeExternalUrl(l.url)) || []
+  const allLinks = Array.isArray(profile.links) ? profile.links : [];
+  const profileMeta = readMeta(allLinks);
+  const socials = allLinks.filter((l: any) => l.type !== "__softcard_meta" && l.enabled !== false && safeExternalUrl(l.url)) || []
   const accent = safeColor(profile.accent_color, '#7000ff');
   const nameColor = safeColor(profile.name_color, '#ffffff');
   const bioColor = safeColor(profile.bio_color, '#d1d5db');
-  const fontFamily = safeFont(profile.font_family);
+  const fontFamily = profileMeta.customFontUrl ? "SoftcardCustomFont" : safeFont(profile.font_family);
   const background = safeGradient(profile.background_value);
   const hasMediaBg = (profile.background_type === "image" || profile.background_type === "video") && profile.background_value;
   const bgUrl = hasMediaBg ? safeMediaUrl(profile.background_value) : "";
@@ -198,12 +258,14 @@ export default function PublicProfile({ params }: { params: { username: string }
   return (
     <div className="container">
       <style jsx>{`
+        ${profileMeta.customFontUrl ? `@font-face { font-family: "SoftcardCustomFont"; src: url("${profileMeta.customFontUrl}") format("truetype"); font-display: swap; }` : ""}
         .container {
           height: 100vh; width: 100vw; 
           background: ${profile.background_type === 'gradient' ? background : '#030712'};
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${fontFamily}, sans-serif;
           overflow: hidden; position: relative;
+          cursor: ${profileMeta.cursorUrl ? `url("${profileMeta.cursorUrl}") 8 8, auto` : "auto"};
         }
 
         .audio-controls {
@@ -232,6 +294,11 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
         .bg-content { width: 100%; height: 100%; object-fit: cover; }
+        .bg-wrapper {
+          opacity: ${profileMeta.bgOpacity};
+          filter: blur(${profileMeta.bgBlur}px);
+          transform: ${profileMeta.bgBlur > 0 ? "scale(1.04)" : "none"};
+        }
 
         .profile-card {
           position: relative; z-index: 5; text-align: center;
@@ -243,7 +310,9 @@ export default function PublicProfile({ params }: { params: { username: string }
           backdrop-filter: ${profile.show_glass_card ? 'blur(25px)' : 'none'};
           border: ${profile.show_glass_card ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
           box-shadow: ${profile.show_glass_card ? '0 25px 50px rgba(0,0,0,0.6)' : 'none'};
+          overflow: hidden;
         }
+        .profile-card > :not(.profile-effect) { position: relative; z-index: 1; }
 
         .view-count {
           position: absolute;
@@ -271,6 +340,38 @@ export default function PublicProfile({ params }: { params: { username: string }
           font-size: 28px; font-weight: 800; margin-bottom: 4px;
           color: ${nameColor};
           letter-spacing: -0.03em;
+          position: relative;
+          font-family: ${fontFamily}, sans-serif;
+        }
+        .name-effect-rainbow {
+          background: linear-gradient(90deg, #ff4f8b, #ffd166, #72e0b1, #55d6ff, #a970ff, #ff4f8b);
+          background-size: 260% 100%;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: public-rainbow 4s linear infinite;
+        }
+        .name-effect-fuzzy {
+          text-shadow: 0 0 5px currentColor, 0 0 14px ${accent};
+          filter: blur(0.25px);
+          animation: public-fuzzy 1.7s ease-in-out infinite;
+        }
+        .name-effect-typewriter {
+          overflow: hidden;
+          white-space: nowrap;
+          border-right: 2px solid currentColor;
+          animation: public-type 3.2s steps(18, end) infinite alternate, public-caret 0.8s step-end infinite;
+          max-width: 100%;
+        }
+        .name-effect-shuffle {
+          animation: public-shuffle 1.1s steps(2, end) infinite;
+        }
+        .name-effect-sparkles::after {
+          content: "✦";
+          position: absolute;
+          right: -18px;
+          top: -10px;
+          color: ${accent};
+          animation: public-sparkle 1.4s ease-in-out infinite;
         }
 
         .badges-pill {
@@ -391,6 +492,75 @@ export default function PublicProfile({ params }: { params: { username: string }
           color: rgba(255,255,255,0.5); transition: 0.3s;
         }
         .overlay:hover { color: white; letter-spacing: 7px; }
+        .profile-effect {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          overflow: hidden;
+          border-radius: inherit;
+          z-index: 0;
+        }
+        .profile-effect span {
+          position: absolute;
+          top: -18px;
+          opacity: 0.85;
+        }
+        .profile-effect span:nth-child(1) { left: 5%; animation-delay: -0.2s; }
+        .profile-effect span:nth-child(2) { left: 12%; animation-delay: -1.4s; }
+        .profile-effect span:nth-child(3) { left: 18%; animation-delay: -2.1s; }
+        .profile-effect span:nth-child(4) { left: 24%; animation-delay: -0.7s; }
+        .profile-effect span:nth-child(5) { left: 31%; animation-delay: -1.8s; }
+        .profile-effect span:nth-child(6) { left: 39%; animation-delay: -0.4s; }
+        .profile-effect span:nth-child(7) { left: 46%; animation-delay: -2.6s; }
+        .profile-effect span:nth-child(8) { left: 54%; animation-delay: -1.1s; }
+        .profile-effect span:nth-child(9) { left: 62%; animation-delay: -2.9s; }
+        .profile-effect span:nth-child(10) { left: 70%; animation-delay: -0.9s; }
+        .profile-effect span:nth-child(11) { left: 78%; animation-delay: -1.9s; }
+        .profile-effect span:nth-child(12) { left: 86%; animation-delay: -0.5s; }
+        .profile-effect span:nth-child(13) { left: 92%; animation-delay: -2.2s; }
+        .profile-effect span:nth-child(14) { left: 97%; animation-delay: -1.2s; }
+        .profile-effect-snow span {
+          width: 5px;
+          height: 5px;
+          border-radius: 999px;
+          background: white;
+          box-shadow: 0 0 10px rgba(255,255,255,0.8);
+          animation: public-fall 5s linear infinite;
+        }
+        .profile-effect-rain span {
+          width: 1px;
+          height: 28px;
+          border-radius: 999px;
+          background: linear-gradient(180deg, transparent, rgba(125,190,255,0.85));
+          animation: public-rain 1.1s linear infinite;
+        }
+        .profile-effect-night {
+          background: radial-gradient(circle at 72% 18%, rgba(255,255,220,0.95) 0 15px, transparent 16px), rgba(4,7,18,0.34);
+        }
+        .profile-effect-night span {
+          width: 2px;
+          height: 2px;
+          border-radius: 999px;
+          background: white;
+          animation: public-twinkle 1.8s ease-in-out infinite;
+        }
+        .profile-effect-ctv {
+          background:
+            repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 4px),
+            linear-gradient(90deg, rgba(255,0,80,0.07), rgba(0,255,210,0.05));
+          mix-blend-mode: screen;
+          animation: public-ctv 0.18s steps(2,end) infinite;
+        }
+        @keyframes public-rainbow { to { background-position: 260% 0; } }
+        @keyframes public-fuzzy { 50% { filter: blur(0.8px); transform: translateX(0.5px); } }
+        @keyframes public-type { from { max-width: 0; } to { max-width: 100%; } }
+        @keyframes public-caret { 50% { border-color: transparent; } }
+        @keyframes public-shuffle { 50% { transform: skewX(-4deg) translateX(1px); text-shadow: 2px 0 #ff4f8b, -2px 0 #55d6ff; } }
+        @keyframes public-sparkle { 50% { transform: scale(1.35) rotate(18deg); opacity: 0.55; } }
+        @keyframes public-fall { to { transform: translate3d(24px, 620px, 0) rotate(180deg); } }
+        @keyframes public-rain { to { transform: translate3d(-18px, 620px, 0); } }
+        @keyframes public-twinkle { 50% { opacity: 0.25; transform: scale(1.6); } }
+        @keyframes public-ctv { 50% { filter: hue-rotate(22deg); transform: translateX(1px); } }
       `}</style>
 
       {!hasEntered && <div className="overlay" onClick={handleEnter}>[ CLICK TO ENTER ]</div>}
@@ -406,6 +576,11 @@ export default function PublicProfile({ params }: { params: { username: string }
       {audioUrl && <audio ref={audioRef} src={audioUrl} loop />}
 
       <div className="profile-card">
+        {profileMeta.profileEffect !== "none" && (
+          <div className={`profile-effect profile-effect-${profileMeta.profileEffect}`} aria-hidden="true">
+            {Array.from({ length: profileMeta.profileEffect === "rain" ? 24 : 14 }).map((_, index) => <span key={index} />)}
+          </div>
+        )}
         <div className="view-count">
           <Eye size={14} strokeWidth={2.5} />
           {/* We show current views + 1 so the user's visit is counted instantly on screen */}
@@ -414,7 +589,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         <img src={avatarUrl} className="pfp" alt="profile" />
         
-        <div className="display-name">{profile.display_name}</div>
+        <div className={`display-name name-effect-${profileMeta.usernameEffect}`}>{profile.display_name}</div>
 
         {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
           <div className="badges-pill">

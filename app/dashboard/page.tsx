@@ -33,6 +33,18 @@ import {
 
 type LinkStyle = "glass" | "filled" | "outline" | "soft";
 type EditorTab = "profile" | "links" | "appearance" | "media" | "stats";
+type ProfileEffect = "none" | "snow" | "rain" | "night" | "ctv";
+type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "shuffle" | "sparkles";
+
+type ProfileMeta = {
+  cursorUrl: string;
+  profileEffect: ProfileEffect;
+  usernameEffect: UsernameEffect;
+  bgBlur: number;
+  bgOpacity: number;
+  customFontUrl: string;
+  customFontName: string;
+};
 
 type SocialLink = {
   id: number;
@@ -45,6 +57,7 @@ type SocialLink = {
   featured?: boolean;
   enabled?: boolean;
   clicks?: number;
+  meta?: ProfileMeta;
 };
 
 type Badges = {
@@ -104,7 +117,11 @@ const RESERVED_USERNAMES = new Set([
 ]);
 
 const iconMap: Record<string, string> = {
+  snapchat: "https://cdn.simpleicons.org/snapchat/fffc00",
   tiktok: "https://cdn.simpleicons.org/tiktok/ffffff",
+  telegram: "https://cdn.simpleicons.org/telegram/26a5e4",
+  soundcloud: "https://cdn.simpleicons.org/soundcloud/ff5500",
+  paypal: "https://cdn.simpleicons.org/paypal/003087",
   instagram: "https://cdn.simpleicons.org/instagram/ffffff",
   x: "https://cdn.simpleicons.org/x/ffffff",
   youtube: "https://cdn.simpleicons.org/youtube/ffffff",
@@ -112,10 +129,49 @@ const iconMap: Record<string, string> = {
   spotify: "https://cdn.simpleicons.org/spotify/ffffff",
   discord: "https://cdn.simpleicons.org/discord/ffffff",
   github: "https://cdn.simpleicons.org/github/ffffff",
+  roblox: "https://cdn.simpleicons.org/roblox/ffffff",
+  cashapp: "https://cdn.simpleicons.org/cashapp/00d632",
+  venmo: "https://cdn.simpleicons.org/venmo/008cff",
+  playstation: "https://cdn.simpleicons.org/playstation/0070cc",
+  xbox: "https://cdn.simpleicons.org/xbox/107c10",
+  applemusic: "https://cdn.simpleicons.org/applemusic/fa243c",
+  gitlab: "https://cdn.simpleicons.org/gitlab/fc6d26",
+  reddit: "https://cdn.simpleicons.org/reddit/ff4500",
+  vk: "https://cdn.simpleicons.org/vk/0077ff",
+  bluesky: "https://cdn.simpleicons.org/bluesky/0285ff",
+  namemc: "https://cdn.simpleicons.org/namemc/12161a",
+  onlyfans: "https://cdn.simpleicons.org/onlyfans/00aff0",
+  linkedin: "https://cdn.simpleicons.org/linkedin/0a66c2",
+  steam: "https://cdn.simpleicons.org/steam/ffffff",
+  kick: "https://cdn.simpleicons.org/kick/53fc18",
+  pinterest: "https://cdn.simpleicons.org/pinterest/e60023",
+  osu: "https://cdn.simpleicons.org/osu/ff66aa",
+  googlemaps: "https://cdn.simpleicons.org/googlemaps/4285f4",
+  buymeacoffee: "https://cdn.simpleicons.org/buymeacoffee/ffdd00",
+  facebook: "https://cdn.simpleicons.org/facebook/0866ff",
   threads: "https://cdn.simpleicons.org/threads/ffffff",
-  linkedin: "https://cdn.simpleicons.org/linkedin/ffffff",
+  patreon: "https://cdn.simpleicons.org/patreon/ff424d",
+  signal: "https://cdn.simpleicons.org/signal/3a76f0",
+  bitcoin: "https://cdn.simpleicons.org/bitcoin/f7931a",
+  ethereum: "https://cdn.simpleicons.org/ethereum/ffffff",
+  litecoin: "https://cdn.simpleicons.org/litecoin/a6a9aa",
+  solana: "https://cdn.simpleicons.org/solana/9945ff",
+  ripple: "https://cdn.simpleicons.org/xrp/346aa9",
+  monero: "https://cdn.simpleicons.org/monero/ff6600",
+  email:
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Cpath d='m3 7 9 6 9-6'/%3E%3C/svg%3E",
   website:
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E",
+};
+
+const defaultMeta: ProfileMeta = {
+  cursorUrl: "",
+  profileEffect: "none",
+  usernameEffect: "none",
+  bgBlur: 0,
+  bgOpacity: 1,
+  customFontUrl: "",
+  customFontName: "",
 };
 
 const badgeInfo = {
@@ -237,6 +293,27 @@ function normalizeLinks(items: SocialLink[]) {
     .filter((link) => link.url);
 }
 
+function readMeta(items: SocialLink[]): ProfileMeta {
+  const metaLink = items.find((link) => link.type === "__softcard_meta");
+  return { ...defaultMeta, ...(metaLink?.meta || {}) };
+}
+
+function writeMeta(items: SocialLink[], meta: ProfileMeta) {
+  const existing = items.filter((link) => link.type !== "__softcard_meta");
+  return [
+    ...existing,
+    {
+      id: -1,
+      type: "__softcard_meta",
+      url: "https://softcard.cc",
+      label: "",
+      enabled: false,
+      featured: false,
+      meta,
+    },
+  ];
+}
+
 export default function SoftcardDashboard() {
   const router = useRouter();
   const supabase = useMemo(() => {
@@ -255,6 +332,7 @@ export default function SoftcardDashboard() {
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "reserved" | "invalid">("idle");
   const [profile, setProfile] = useState<ProfileData>(defaultProfile);
   const [links, setLinks] = useState<SocialLink[]>([]);
+  const [profileMeta, setProfileMeta] = useState<ProfileMeta>(defaultMeta);
   const [badges, setBadges] = useState<Badges>({ user: true, dev: false, staff: false });
   const [customThemes, setCustomThemes] = useState<ThemePreset[]>([]);
 
@@ -309,7 +387,9 @@ export default function SoftcardDashboard() {
           views: data.views || 0,
           showGlass: data.show_glass_card ?? true,
         });
-        setLinks(Array.isArray(data.links) ? data.links : []);
+        const savedLinks = Array.isArray(data.links) ? data.links : [];
+        setLinks(savedLinks.filter((link: SocialLink) => link.type !== "__softcard_meta"));
+        setProfileMeta(readMeta(savedLinks));
         setBadges(data.badges || { user: true, dev: false, staff: false });
         setOriginalUsername(data.username || "");
       }
@@ -414,11 +494,13 @@ export default function SoftcardDashboard() {
     updateProfile("gradient", `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`);
   }
 
-  async function uploadMedia(kind: "avatar" | "image" | "video" | "audio", file: File) {
+  async function uploadMedia(kind: "avatar" | "image" | "video" | "audio" | "cursor" | "font", file: File) {
     if (!supabase) throw new Error("Uploads are not configured.");
     if ((kind === "avatar" || kind === "image") && !file.type.startsWith("image/")) throw new Error("Use an image file.");
     if (kind === "video" && !file.type.startsWith("video/")) throw new Error("Use a video file.");
     if (kind === "audio" && !file.type.startsWith("audio/")) throw new Error("Use an audio file.");
+    if (kind === "cursor" && !file.type.startsWith("image/")) throw new Error("Use an image file for the cursor.");
+    if (kind === "font" && !/\.(ttf|otf)$/i.test(file.name)) throw new Error("Custom fonts must be .ttf or .otf files.");
     if (file.size > uploadLimit()) throw new Error(`File is too large. Use a file under ${formatMb(uploadLimit())}.`);
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -456,6 +538,14 @@ export default function SoftcardDashboard() {
         backgroundAudio: true,
       }));
     }
+    if (kind === "cursor") setProfileMeta((current) => ({ ...current, cursorUrl: publicUrl }));
+    if (kind === "font") {
+      setProfileMeta((current) => ({
+        ...current,
+        customFontUrl: publicUrl,
+        customFontName: fileTitle(file.name) || "SoftcardCustomFont",
+      }));
+    }
   }
 
   async function saveChanges() {
@@ -486,7 +576,7 @@ export default function SoftcardDashboard() {
           sexuality: profile.sexuality,
           birthday: profile.birthday,
           timezone: profile.timezone,
-          links: normalizeLinks(links),
+          links: writeMeta(normalizeLinks(links), profileMeta),
           accent_color: profile.accent,
           name_color: profile.nameColor,
           bio_color: profile.bioColor,
@@ -534,7 +624,7 @@ export default function SoftcardDashboard() {
   if (view === "hub") {
     return (
       <main className="classic-hub">
-        <style>{classicStyles(profile)}</style>
+        <style>{classicStyles(profile, profileMeta)}</style>
         <div className="classic-hub-shell">
           <nav className="classic-hub-nav">
             <button className="classic-ghost" onClick={signOut}><LogOut size={16} /> Log out</button>
@@ -564,7 +654,7 @@ export default function SoftcardDashboard() {
 
   return (
     <main className="classic-editor" style={{ fontFamily: `${profile.font}, Inter, system-ui, sans-serif` }}>
-      <style>{classicStyles(profile)}</style>
+      <style>{classicStyles(profile, profileMeta)}</style>
       <aside className="classic-sidebar">
         <div className="classic-editor-head">
           <button className="classic-back" onClick={() => setView("hub")}><ArrowLeft size={16} /> Dashboard</button>
@@ -706,6 +796,35 @@ export default function SoftcardDashboard() {
             </div>
             <Field label="Bio Color"><input type="color" value={profile.bioColor.slice(0, 7)} onChange={(e) => updateProfile("bioColor", e.target.value)} /></Field>
             <label className="classic-check"><input type="checkbox" checked={profile.showGlass} onChange={(e) => updateProfile("showGlass", e.target.checked)} /> Transparent Glass Card</label>
+            <Field label="Profile Effect">
+              <select value={profileMeta.profileEffect} onChange={(e) => setProfileMeta((current) => ({ ...current, profileEffect: e.target.value as ProfileEffect }))}>
+                <option value="none">None</option>
+                <option value="snow">Snowflakes</option>
+                <option value="rain">Rain</option>
+                <option value="night">Nighttime</option>
+                <option value="ctv">CTV</option>
+              </select>
+            </Field>
+            <Field label="Username Effect">
+              <select value={profileMeta.usernameEffect} onChange={(e) => setProfileMeta((current) => ({ ...current, usernameEffect: e.target.value as UsernameEffect }))}>
+                <option value="none">None</option>
+                <option value="typewriter">Typewriter</option>
+                <option value="rainbow">Rainbow</option>
+                <option value="fuzzy">Fuzzy</option>
+                <option value="shuffle">Shuffle</option>
+                <option value="sparkles">Sparkles</option>
+              </select>
+            </Field>
+            <Field label={`Background Blur: ${profileMeta.bgBlur}px`}>
+              <input type="range" min="0" max="24" value={profileMeta.bgBlur} onChange={(e) => setProfileMeta((current) => ({ ...current, bgBlur: Number(e.target.value) }))} />
+            </Field>
+            <Field label={`Background Opacity: ${Math.round(profileMeta.bgOpacity * 100)}%`}>
+              <input type="range" min="0.2" max="1" step="0.05" value={profileMeta.bgOpacity} onChange={(e) => setProfileMeta((current) => ({ ...current, bgOpacity: Number(e.target.value) }))} />
+            </Field>
+            <Field label="Custom Font File">
+              <MediaDrop kind="font" icon={<Upload size={20} />} title="Drop .ttf or .otf" hint="Font file only" onUpload={uploadMedia} />
+              {profileMeta.customFontUrl && <small>{profileMeta.customFontName || "Custom font uploaded"}</small>}
+            </Field>
           </Panel>
         )}
 
@@ -734,6 +853,12 @@ export default function SoftcardDashboard() {
               </Field>
             )}
             <MediaDrop kind="audio" icon={<Music size={20} />} title="Drop audio" hint="MP3, WAV, OGG, WEBM up to 50MB" onUpload={uploadMedia} />
+            <Field label="Custom Cursor">
+              <MediaDrop kind="cursor" icon={<Upload size={20} />} title="Drop cursor image" hint="PNG, JPG, GIF, WEBP" onUpload={uploadMedia} />
+              {profileMeta.cursorUrl && (
+                <button className="classic-secondary" onClick={() => setProfileMeta((current) => ({ ...current, cursorUrl: "" }))}>Clear cursor</button>
+              )}
+            </Field>
             <Field label="Audio Player Name"><input value={profile.bgAudioName} onChange={(e) => updateProfile("bgAudioName", e.target.value.slice(0, 60))} /></Field>
             <Field label="Audio URL"><input value={profile.bgAudio} onChange={(e) => updateProfile("bgAudio", e.target.value)} placeholder="https://..." /></Field>
             <label className="classic-check"><input type="checkbox" checked={profile.showAudioPlayer} onChange={(e) => updateProfile("showAudioPlayer", e.target.checked)} /> Show audio player</label>
@@ -764,7 +889,7 @@ export default function SoftcardDashboard() {
         {profile.bgType === "gradient" && <div className="classic-bg" style={{ background: profile.gradient }} />}
         {profile.bgType === "image" && profile.bgImage && <img className="classic-bg" src={profile.bgImage} alt="" />}
         {profile.bgType === "video" && profile.bgVideo && <video className="classic-bg" src={profile.bgVideo} autoPlay muted loop playsInline />}
-        <ProfilePreview profile={profile} badges={badges} links={links} featureClass={featureClass} />
+        <ProfilePreview profile={profile} meta={profileMeta} badges={badges} links={links} featureClass={featureClass} />
       </section>
     </main>
   );
@@ -790,11 +915,11 @@ function MediaDrop({
   hint,
   onUpload,
 }: {
-  kind: "avatar" | "image" | "video" | "audio";
+  kind: "avatar" | "image" | "video" | "audio" | "cursor" | "font";
   icon: ReactNode;
   title: string;
   hint: string;
-  onUpload: (kind: "avatar" | "image" | "video" | "audio", file: File) => Promise<void>;
+  onUpload: (kind: "avatar" | "image" | "video" | "audio" | "cursor" | "font", file: File) => Promise<void>;
 }) {
   const [uploading, setUploading] = useState(false);
 
@@ -824,7 +949,7 @@ function MediaDrop({
       <span>{hint}</span>
       <input
         type="file"
-        accept={kind === "video" ? "video/*" : kind === "audio" ? "audio/*" : "image/*"}
+        accept={kind === "video" ? "video/*" : kind === "audio" ? "audio/*" : kind === "font" ? ".ttf,.otf" : "image/*"}
         onChange={(event) => handleFile(event.target.files?.[0])}
       />
     </label>
@@ -833,11 +958,13 @@ function MediaDrop({
 
 function ProfilePreview({
   profile,
+  meta,
   badges,
   links,
   featureClass,
 }: {
   profile: ProfileData;
+  meta: ProfileMeta;
   badges: Badges;
   links: SocialLink[];
   featureClass: (style?: LinkStyle) => string;
@@ -848,12 +975,15 @@ function ProfilePreview({
 
   return (
     <div className="classic-profile-card">
+      <EffectLayer effect={meta.profileEffect} />
       <div className="classic-view-count">
         <Eye size={14} strokeWidth={2.5} />
         {Number(profile.views || 0).toLocaleString()}
       </div>
       <img className="classic-pfp" src={profile.avatar || defaultProfile.avatar} alt="Profile" />
-      <div className="classic-name" style={{ color: profile.nameColor }}>{profile.name || "User"}</div>
+      <div className={`classic-name name-effect-${meta.usernameEffect}`} style={{ color: profile.nameColor }} data-name={profile.name || "User"}>
+        {profile.name || "User"}
+      </div>
       {(badges.user || badges.dev || badges.staff) && (
         <div className="classic-badges">
           {Object.entries(badgeInfo).map(([key, info]) => {
@@ -909,8 +1039,18 @@ function ProfilePreview({
   );
 }
 
-function classicStyles(profile: ProfileData) {
+function EffectLayer({ effect }: { effect: ProfileEffect }) {
+  if (effect === "none") return null;
+  return (
+    <div className={`classic-effect classic-effect-${effect}`} aria-hidden="true">
+      {Array.from({ length: effect === "rain" ? 24 : 14 }).map((_, index) => <span key={index} />)}
+    </div>
+  );
+}
+
+function classicStyles(profile: ProfileData, meta: ProfileMeta) {
   return `
+    ${meta.customFontUrl ? `@font-face { font-family: "SoftcardCustomFont"; src: url("${meta.customFontUrl}") format("truetype"); font-display: swap; }` : ""}
     .classic-loading {
       min-height: 100vh;
       display: flex;
@@ -925,6 +1065,7 @@ function classicStyles(profile: ProfileData) {
     .classic-editor {
       min-height: 100vh;
       color: white;
+      cursor: ${meta.cursorUrl ? `url("${meta.cursorUrl}") 8 8, auto` : "auto"};
       background:
         radial-gradient(circle at 50% -10%, rgba(169,112,255,0.16), transparent 34%),
         #05060a;
@@ -1313,6 +1454,9 @@ function classicStyles(profile: ProfileData) {
       height: 100%;
       object-fit: cover;
       z-index: 1;
+      opacity: ${meta.bgOpacity};
+      filter: blur(${meta.bgBlur}px);
+      transform: ${meta.bgBlur > 0 ? "scale(1.04)" : "none"};
     }
     .classic-profile-card {
       position: relative;
@@ -1325,10 +1469,15 @@ function classicStyles(profile: ProfileData) {
       flex-direction: column;
       align-items: center;
       text-align: center;
+      overflow: hidden;
       background: ${profile.showGlass ? "rgba(0,0,0,0.45)" : "transparent"};
       backdrop-filter: ${profile.showGlass ? "blur(25px)" : "none"};
       border: ${profile.showGlass ? "1px solid rgba(255,255,255,0.1)" : "0"};
       box-shadow: ${profile.showGlass ? "0 25px 50px rgba(0,0,0,0.6)" : "none"};
+    }
+    .classic-profile-card > :not(.classic-effect) {
+      position: relative;
+      z-index: 1;
     }
     .classic-view-count {
       position: absolute;
@@ -1359,6 +1508,38 @@ function classicStyles(profile: ProfileData) {
       line-height: 1.1;
       margin-bottom: 4px;
       letter-spacing: -0.03em;
+      font-family: ${meta.customFontUrl ? '"SoftcardCustomFont"' : profile.font}, ${profile.font}, sans-serif;
+      position: relative;
+    }
+    .name-effect-rainbow {
+      background: linear-gradient(90deg, #ff4f8b, #ffd166, #72e0b1, #55d6ff, #a970ff, #ff4f8b);
+      background-size: 260% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: classic-rainbow 4s linear infinite;
+    }
+    .name-effect-fuzzy {
+      text-shadow: 0 0 5px currentColor, 0 0 14px ${profile.accent};
+      filter: blur(0.25px);
+      animation: classic-fuzzy 1.7s ease-in-out infinite;
+    }
+    .name-effect-typewriter {
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid currentColor;
+      animation: classic-type 3.2s steps(18, end) infinite alternate, classic-caret 0.8s step-end infinite;
+      max-width: 100%;
+    }
+    .name-effect-shuffle {
+      animation: classic-shuffle 1.1s steps(2, end) infinite;
+    }
+    .name-effect-sparkles::after {
+      content: "✦";
+      position: absolute;
+      right: -18px;
+      top: -10px;
+      color: ${profile.accent};
+      animation: classic-sparkle 1.4s ease-in-out infinite;
     }
     .classic-badges,
     .classic-tags,
@@ -1546,6 +1727,79 @@ function classicStyles(profile: ProfileData) {
       font-weight: 800;
       letter-spacing: 0.08em;
     }
+    .classic-effect {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: inherit;
+      z-index: 0;
+    }
+    .classic-effect span {
+      position: absolute;
+      left: calc(var(--i, 0) * 7%);
+      top: -18px;
+      width: 3px;
+      height: 3px;
+      opacity: 0.85;
+    }
+    .classic-effect span:nth-child(1) { left: 5%; animation-delay: -0.2s; }
+    .classic-effect span:nth-child(2) { left: 12%; animation-delay: -1.4s; }
+    .classic-effect span:nth-child(3) { left: 18%; animation-delay: -2.1s; }
+    .classic-effect span:nth-child(4) { left: 24%; animation-delay: -0.7s; }
+    .classic-effect span:nth-child(5) { left: 31%; animation-delay: -1.8s; }
+    .classic-effect span:nth-child(6) { left: 39%; animation-delay: -0.4s; }
+    .classic-effect span:nth-child(7) { left: 46%; animation-delay: -2.6s; }
+    .classic-effect span:nth-child(8) { left: 54%; animation-delay: -1.1s; }
+    .classic-effect span:nth-child(9) { left: 62%; animation-delay: -2.9s; }
+    .classic-effect span:nth-child(10) { left: 70%; animation-delay: -0.9s; }
+    .classic-effect span:nth-child(11) { left: 78%; animation-delay: -1.9s; }
+    .classic-effect span:nth-child(12) { left: 86%; animation-delay: -0.5s; }
+    .classic-effect span:nth-child(13) { left: 92%; animation-delay: -2.2s; }
+    .classic-effect span:nth-child(14) { left: 97%; animation-delay: -1.2s; }
+    .classic-effect-snow span {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: white;
+      box-shadow: 0 0 10px rgba(255,255,255,0.8);
+      animation: classic-fall 5s linear infinite;
+    }
+    .classic-effect-rain span {
+      width: 1px;
+      height: 28px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, transparent, rgba(125,190,255,0.85));
+      animation: classic-rain 1.1s linear infinite;
+    }
+    .classic-effect-night {
+      background: radial-gradient(circle at 72% 18%, rgba(255,255,220,0.95) 0 15px, transparent 16px), rgba(4,7,18,0.34);
+    }
+    .classic-effect-night span {
+      width: 2px;
+      height: 2px;
+      border-radius: 999px;
+      background: white;
+      top: calc(10% + (var(--i, 0) * 5%));
+      animation: classic-twinkle 1.8s ease-in-out infinite;
+    }
+    .classic-effect-ctv {
+      background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 4px),
+        linear-gradient(90deg, rgba(255,0,80,0.07), rgba(0,255,210,0.05));
+      mix-blend-mode: screen;
+      animation: classic-ctv 0.18s steps(2,end) infinite;
+    }
+    @keyframes classic-rainbow { to { background-position: 260% 0; } }
+    @keyframes classic-fuzzy { 50% { filter: blur(0.8px); transform: translateX(0.5px); } }
+    @keyframes classic-type { from { max-width: 0; } to { max-width: 100%; } }
+    @keyframes classic-caret { 50% { border-color: transparent; } }
+    @keyframes classic-shuffle { 50% { transform: skewX(-4deg) translateX(1px); text-shadow: 2px 0 #ff4f8b, -2px 0 #55d6ff; } }
+    @keyframes classic-sparkle { 50% { transform: scale(1.35) rotate(18deg); opacity: 0.55; } }
+    @keyframes classic-fall { to { transform: translate3d(24px, 620px, 0) rotate(180deg); } }
+    @keyframes classic-rain { to { transform: translate3d(-18px, 620px, 0); } }
+    @keyframes classic-twinkle { 50% { opacity: 0.25; transform: scale(1.6); } }
+    @keyframes classic-ctv { 50% { filter: hue-rotate(22deg); transform: translateX(1px); } }
     @media (max-width: 900px) {
       .classic-editor {
         grid-template-columns: 1fr;
