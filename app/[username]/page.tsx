@@ -134,6 +134,14 @@ const discordBadgeInfo: Record<string, { label: string; short: string }> = {
   nitro: { label: "Nitro Subscriber", short: "NITRO" },
 };
 
+const discordStatusColors: Record<string, string> = {
+  online: "#23a55a",
+  idle: "#f0b232",
+  dnd: "#f23f43",
+  offline: "#80848e",
+  invisible: "#80848e",
+};
+
 function safeColor(value: unknown, fallback: string) {
   return typeof value === "string" && HEX_COLOR.test(value) ? value : fallback;
 }
@@ -354,15 +362,13 @@ export default function PublicProfile({ params }: { params: { username: string }
   const discordUrl = safeExternalUrl(profileMeta.discordUrl);
   const discordAvatar = safeMediaUrl(profileMeta.discordAvatar) || avatarUrl;
   const discordStatus = profileMeta.discordStatus.trim() || "last seen unknown";
+  const discordStatusColor = discordStatusColors[discordStatus.toLowerCase()] || discordStatusColors.offline;
   const discordBadges = Array.isArray(profileMeta.discordBadges) ? profileMeta.discordBadges.filter((badge) => discordBadgeInfo[badge]).slice(0, 6) : [];
   const discordActivityName = profileMeta.discordActivityName.trim();
   const discordActivityDetails = profileMeta.discordActivityDetails.trim();
   const discordActivityState = profileMeta.discordActivityState.trim();
   const discordActivityType = profileMeta.discordActivityType.trim() || "Playing";
   const discordActivityImage = safeMediaUrl(profileMeta.discordActivityImage);
-  const discordServerName = profileMeta.discordServerName.trim();
-  const discordServerStatus = profileMeta.discordServerStatus.trim();
-  const discordServerIcon = safeMediaUrl(profileMeta.discordServerIcon);
   const audioSettings = splitAudioMeta(safeMediaUrl(profile.audio_url));
   const audioUrl = audioSettings.url;
   const audioTitle = audioSettings.title || mediaName(audioUrl);
@@ -694,9 +700,11 @@ export default function PublicProfile({ params }: { params: { username: string }
           box-shadow: 0 0 0 3px rgba(130,170,255,0.18);
         }
         .discord-badges {
-          display: flex;
-          flex-wrap: wrap;
+          min-width: 0;
+          display: inline-flex;
+          flex-wrap: nowrap;
           gap: 4px;
+          overflow: hidden;
         }
         .discord-badges span {
           height: 16px;
@@ -707,7 +715,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           border: 1px solid rgba(255,255,255,0.12);
           background: rgba(255,255,255,0.09);
           color: rgba(255,255,255,0.82);
-          font-size: 8px;
+          font-size: 7px;
           font-weight: 900;
           line-height: 1;
         }
@@ -1173,10 +1181,9 @@ export default function PublicProfile({ params }: { params: { username: string }
         {profileMeta.discordWidgetEnabled && (discordName || discordUrl) && (
           discordUrl ? (
             <a className="discord-card" href={discordUrl} target="_blank" rel="noopener noreferrer">
-              <span className="discord-avatar-wrap"><img className="discord-avatar" src={discordAvatar} alt="" /><span className="discord-status-dot" /></span>
+              <span className="discord-avatar-wrap"><img className="discord-avatar" src={discordAvatar} alt="" /><span className="discord-status-dot" style={{ background: discordStatusColor, boxShadow: `0 0 12px ${discordStatusColor}aa` }} /></span>
               <span className="discord-main">
-                <span className="discord-name-row"><strong>{discordName || "Discord"}</strong><span className="discord-mini-dot" /></span>
-                {discordBadges.length > 0 && <span className="discord-badges">{discordBadges.map((badge) => <span key={badge} title={discordBadgeInfo[badge].label}>{discordBadgeInfo[badge].short}</span>)}</span>}
+                <span className="discord-name-row"><strong>{discordName || "Discord"}</strong><span className="discord-mini-dot" />{discordBadges.length > 0 && <span className="discord-badges">{discordBadges.map((badge) => <span key={badge} title={discordBadgeInfo[badge].label}>{discordBadgeInfo[badge].short}</span>)}</span>}</span>
                 <small>{discordStatus}</small>
                 {discordActivityName && (
                   <span className="discord-activity">
@@ -1185,15 +1192,6 @@ export default function PublicProfile({ params }: { params: { username: string }
                       <b>{discordActivityType} {discordActivityName}</b>
                       {discordActivityDetails && <em>{discordActivityDetails}</em>}
                       {discordActivityState && <em>{discordActivityState}</em>}
-                    </span>
-                  </span>
-                )}
-                {(discordServerName || discordServerStatus) && (
-                  <span className="discord-server">
-                    {discordServerIcon ? <img src={discordServerIcon} alt="" /> : <span className="discord-server-dot" />}
-                    <span>
-                      {discordServerName && <b>{discordServerName}</b>}
-                      {discordServerStatus && <em>{discordServerStatus}</em>}
                     </span>
                   </span>
                 )}
@@ -1201,10 +1199,9 @@ export default function PublicProfile({ params }: { params: { username: string }
             </a>
           ) : (
             <div className="discord-card">
-              <span className="discord-avatar-wrap"><img className="discord-avatar" src={discordAvatar} alt="" /><span className="discord-status-dot" /></span>
+              <span className="discord-avatar-wrap"><img className="discord-avatar" src={discordAvatar} alt="" /><span className="discord-status-dot" style={{ background: discordStatusColor, boxShadow: `0 0 12px ${discordStatusColor}aa` }} /></span>
               <span className="discord-main">
-                <span className="discord-name-row"><strong>{discordName || "Discord"}</strong><span className="discord-mini-dot" /></span>
-                {discordBadges.length > 0 && <span className="discord-badges">{discordBadges.map((badge) => <span key={badge} title={discordBadgeInfo[badge].label}>{discordBadgeInfo[badge].short}</span>)}</span>}
+                <span className="discord-name-row"><strong>{discordName || "Discord"}</strong><span className="discord-mini-dot" />{discordBadges.length > 0 && <span className="discord-badges">{discordBadges.map((badge) => <span key={badge} title={discordBadgeInfo[badge].label}>{discordBadgeInfo[badge].short}</span>)}</span>}</span>
                 <small>{discordStatus}</small>
                 {discordActivityName && (
                   <span className="discord-activity">
@@ -1213,15 +1210,6 @@ export default function PublicProfile({ params }: { params: { username: string }
                       <b>{discordActivityType} {discordActivityName}</b>
                       {discordActivityDetails && <em>{discordActivityDetails}</em>}
                       {discordActivityState && <em>{discordActivityState}</em>}
-                    </span>
-                  </span>
-                )}
-                {(discordServerName || discordServerStatus) && (
-                  <span className="discord-server">
-                    {discordServerIcon ? <img src={discordServerIcon} alt="" /> : <span className="discord-server-dot" />}
-                    <span>
-                      {discordServerName && <b>{discordServerName}</b>}
-                      {discordServerStatus && <em>{discordServerStatus}</em>}
                     </span>
                   </span>
                 )}

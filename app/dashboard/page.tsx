@@ -229,6 +229,14 @@ const discordBadgeInfo: Record<string, { label: string; short: string }> = {
   nitro: { label: "Nitro Subscriber", short: "NITRO" },
 };
 
+const discordStatusColors: Record<string, string> = {
+  online: "#23a55a",
+  idle: "#f0b232",
+  dnd: "#f23f43",
+  offline: "#80848e",
+  invisible: "#80848e",
+};
+
 const badgeInfo = {
   user: { label: "Verified User", description: "This profile belongs to a verified Softcard user.", color: "#3b82f6", icon: ShieldCheck },
   dev: { label: "Developer", description: "This user is marked as a Softcard developer.", color: "#a970ff", icon: Code },
@@ -1176,9 +1184,8 @@ function DiscordCard({ meta, fallbackAvatar }: { meta: ProfileMeta; fallbackAvat
   const activityState = meta.discordActivityState.trim();
   const activityType = meta.discordActivityType.trim() || "Playing";
   const activityImage = safeMediaUrl(meta.discordActivityImage);
-  const serverName = meta.discordServerName.trim();
-  const serverStatus = meta.discordServerStatus.trim();
-  const serverIcon = safeMediaUrl(meta.discordServerIcon);
+  const statusKey = status.toLowerCase();
+  const statusColor = discordStatusColors[statusKey] || discordStatusColors.offline;
   const badges = Array.isArray(meta.discordBadges) ? meta.discordBadges.filter((badge) => discordBadgeInfo[badge]).slice(0, 6) : [];
   if (!name && !url) return null;
 
@@ -1186,20 +1193,20 @@ function DiscordCard({ meta, fallbackAvatar }: { meta: ProfileMeta; fallbackAvat
     <>
       <span className="classic-discord-avatar-wrap">
         <img className="classic-discord-avatar" src={avatar} alt="" />
-        <span className="classic-discord-status-dot" />
+        <span className="classic-discord-status-dot" style={{ background: statusColor, boxShadow: `0 0 12px ${statusColor}aa` }} />
       </span>
       <div className="classic-discord-main">
         <div className="classic-discord-name-row">
           <strong>{name || "Discord"}</strong>
           <span className="classic-discord-mini-dot" />
+          {badges.length > 0 ? (
+            <span className="classic-discord-badges">
+              {badges.map((badge) => (
+                <span key={badge} title={discordBadgeInfo[badge].label}>{discordBadgeInfo[badge].short}</span>
+              ))}
+            </span>
+          ) : null}
         </div>
-        {badges.length > 0 ? (
-          <span className="classic-discord-badges">
-            {badges.map((badge) => (
-              <span key={badge} title={discordBadgeInfo[badge].label}>{discordBadgeInfo[badge].short}</span>
-            ))}
-          </span>
-        ) : null}
         <small>{status}</small>
         {activityName ? (
           <span className="classic-discord-activity">
@@ -1208,15 +1215,6 @@ function DiscordCard({ meta, fallbackAvatar }: { meta: ProfileMeta; fallbackAvat
               <b>{activityType} {activityName}</b>
               {activityDetails ? <em>{activityDetails}</em> : null}
               {activityState ? <em>{activityState}</em> : null}
-            </span>
-          </span>
-        ) : null}
-        {serverName || serverStatus ? (
-          <span className="classic-discord-server">
-            {serverIcon ? <img src={serverIcon} alt="" /> : <span className="classic-discord-server-dot" />}
-            <span>
-              {serverName ? <b>{serverName}</b> : null}
-              {serverStatus ? <em>{serverStatus}</em> : null}
             </span>
           </span>
         ) : null}
@@ -2453,9 +2451,11 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       line-height: 1;
     }
     .classic-discord-badges {
-      display: flex;
-      flex-wrap: wrap;
+      min-width: 0;
+      display: inline-flex;
+      flex-wrap: nowrap;
       gap: 4px;
+      overflow: hidden;
     }
     .classic-discord-badges span {
       height: 16px;
@@ -2466,7 +2466,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.09);
       color: rgba(255,255,255,0.82);
-      font-size: 8px;
+      font-size: 7px;
       font-weight: 900;
       line-height: 1;
     }
