@@ -3,7 +3,9 @@ import { randomBytes } from "crypto";
 import { NextResponse, type NextRequest } from "next/server";
 
 function discordRedirectUri(request: NextRequest) {
-  return process.env.DISCORD_REDIRECT_URI || new URL("/api/discord/callback", request.url).toString();
+  if (process.env.DISCORD_REDIRECT_URI) return process.env.DISCORD_REDIRECT_URI;
+  if (process.env.NEXT_PUBLIC_SITE_URL) return new URL("/api/discord/callback", process.env.NEXT_PUBLIC_SITE_URL).toString();
+  return new URL("/api/discord/callback", request.url).toString();
 }
 
 export async function GET(request: NextRequest) {
@@ -34,7 +36,7 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.redirect(new URL("/login", request.url));
 
   const state = randomBytes(24).toString("hex");
-  const authorizeUrl = new URL("https://discord.com/oauth2/authorize");
+  const authorizeUrl = new URL("https://discord.com/api/oauth2/authorize");
   authorizeUrl.searchParams.set("client_id", clientId);
   authorizeUrl.searchParams.set("redirect_uri", discordRedirectUri(request));
   authorizeUrl.searchParams.set("response_type", "code");

@@ -5,7 +5,9 @@ import { NextResponse, type NextRequest } from "next/server";
 const META_TYPE = "__softcard_meta";
 
 function discordRedirectUri(request: NextRequest) {
-  return process.env.DISCORD_REDIRECT_URI || new URL("/api/discord/callback", request.url).toString();
+  if (process.env.DISCORD_REDIRECT_URI) return process.env.DISCORD_REDIRECT_URI;
+  if (process.env.NEXT_PUBLIC_SITE_URL) return new URL("/api/discord/callback", process.env.NEXT_PUBLIC_SITE_URL).toString();
+  return new URL("/api/discord/callback", request.url).toString();
 }
 
 function avatarUrl(user: any) {
@@ -102,7 +104,7 @@ export async function GET(request: NextRequest) {
   }
 
   const token = await tokenResponse.json();
-  const userResponse = await fetch("https://discord.com/api/users/@me", {
+  const userResponse = await fetch("https://discord.com/api/v10/users/@me", {
     headers: { Authorization: `Bearer ${token.access_token}` },
   });
 
@@ -122,7 +124,7 @@ export async function GET(request: NextRequest) {
     .single();
 
   const links = Array.isArray(profile?.links) ? profile.links : [];
-  await supabaseAdmin
+  const { error: saveError } = await supabaseAdmin
     .from("profiles")
     .update({
       links: writeMeta(links, {
@@ -137,6 +139,10 @@ export async function GET(request: NextRequest) {
       }),
     })
     .eq("id", user.id);
+
+  if (saveError) {
+    return NextResponse.redirect(new URL("/dashboard?discord=save-failed", request.url));
+  }
 
   return response;
 }

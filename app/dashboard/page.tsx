@@ -357,6 +357,7 @@ export default function SoftcardDashboard() {
   const [profile, setProfile] = useState<ProfileData>(defaultProfile);
   const [links, setLinks] = useState<SocialLink[]>([]);
   const [profileMeta, setProfileMeta] = useState<ProfileMeta>(defaultMeta);
+  const [discordNotice, setDiscordNotice] = useState<{ kind: "ok" | "error"; message: string } | null>(null);
   const [badges, setBadges] = useState<Badges>({ user: true, dev: false, staff: false });
   const [customThemes, setCustomThemes] = useState<ThemePreset[]>([]);
 
@@ -429,6 +430,23 @@ export default function SoftcardDashboard() {
       const saved = JSON.parse(window.localStorage.getItem("softcard_custom_themes") || "[]");
       if (Array.isArray(saved)) setCustomThemes(saved.slice(0, 8));
     } catch {}
+  }, []);
+
+  useEffect(() => {
+    const status = new URLSearchParams(window.location.search).get("discord");
+    if (!status) return;
+
+    const messages: Record<string, { kind: "ok" | "error"; message: string }> = {
+      connected: { kind: "ok", message: "Discord connected. The widget will publish with your next save." },
+      "not-configured": { kind: "error", message: "Discord is not configured. Add the Discord client ID, client secret, and redirect URL in Vercel." },
+      invalid: { kind: "error", message: "Discord login expired or the state did not match. Try connecting again." },
+      "token-failed": { kind: "error", message: "Discord token exchange failed. Check that the redirect URL matches the Discord Developer Portal exactly." },
+      "user-failed": { kind: "error", message: "Discord connected, but the user profile fetch failed. Try connecting again." },
+      "save-failed": { kind: "error", message: "Discord connected, but saving it to your profile failed. Check the Supabase service role key." },
+    };
+
+    setDiscordNotice(messages[status] || { kind: "error", message: "Discord connection failed. Try connecting again." });
+    window.history.replaceState({}, "", window.location.pathname);
   }, []);
 
   useEffect(() => {
@@ -722,6 +740,7 @@ export default function SoftcardDashboard() {
                     <small>{profileMeta.discordConnected ? `Signed in as ${profileMeta.discordUsername || profileMeta.discordName}` : "Authorize Discord to auto-fill the profile widget."}</small>
                   </div>
                 </div>
+                {discordNotice ? <p className={`classic-discord-notice ${discordNotice.kind}`}>{discordNotice.message}</p> : null}
                 <div className="classic-grid-2">
                   <a className="classic-primary" href="/api/discord/connect"><DiscordIcon /> {profileMeta.discordConnected ? "Reconnect" : "Connect Discord"}</a>
                   {profileMeta.discordConnected ? (
@@ -2206,6 +2225,26 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       color: rgba(255,255,255,0.52);
       font-size: 12px;
       line-height: 1.35;
+    }
+    .classic-discord-notice {
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.045);
+      color: rgba(255,255,255,0.72);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .classic-discord-notice.ok {
+      border-color: rgba(89,255,174,0.28);
+      background: rgba(89,255,174,0.08);
+      color: rgba(207,255,229,0.92);
+    }
+    .classic-discord-notice.error {
+      border-color: rgba(255,95,134,0.32);
+      background: rgba(255,95,134,0.09);
+      color: rgba(255,221,229,0.94);
     }
     .classic-discord-card {
       width: 100%;
