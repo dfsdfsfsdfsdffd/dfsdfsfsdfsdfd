@@ -46,9 +46,13 @@ type ProfileMeta = {
   customFontName: string;
   customFontBio: boolean;
   discordUrl: string;
+  discordId: string;
   discordName: string;
+  discordUsername: string;
   discordStatus: string;
   discordAvatar: string;
+  discordConnected: boolean;
+  discordConnectedAt: string;
   elementGlow: boolean;
 };
 
@@ -180,9 +184,13 @@ const defaultMeta: ProfileMeta = {
   customFontName: "",
   customFontBio: false,
   discordUrl: "",
+  discordId: "",
   discordName: "",
+  discordUsername: "",
   discordStatus: "last seen unknown",
   discordAvatar: "",
+  discordConnected: false,
+  discordConnectedAt: "",
   elementGlow: false,
 };
 
@@ -626,6 +634,25 @@ export default function SoftcardDashboard() {
     window.setTimeout(() => setCopied(false), 1600);
   }
 
+  async function disconnectDiscord() {
+    const response = await fetch("/api/discord/disconnect", { method: "POST" });
+    if (!response.ok) {
+      alert("Could not disconnect Discord.");
+      return;
+    }
+    setProfileMeta((current) => ({
+      ...current,
+      discordId: "",
+      discordName: "",
+      discordUsername: "",
+      discordAvatar: "",
+      discordUrl: "",
+      discordConnected: false,
+      discordConnectedAt: "",
+      discordStatus: "last seen unknown",
+    }));
+  }
+
   const featureClass = (style?: LinkStyle) => `sx-feature-link sx-feature-${style || "glass"}`;
 
   if (loading) {
@@ -688,21 +715,24 @@ export default function SoftcardDashboard() {
                   <span>Settings</span>
                   <DiscordIcon />
                 </div>
-                <Field label="Discord Username">
-                  <input value={profileMeta.discordName} onChange={(e) => setProfileMeta((current) => ({ ...current, discordName: e.target.value.slice(0, 40) }))} placeholder="pray4pris" />
-                </Field>
-                <Field label="Discord Link">
-                  <input value={profileMeta.discordUrl} onChange={(e) => setProfileMeta((current) => ({ ...current, discordUrl: e.target.value.slice(0, 160) }))} placeholder="https://discord.gg/..." />
-                </Field>
+                <div className="classic-discord-connect-panel">
+                  <DiscordCard meta={profileMeta} fallbackAvatar={profile.avatar || defaultProfile.avatar} />
+                  <div>
+                    <strong>{profileMeta.discordConnected ? "Discord connected" : "Connect Discord"}</strong>
+                    <small>{profileMeta.discordConnected ? `Signed in as ${profileMeta.discordUsername || profileMeta.discordName}` : "Authorize Discord to auto-fill the profile widget."}</small>
+                  </div>
+                </div>
+                <div className="classic-grid-2">
+                  <a className="classic-primary" href="/api/discord/connect"><DiscordIcon /> {profileMeta.discordConnected ? "Reconnect" : "Connect Discord"}</a>
+                  {profileMeta.discordConnected ? (
+                    <button className="classic-secondary" onClick={disconnectDiscord}><X size={16} /> Disconnect</button>
+                  ) : (
+                    <button className="classic-secondary" disabled><X size={16} /> Not connected</button>
+                  )}
+                </div>
                 <Field label="Status Text">
                   <input value={profileMeta.discordStatus} onChange={(e) => setProfileMeta((current) => ({ ...current, discordStatus: e.target.value.slice(0, 50) }))} placeholder="last seen unknown" />
                 </Field>
-                <Field label="Avatar Image URL">
-                  <input value={profileMeta.discordAvatar} onChange={(e) => setProfileMeta((current) => ({ ...current, discordAvatar: e.target.value.slice(0, 220) }))} placeholder="Optional image URL" />
-                </Field>
-                <div className="classic-discord-preview">
-                  <DiscordCard meta={profileMeta} fallbackAvatar={profile.avatar || defaultProfile.avatar} />
-                </div>
                 <button className="classic-primary" onClick={saveChanges} disabled={saving}><Save size={16} /> {saving ? "Saving..." : "Save Settings"}</button>
               </section>
             </div>
@@ -2151,6 +2181,32 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       display: flex;
       justify-content: center;
     }
+    .classic-discord-connect-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 270px) minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.035);
+    }
+    .classic-discord-connect-panel > div:last-child {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .classic-discord-connect-panel strong {
+      color: white;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .classic-discord-connect-panel small {
+      color: rgba(255,255,255,0.52);
+      font-size: 12px;
+      line-height: 1.35;
+    }
     .classic-discord-card {
       width: 100%;
       max-width: 270px;
@@ -2551,7 +2607,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       .classic-grid-2,
       .classic-theme-grid,
       .classic-stat-grid,
-      .classic-dashboard-grid {
+      .classic-dashboard-grid,
+      .classic-discord-connect-panel {
         grid-template-columns: 1fr;
       }
       .classic-tabs {

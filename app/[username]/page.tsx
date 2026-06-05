@@ -15,9 +15,13 @@ type ProfileMeta = {
   customFontName: string;
   customFontBio: boolean;
   discordUrl: string;
+  discordId: string;
   discordName: string;
+  discordUsername: string;
   discordStatus: string;
   discordAvatar: string;
+  discordConnected: boolean;
+  discordConnectedAt: string;
   elementGlow: boolean;
 };
 
@@ -85,9 +89,13 @@ const defaultMeta: ProfileMeta = {
   customFontName: "",
   customFontBio: false,
   discordUrl: "",
+  discordId: "",
   discordName: "",
+  discordUsername: "",
   discordStatus: "last seen unknown",
   discordAvatar: "",
+  discordConnected: false,
+  discordConnectedAt: "",
   elementGlow: false,
 };
 
