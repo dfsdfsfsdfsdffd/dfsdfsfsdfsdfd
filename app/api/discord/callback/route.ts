@@ -18,9 +18,29 @@ const DISCORD_PUBLIC_FLAGS = [
   { bit: 22, id: "activeDeveloper" },
 ];
 
+function absoluteUrl(value?: string) {
+  if (!value) return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  try {
+    return new URL(trimmed).toString();
+  } catch {
+    try {
+      return new URL(`https://${trimmed}`).toString();
+    } catch {
+      return "";
+    }
+  }
+}
+
 function discordRedirectUri(request: NextRequest) {
-  if (process.env.DISCORD_REDIRECT_URI) return process.env.DISCORD_REDIRECT_URI;
-  if (process.env.NEXT_PUBLIC_SITE_URL) return new URL("/api/discord/callback", process.env.NEXT_PUBLIC_SITE_URL).toString();
+  const configuredRedirect = absoluteUrl(process.env.DISCORD_REDIRECT_URI);
+  if (configuredRedirect) return configuredRedirect;
+
+  const siteUrl = absoluteUrl(process.env.NEXT_PUBLIC_SITE_URL);
+  if (siteUrl) return new URL("/api/discord/callback", siteUrl).toString();
+
   return new URL("/api/discord/callback", request.url).toString();
 }
 
