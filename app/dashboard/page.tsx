@@ -51,6 +51,12 @@ type ProfileMeta = {
   discordUsername: string;
   discordStatus: string;
   discordAvatar: string;
+  discordBadges: string[];
+  discordActivityName: string;
+  discordActivityDetails: string;
+  discordActivityState: string;
+  discordActivityType: string;
+  discordActivityImage: string;
   discordConnected: boolean;
   discordConnectedAt: string;
   elementGlow: boolean;
@@ -189,9 +195,30 @@ const defaultMeta: ProfileMeta = {
   discordUsername: "",
   discordStatus: "last seen unknown",
   discordAvatar: "",
+  discordBadges: [],
+  discordActivityName: "",
+  discordActivityDetails: "",
+  discordActivityState: "",
+  discordActivityType: "",
+  discordActivityImage: "",
   discordConnected: false,
   discordConnectedAt: "",
   elementGlow: false,
+};
+
+const discordBadgeInfo: Record<string, { label: string; short: string }> = {
+  staff: { label: "Discord Staff", short: "STAFF" },
+  partner: { label: "Partnered Server Owner", short: "PART" },
+  hypesquad: { label: "HypeSquad Events", short: "HYPE" },
+  bug1: { label: "Bug Hunter", short: "BUG" },
+  bravery: { label: "House Bravery", short: "BRV" },
+  brilliance: { label: "House Brilliance", short: "BRL" },
+  balance: { label: "House Balance", short: "BAL" },
+  early: { label: "Early Supporter", short: "EARLY" },
+  bug2: { label: "Gold Bug Hunter", short: "BUG2" },
+  developer: { label: "Early Verified Bot Developer", short: "DEV" },
+  activeDeveloper: { label: "Active Developer", short: "ACT" },
+  nitro: { label: "Nitro Subscriber", short: "NITRO" },
 };
 
 const badgeInfo = {
@@ -664,6 +691,12 @@ export default function SoftcardDashboard() {
       discordName: "",
       discordUsername: "",
       discordAvatar: "",
+      discordBadges: [],
+      discordActivityName: "",
+      discordActivityDetails: "",
+      discordActivityState: "",
+      discordActivityType: "",
+      discordActivityImage: "",
       discordUrl: "",
       discordConnected: false,
       discordConnectedAt: "",
@@ -1072,17 +1105,43 @@ function DiscordCard({ meta, fallbackAvatar }: { meta: ProfileMeta; fallbackAvat
   const url = safeExternalUrl(meta.discordUrl);
   const status = meta.discordStatus.trim() || "last seen unknown";
   const avatar = meta.discordAvatar.trim() || fallbackAvatar;
+  const activityName = meta.discordActivityName.trim();
+  const activityDetails = meta.discordActivityDetails.trim();
+  const activityState = meta.discordActivityState.trim();
+  const activityType = meta.discordActivityType.trim() || "Playing";
+  const activityImage = safeMediaUrl(meta.discordActivityImage);
+  const badges = Array.isArray(meta.discordBadges) ? meta.discordBadges.filter((badge) => discordBadgeInfo[badge]).slice(0, 6) : [];
   if (!name && !url) return null;
 
   const content = (
     <>
-      <img className="classic-discord-avatar" src={avatar} alt="" />
+      <span className="classic-discord-avatar-wrap">
+        <img className="classic-discord-avatar" src={avatar} alt="" />
+        <span className="classic-discord-status-dot" />
+      </span>
       <div className="classic-discord-main">
-        <div>
+        <div className="classic-discord-name-row">
           <strong>{name || "Discord"}</strong>
-          <span className="classic-discord-dot" />
+          <span className="classic-discord-mini-dot" />
         </div>
+        {badges.length > 0 ? (
+          <span className="classic-discord-badges">
+            {badges.map((badge) => (
+              <span key={badge} title={discordBadgeInfo[badge].label}>{discordBadgeInfo[badge].short}</span>
+            ))}
+          </span>
+        ) : null}
         <small>{status}</small>
+        {activityName ? (
+          <span className="classic-discord-activity">
+            {activityImage ? <img src={activityImage} alt="" /> : <span className="classic-discord-activity-fallback"><DiscordIcon /></span>}
+            <span>
+              <b>{activityType} {activityName}</b>
+              {activityDetails ? <em>{activityDetails}</em> : null}
+              {activityState ? <em>{activityState}</em> : null}
+            </span>
+          </span>
+        ) : null}
       </div>
     </>
   );
@@ -1963,8 +2022,6 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       z-index: 5;
       width: 90%;
       max-width: 420px;
-      max-height: calc(100svh - 68px);
-      overflow-y: auto;
       flex: 0 0 auto;
       padding: 28px 20px;
       border-radius: 28px;
@@ -1972,7 +2029,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       flex-direction: column;
       align-items: center;
       text-align: center;
-      overflow-x: hidden;
+      overflow: hidden;
       background: ${profile.showGlass ? "rgba(0,0,0,0.45)" : "transparent"};
       backdrop-filter: ${profile.showGlass ? "blur(25px)" : "none"};
       border: ${profile.showGlass ? "1px solid rgba(255,255,255,0.1)" : "0"};
@@ -2248,11 +2305,11 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-discord-card {
       width: 100%;
-      max-width: 270px;
-      min-height: 74px;
-      padding: 10px 12px;
+      max-width: 300px;
+      min-height: 78px;
+      padding: 11px 12px;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 11px;
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.1);
@@ -2273,21 +2330,37 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
         radial-gradient(circle at 80% 20%, ${profile.accent}32, transparent 38%),
         rgba(255,255,255,0.095);
     }
+    .classic-discord-avatar-wrap {
+      position: relative;
+      flex: 0 0 auto;
+    }
     .classic-discord-avatar {
       width: 54px;
       height: 54px;
       border-radius: 50%;
       object-fit: cover;
-      flex: 0 0 auto;
+      display: block;
+    }
+    .classic-discord-status-dot {
+      position: absolute;
+      right: -1px;
+      bottom: 1px;
+      width: 15px;
+      height: 15px;
+      border-radius: 999px;
+      background: #8fa8ff;
+      border: 3px solid rgba(18,18,24,0.95);
+      box-shadow: 0 0 12px rgba(143,168,255,0.75);
     }
     .classic-discord-main {
       min-width: 0;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
+      text-align: left;
     }
-    .classic-discord-main div {
+    .classic-discord-name-row {
       display: flex;
       align-items: center;
       gap: 7px;
@@ -2301,6 +2374,24 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       font-weight: 900;
       line-height: 1;
     }
+    .classic-discord-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .classic-discord-badges span {
+      height: 16px;
+      padding: 0 5px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.09);
+      color: rgba(255,255,255,0.82);
+      font-size: 8px;
+      font-weight: 900;
+      line-height: 1;
+    }
     .classic-discord-main small {
       color: rgba(255,255,255,0.58);
       font-size: 12px;
@@ -2309,13 +2400,63 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .classic-discord-dot {
+    .classic-discord-mini-dot {
       width: 10px;
       height: 10px;
       border-radius: 999px;
       background: #82aaff;
       box-shadow: 0 0 0 3px rgba(130,170,255,0.18);
       flex: 0 0 auto;
+    }
+    .classic-discord-activity {
+      min-width: 0;
+      margin-top: 2px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .classic-discord-activity img,
+    .classic-discord-activity-fallback {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      flex: 0 0 auto;
+      object-fit: cover;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.08);
+    }
+    .classic-discord-activity-fallback img {
+      width: 16px;
+      height: 16px;
+      border-radius: 0;
+      background: transparent;
+    }
+    .classic-discord-activity > span:last-child {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .classic-discord-activity b,
+    .classic-discord-activity em {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-style: normal;
+      line-height: 1.1;
+    }
+    .classic-discord-activity b {
+      color: rgba(255,255,255,0.9);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .classic-discord-activity em {
+      color: rgba(255,255,255,0.5);
+      font-size: 10px;
     }
     .classic-socials {
       gap: 14px;

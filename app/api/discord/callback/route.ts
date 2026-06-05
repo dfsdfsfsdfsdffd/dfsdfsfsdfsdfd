@@ -4,6 +4,20 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const META_TYPE = "__softcard_meta";
 
+const DISCORD_PUBLIC_FLAGS = [
+  { bit: 0, id: "staff" },
+  { bit: 1, id: "partner" },
+  { bit: 2, id: "hypesquad" },
+  { bit: 3, id: "bug1" },
+  { bit: 6, id: "bravery" },
+  { bit: 7, id: "brilliance" },
+  { bit: 8, id: "balance" },
+  { bit: 9, id: "early" },
+  { bit: 14, id: "bug2" },
+  { bit: 17, id: "developer" },
+  { bit: 22, id: "activeDeveloper" },
+];
+
 function discordRedirectUri(request: NextRequest) {
   if (process.env.DISCORD_REDIRECT_URI) return process.env.DISCORD_REDIRECT_URI;
   if (process.env.NEXT_PUBLIC_SITE_URL) return new URL("/api/discord/callback", process.env.NEXT_PUBLIC_SITE_URL).toString();
@@ -23,6 +37,13 @@ function avatarUrl(user: any) {
 
 function displayName(user: any) {
   return String(user?.global_name || user?.username || "Discord").slice(0, 40);
+}
+
+function discordBadges(user: any) {
+  const flags = Number(user?.public_flags || user?.flags || 0);
+  const badges = DISCORD_PUBLIC_FLAGS.filter((badge) => (flags & (2 ** badge.bit)) !== 0).map((badge) => badge.id);
+  if (Number(user?.premium_type || 0) > 0) badges.push("nitro");
+  return [...new Set(badges)].slice(0, 8);
 }
 
 function writeMeta(items: any[], patch: Record<string, unknown>) {
@@ -132,6 +153,7 @@ export async function GET(request: NextRequest) {
         discordName: displayName(discordUser),
         discordUsername: String(discordUser.username || ""),
         discordAvatar: avatarUrl(discordUser),
+        discordBadges: discordBadges(discordUser),
         discordUrl: discordUser.id ? `https://discord.com/users/${discordUser.id}` : "",
         discordConnected: true,
         discordConnectedAt: new Date().toISOString(),

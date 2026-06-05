@@ -20,6 +20,12 @@ type ProfileMeta = {
   discordUsername: string;
   discordStatus: string;
   discordAvatar: string;
+  discordBadges: string[];
+  discordActivityName: string;
+  discordActivityDetails: string;
+  discordActivityState: string;
+  discordActivityType: string;
+  discordActivityImage: string;
   discordConnected: boolean;
   discordConnectedAt: string;
   elementGlow: boolean;
@@ -94,9 +100,30 @@ const defaultMeta: ProfileMeta = {
   discordUsername: "",
   discordStatus: "last seen unknown",
   discordAvatar: "",
+  discordBadges: [],
+  discordActivityName: "",
+  discordActivityDetails: "",
+  discordActivityState: "",
+  discordActivityType: "",
+  discordActivityImage: "",
   discordConnected: false,
   discordConnectedAt: "",
   elementGlow: false,
+};
+
+const discordBadgeInfo: Record<string, { label: string; short: string }> = {
+  staff: { label: "Discord Staff", short: "STAFF" },
+  partner: { label: "Partnered Server Owner", short: "PART" },
+  hypesquad: { label: "HypeSquad Events", short: "HYPE" },
+  bug1: { label: "Bug Hunter", short: "BUG" },
+  bravery: { label: "House Bravery", short: "BRV" },
+  brilliance: { label: "House Brilliance", short: "BRL" },
+  balance: { label: "House Balance", short: "BAL" },
+  early: { label: "Early Supporter", short: "EARLY" },
+  bug2: { label: "Gold Bug Hunter", short: "BUG2" },
+  developer: { label: "Early Verified Bot Developer", short: "DEV" },
+  activeDeveloper: { label: "Active Developer", short: "ACT" },
+  nitro: { label: "Nitro Subscriber", short: "NITRO" },
 };
 
 function safeColor(value: unknown, fallback: string) {
@@ -278,6 +305,12 @@ export default function PublicProfile({ params }: { params: { username: string }
   const discordUrl = safeExternalUrl(profileMeta.discordUrl);
   const discordAvatar = safeMediaUrl(profileMeta.discordAvatar) || avatarUrl;
   const discordStatus = profileMeta.discordStatus.trim() || "last seen unknown";
+  const discordBadges = Array.isArray(profileMeta.discordBadges) ? profileMeta.discordBadges.filter((badge) => discordBadgeInfo[badge]).slice(0, 6) : [];
+  const discordActivityName = profileMeta.discordActivityName.trim();
+  const discordActivityDetails = profileMeta.discordActivityDetails.trim();
+  const discordActivityState = profileMeta.discordActivityState.trim();
+  const discordActivityType = profileMeta.discordActivityType.trim() || "Playing";
+  const discordActivityImage = safeMediaUrl(profileMeta.discordActivityImage);
   const audioSettings = splitAudioMeta(safeMediaUrl(profile.audio_url));
   const audioUrl = audioSettings.url;
   const audioTitle = audioSettings.title || mediaName(audioUrl);
@@ -341,8 +374,6 @@ export default function PublicProfile({ params }: { params: { username: string }
           z-index: 5; text-align: center;
           display: flex; flex-direction: column; align-items: center;
           width: 90%; max-width: 420px;
-          max-height: calc(100svh - 40px);
-          overflow-y: auto;
           flex: 0 0 auto;
           padding: 28px 20px;
           border-radius: 28px;
@@ -350,7 +381,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           backdrop-filter: ${profile.show_glass_card ? 'blur(25px)' : 'none'};
           border: ${profile.show_glass_card ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
           box-shadow: ${profile.show_glass_card ? '0 25px 50px rgba(0,0,0,0.6)' : 'none'};
-          overflow-x: hidden;
+          overflow: hidden;
         }
         .profile-card::before {
           content: "";
@@ -543,12 +574,12 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
         .discord-card {
           width: 100%;
-          max-width: 270px;
-          min-height: 74px;
+          max-width: 300px;
+          min-height: 78px;
           margin-bottom: 14px;
-          padding: 10px 12px;
+          padding: 11px 12px;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           gap: 11px;
           border-radius: 14px;
           border: 1px solid rgba(255,255,255,0.1);
@@ -568,6 +599,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           height: 54px;
           border-radius: 50%;
           object-fit: cover;
+          display: block;
         }
         .discord-status-dot {
           position: absolute;
@@ -575,17 +607,17 @@ export default function PublicProfile({ params }: { params: { username: string }
           bottom: 1px;
           width: 15px;
           height: 15px;
-          border-radius: 50%;
+          border-radius: 999px;
           border: 3px solid rgba(20,20,24,0.92);
-          background: #8b8d98;
-          box-shadow: 0 0 0 1px rgba(255,255,255,0.2);
+          background: #8fa8ff;
+          box-shadow: 0 0 12px rgba(143,168,255,0.75);
         }
         .discord-main {
           min-width: 0;
           flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 5px;
           text-align: left;
         }
         .discord-name-row {
@@ -609,6 +641,24 @@ export default function PublicProfile({ params }: { params: { username: string }
           background: #82aaff;
           box-shadow: 0 0 0 3px rgba(130,170,255,0.18);
         }
+        .discord-badges {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+        }
+        .discord-badges span {
+          height: 16px;
+          padding: 0 5px;
+          display: inline-flex;
+          align-items: center;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,0.12);
+          background: rgba(255,255,255,0.09);
+          color: rgba(255,255,255,0.82);
+          font-size: 8px;
+          font-weight: 900;
+          line-height: 1;
+        }
         .discord-main small {
           color: rgba(255,255,255,0.58);
           font-size: 12px;
@@ -616,6 +666,56 @@ export default function PublicProfile({ params }: { params: { username: string }
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+        }
+        .discord-activity {
+          min-width: 0;
+          margin-top: 2px;
+          padding-top: 8px;
+          border-top: 1px solid rgba(255,255,255,0.08);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .discord-activity img,
+        .discord-activity-fallback {
+          width: 32px;
+          height: 32px;
+          border-radius: 9px;
+          flex: 0 0 auto;
+          object-fit: cover;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255,255,255,0.08);
+        }
+        .discord-activity-fallback img {
+          width: 16px;
+          height: 16px;
+          border-radius: 0;
+          background: transparent;
+        }
+        .discord-activity > span:last-child {
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .discord-activity b,
+        .discord-activity em {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-style: normal;
+          line-height: 1.1;
+        }
+        .discord-activity b {
+          color: rgba(255,255,255,0.9);
+          font-size: 11px;
+          font-weight: 900;
+        }
+        .discord-activity em {
+          color: rgba(255,255,255,0.5);
+          font-size: 10px;
         }
 
         .social-row { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 2px; }
@@ -979,12 +1079,40 @@ export default function PublicProfile({ params }: { params: { username: string }
           discordUrl ? (
             <a className="discord-card" href={discordUrl} target="_blank" rel="noopener noreferrer">
               <span className="discord-avatar-wrap"><img className="discord-avatar" src={discordAvatar} alt="" /><span className="discord-status-dot" /></span>
-              <span className="discord-main"><span className="discord-name-row"><strong>{discordName || "Discord"}</strong><span className="discord-mini-dot" /></span><small>{discordStatus}</small></span>
+              <span className="discord-main">
+                <span className="discord-name-row"><strong>{discordName || "Discord"}</strong><span className="discord-mini-dot" /></span>
+                {discordBadges.length > 0 && <span className="discord-badges">{discordBadges.map((badge) => <span key={badge} title={discordBadgeInfo[badge].label}>{discordBadgeInfo[badge].short}</span>)}</span>}
+                <small>{discordStatus}</small>
+                {discordActivityName && (
+                  <span className="discord-activity">
+                    {discordActivityImage ? <img src={discordActivityImage} alt="" /> : <span className="discord-activity-fallback"><img src={iconMap.discord} alt="" /></span>}
+                    <span>
+                      <b>{discordActivityType} {discordActivityName}</b>
+                      {discordActivityDetails && <em>{discordActivityDetails}</em>}
+                      {discordActivityState && <em>{discordActivityState}</em>}
+                    </span>
+                  </span>
+                )}
+              </span>
             </a>
           ) : (
             <div className="discord-card">
               <span className="discord-avatar-wrap"><img className="discord-avatar" src={discordAvatar} alt="" /><span className="discord-status-dot" /></span>
-              <span className="discord-main"><span className="discord-name-row"><strong>{discordName || "Discord"}</strong><span className="discord-mini-dot" /></span><small>{discordStatus}</small></span>
+              <span className="discord-main">
+                <span className="discord-name-row"><strong>{discordName || "Discord"}</strong><span className="discord-mini-dot" /></span>
+                {discordBadges.length > 0 && <span className="discord-badges">{discordBadges.map((badge) => <span key={badge} title={discordBadgeInfo[badge].label}>{discordBadgeInfo[badge].short}</span>)}</span>}
+                <small>{discordStatus}</small>
+                {discordActivityName && (
+                  <span className="discord-activity">
+                    {discordActivityImage ? <img src={discordActivityImage} alt="" /> : <span className="discord-activity-fallback"><img src={iconMap.discord} alt="" /></span>}
+                    <span>
+                      <b>{discordActivityType} {discordActivityName}</b>
+                      {discordActivityDetails && <em>{discordActivityDetails}</em>}
+                      {discordActivityState && <em>{discordActivityState}</em>}
+                    </span>
+                  </span>
+                )}
+              </span>
             </div>
           )
         )}
