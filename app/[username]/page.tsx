@@ -5,10 +5,12 @@ import { ShieldCheck, Code, Star, Heart, Eye, ExternalLink, Play, Pause } from "
 
 type ProfileEffect = "none" | "snow" | "rain" | "ctv";
 type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "glitch" | "static";
+type TextEffect = UsernameEffect;
 type ProfileMeta = {
   cursorUrl: string;
   profileEffect: ProfileEffect;
   usernameEffect: UsernameEffect;
+  bioEffect: TextEffect;
   bgBlur: number;
   bgOpacity: number;
   customFontUrl: string;
@@ -94,6 +96,7 @@ const defaultMeta: ProfileMeta = {
   cursorUrl: "",
   profileEffect: "none",
   usernameEffect: "none",
+  bioEffect: "none",
   bgBlur: 0,
   bgOpacity: 1,
   customFontUrl: "",
@@ -186,12 +189,14 @@ function cleanMeta(raw: any): ProfileMeta {
   const meta = { ...defaultMeta, ...(raw && typeof raw === "object" ? raw : {}) };
   const profileEffect = ["none", "snow", "rain", "ctv"].includes(meta.profileEffect) ? meta.profileEffect : "none";
   const usernameEffect = ["none", "typewriter", "rainbow", "fuzzy", "glitch", "static"].includes(meta.usernameEffect) ? meta.usernameEffect : "none";
+  const bioEffect = ["none", "typewriter", "rainbow", "fuzzy", "glitch", "static"].includes(meta.bioEffect) ? meta.bioEffect : "none";
   return {
     ...defaultMeta,
     ...meta,
     cursorUrl: safeText(meta.cursorUrl),
     profileEffect,
     usernameEffect,
+    bioEffect,
     bgBlur: Number.isFinite(Number(meta.bgBlur)) ? Math.max(0, Math.min(24, Number(meta.bgBlur))) : defaultMeta.bgBlur,
     bgOpacity: Number.isFinite(Number(meta.bgOpacity)) ? Math.max(0, Math.min(1, Number(meta.bgOpacity))) : defaultMeta.bgOpacity,
     customFontUrl: safeText(meta.customFontUrl),
@@ -1191,7 +1196,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           )}
         </div>
 
-        <div className="bio">{profile.bio || "No bio yet."}</div>
+        <div className={`bio name-effect-${profileMeta.bioEffect}`} data-name={profile.bio || "No bio yet."}>{profile.bio || "No bio yet."}</div>
 
         {profileMeta.discordWidgetEnabled && (discordName || discordUrl) && (
           discordUrl ? (

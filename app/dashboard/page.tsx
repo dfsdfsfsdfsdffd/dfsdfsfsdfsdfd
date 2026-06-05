@@ -36,11 +36,13 @@ type LinkStyle = "glass" | "filled" | "outline" | "soft";
 type EditorTab = "profile" | "links" | "appearance" | "media";
 type ProfileEffect = "none" | "snow" | "rain" | "ctv";
 type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "glitch" | "static";
+type TextEffect = UsernameEffect;
 
 type ProfileMeta = {
   cursorUrl: string;
   profileEffect: ProfileEffect;
   usernameEffect: UsernameEffect;
+  bioEffect: TextEffect;
   bgBlur: number;
   bgOpacity: number;
   customFontUrl: string;
@@ -190,6 +192,7 @@ const defaultMeta: ProfileMeta = {
   cursorUrl: "",
   profileEffect: "none",
   usernameEffect: "none",
+  bioEffect: "none",
   bgBlur: 0,
   bgOpacity: 1,
   customFontUrl: "",
@@ -309,12 +312,14 @@ function cleanMeta(raw: any): ProfileMeta {
   const meta = { ...defaultMeta, ...(raw && typeof raw === "object" ? raw : {}) };
   const profileEffect = ["none", "snow", "rain", "ctv"].includes(meta.profileEffect) ? meta.profileEffect : "none";
   const usernameEffect = ["none", "typewriter", "rainbow", "fuzzy", "glitch", "static"].includes(meta.usernameEffect) ? meta.usernameEffect : "none";
+  const bioEffect = ["none", "typewriter", "rainbow", "fuzzy", "glitch", "static"].includes(meta.bioEffect) ? meta.bioEffect : "none";
   return {
     ...defaultMeta,
     ...meta,
     cursorUrl: safeText(meta.cursorUrl),
     profileEffect,
     usernameEffect,
+    bioEffect,
     bgBlur: Number.isFinite(Number(meta.bgBlur)) ? Math.max(0, Math.min(24, Number(meta.bgBlur))) : defaultMeta.bgBlur,
     bgOpacity: Number.isFinite(Number(meta.bgOpacity)) ? Math.max(0, Math.min(1, Number(meta.bgOpacity))) : defaultMeta.bgOpacity,
     customFontUrl: safeText(meta.customFontUrl),
@@ -862,10 +867,6 @@ export default function SoftcardDashboard() {
                 <Field label="Status Text">
                   <input value={profileMeta.discordStatus} onChange={(e) => setProfileMeta((current) => ({ ...current, discordStatus: e.target.value.slice(0, 50) }))} placeholder="last seen unknown" />
                 </Field>
-                <label className="classic-check">
-                  <input type="checkbox" checked={profileMeta.discordWidgetEnabled} onChange={(e) => setProfileMeta((current) => ({ ...current, discordWidgetEnabled: e.target.checked }))} />
-                  Show Discord widget on profile
-                </label>
                 <button className="classic-primary" onClick={saveChanges} disabled={saving}><Save size={16} /> {saving ? "Saving..." : "Save Settings"}</button>
               </section>
             </div>
@@ -914,8 +915,8 @@ export default function SoftcardDashboard() {
             <Field label="Display Name">
               <input value={profile.name} onChange={(e) => updateProfile("name", e.target.value.slice(0, 60))} />
             </Field>
-            <Field label="Username Effect">
-              <select value={profileMeta.usernameEffect} onChange={(e) => setProfileMeta((current) => ({ ...current, usernameEffect: e.target.value as UsernameEffect }))}>
+            <Field label="Bio Effect">
+              <select value={profileMeta.bioEffect} onChange={(e) => setProfileMeta((current) => ({ ...current, bioEffect: e.target.value as TextEffect }))}>
                 <option value="none">None</option>
                 <option value="typewriter">Typewriter</option>
                 <option value="rainbow">Rainbow</option>
@@ -1345,7 +1346,7 @@ function ProfilePreview({
         {profile.birthday && <span>{new Date(profile.birthday).toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" })}</span>}
         {profile.timezone && <span>{profile.timezone.split("/").pop()?.replace(/_/g, " ")}</span>}
       </div>
-      <div className="classic-bio" style={{ color: profile.bioColor }}>{profile.bio || "No bio yet."}</div>
+      <div className={`classic-bio name-effect-${meta.bioEffect}`} style={{ color: profile.bioColor }} data-name={profile.bio || "No bio yet."}>{profile.bio || "No bio yet."}</div>
       {meta.discordWidgetEnabled ? <DiscordCard meta={meta} fallbackAvatar={profile.avatar || defaultProfile.avatar} /> : null}
       <div className="classic-socials">
         {iconLinks.map((link) => (
