@@ -681,12 +681,9 @@ export default function SoftcardDashboard() {
               <img src={profile.avatar || defaultProfile.avatar} alt="Profile" />
               <MediaDrop kind="avatar" icon={<ImageIcon size={20} />} title="Drop profile picture" hint="PNG, JPG, WEBP, GIF up to 50MB" onUpload={uploadMedia} />
             </div>
-            <Field label="Avatar Image URL">
-              <div className="classic-inline-input">
-                <input value={profile.avatar} onChange={(e) => updateProfile("avatar", e.target.value)} placeholder="https://..." />
-                <button onClick={() => updateProfile("avatar", "")}><X size={16} /></button>
-              </div>
-            </Field>
+            {profile.avatar && profile.avatar !== defaultProfile.avatar && (
+              <button className="classic-secondary" onClick={() => updateProfile("avatar", "")}><X size={16} /> Clear profile picture</button>
+            )}
             <Field label="Username">
               <input value={profile.username} onChange={(e) => updateProfile("username", e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30))} placeholder="username" />
               <div className={`classic-status ${usernameStatus}`}>
@@ -861,8 +858,14 @@ export default function SoftcardDashboard() {
               </div>
             )}
             {profile.bgType !== "gradient" && (
-              <Field label={profile.bgType === "video" ? "Video URL" : "Image URL"}>
-                <input value={profile.bgType === "video" ? profile.bgVideo : profile.bgImage} onChange={(e) => profile.bgType === "video" ? updateProfile("bgVideo", e.target.value) : updateProfile("bgImage", e.target.value)} placeholder="https://..." />
+              <Field label={profile.bgType === "video" ? "Video Background" : "Image Background"}>
+                {profile.bgType === "video" && profile.bgVideo ? (
+                  <button className="classic-secondary" onClick={() => updateProfile("bgVideo", "")}><X size={16} /> Clear uploaded video</button>
+                ) : profile.bgType === "image" && profile.bgImage ? (
+                  <button className="classic-secondary" onClick={() => updateProfile("bgImage", "")}><X size={16} /> Clear uploaded image</button>
+                ) : (
+                  <small>Drop a {profile.bgType} above to set the background.</small>
+                )}
               </Field>
             )}
             <MediaDrop kind="audio" icon={<Music size={20} />} title="Drop audio" hint="MP3, WAV, OGG, WEBM up to 50MB" onUpload={uploadMedia} />
@@ -872,10 +875,16 @@ export default function SoftcardDashboard() {
                 <button className="classic-secondary" onClick={() => setProfileMeta((current) => ({ ...current, cursorUrl: "" }))}>Clear cursor</button>
               )}
             </Field>
-            <Field label="Audio Player Name"><input value={profile.bgAudioName} onChange={(e) => updateProfile("bgAudioName", e.target.value.slice(0, 60))} /></Field>
-            <Field label="Audio URL"><input value={profile.bgAudio} onChange={(e) => updateProfile("bgAudio", e.target.value)} placeholder="https://..." /></Field>
-            <label className="classic-check"><input type="checkbox" checked={profile.showAudioPlayer} onChange={(e) => updateProfile("showAudioPlayer", e.target.checked)} /> Show audio player</label>
-            <label className="classic-check"><input type="checkbox" checked={profile.backgroundAudio} onChange={(e) => updateProfile("backgroundAudio", e.target.checked)} /> Use as background audio after click-to-enter</label>
+            {profile.bgAudio ? (
+              <>
+                <Field label="Audio Player Name"><input value={profile.bgAudioName} onChange={(e) => updateProfile("bgAudioName", e.target.value.slice(0, 60))} placeholder="Profile audio" /></Field>
+                <button className="classic-secondary" onClick={() => updateProfile("bgAudio", "")}><X size={16} /> Clear uploaded audio</button>
+                <label className="classic-check"><input type="checkbox" checked={profile.showAudioPlayer} onChange={(e) => updateProfile("showAudioPlayer", e.target.checked)} /> Show audio player</label>
+                <label className="classic-check"><input type="checkbox" checked={profile.backgroundAudio} onChange={(e) => updateProfile("backgroundAudio", e.target.checked)} /> Use as background audio after click-to-enter</label>
+              </>
+            ) : (
+              <small className="classic-muted">Drop an audio file above to enable profile audio.</small>
+            )}
           </Panel>
         )}
 
