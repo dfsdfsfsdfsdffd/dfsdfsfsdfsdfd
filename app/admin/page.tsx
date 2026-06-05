@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, RefreshCw, ShieldCheck, Code, Star, Heart, Search, Trash2, ExternalLink } from "lucide-react";
+import { ArrowLeft, RefreshCw, ShieldCheck, Code, Star, Heart, Search, Trash2, ExternalLink, Plus, CornerDownRight } from "lucide-react";
 
 type Badges = {
   user?: boolean;
@@ -23,10 +23,21 @@ type AdminUser = {
   badges: Badges | null;
 };
 
+type ProfileRedirect = {
+  id: string;
+  source_username: string;
+  target_username: string;
+  target_user_id?: string | null;
+  created_at?: string | null;
+};
+
 export default function AdminPanel() {
   const [password, setPassword] = useState("");
   const [isAuthed, setIsAuthed] = useState(false);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [redirects, setRedirects] = useState<ProfileRedirect[]>([]);
+  const [redirectSource, setRedirectSource] = useState("");
+  const [redirectTarget, setRedirectTarget] = useState("");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,13 +62,19 @@ export default function AdminPanel() {
 
     try {
       const response = await fetch("/api/admin/users");
+      const redirectsResponse = await fetch("/api/admin/redirects");
       const result = await response.json();
+      const redirectsResult = await redirectsResponse.json();
 
       if (!response.ok) {
         throw new Error(result.error || "Unable to load users.");
       }
+      if (!redirectsResponse.ok) {
+        throw new Error(redirectsResult.error || "Unable to load redirects.");
+      }
 
       setUsers(result.users || []);
+      setRedirects(redirectsResult.redirects || []);
       setIsAuthed(true);
     } catch (err: any) {
       setError(err.message || "Unable to load users.");
@@ -94,6 +111,7 @@ export default function AdminPanel() {
     await fetch("/api/admin/logout", { method: "POST" });
     setIsAuthed(false);
     setUsers([]);
+    setRedirects([]);
     setPassword("");
   }
 
@@ -152,6 +170,50 @@ export default function AdminPanel() {
     setUsers((current) => current.filter((item) => item.id !== user.id));
   }
 
+  async function saveRedirect() {
+    setError(null);
+
+    const response = await fetch("/api/admin/redirects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source: redirectSource,
+        target: redirectTarget,
+      }),
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setError(result.error || "Unable to save redirect.");
+      return;
+    }
+
+    setRedirects(result.redirects || []);
+    setRedirectSource("");
+    setRedirectTarget("");
+  }
+
+  async function deleteRedirect(source: string) {
+    setError(null);
+
+    const response = await fetch("/api/admin/redirects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "delete",
+        source,
+      }),
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setError(result.error || "Unable to delete redirect.");
+      return;
+    }
+
+    setRedirects(result.redirects || []);
+  }
+
   return (
     <main className="admin-main">
       <nav className="admin-nav">
@@ -204,6 +266,55 @@ export default function AdminPanel() {
           </div>
 
           {error && <div className="admin-error">{error}</div>}
+
+          <div className="admin-redirects">
+            <div className="admin-redirect-head">
+              <div>
+                <strong>Reserved redirects</strong>
+                <span>Make aliases like softcard.cc/hey redirect to a real profile.</span>
+              </div>
+              <small>{redirects.length.toLocaleString()} active</small>
+            </div>
+            <div className="admin-redirect-form">
+              <label>
+                <span>Alias</span>
+                <input
+                  value={redirectSource}
+                  onChange={(event) => setRedirectSource(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30))}
+                  placeholder="hey"
+                />
+              </label>
+              <CornerDownRight size={18} />
+              <label>
+                <span>Target profile</span>
+                <input
+                  value={redirectTarget}
+                  onChange={(event) => setRedirectTarget(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30))}
+                  placeholder="akuryo"
+                />
+              </label>
+              <button onClick={saveRedirect} disabled={!redirectSource || !redirectTarget}>
+                <Plus size={15} />
+                Save redirect
+              </button>
+            </div>
+            {redirects.length > 0 && (
+              <div className="admin-redirect-list">
+                {redirects.map((redirect) => (
+                  <div className="admin-redirect-row" key={redirect.id || redirect.source_username}>
+                    <span><b>/{redirect.source_username}</b> {"->"} /{redirect.target_username}</span>
+                    <div>
+                      <a href={`/${redirect.source_username}`} target="_blank" rel="noreferrer">Test</a>
+                      <button onClick={() => deleteRedirect(redirect.source_username)}>
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="admin-search">
             <Search size={16} />

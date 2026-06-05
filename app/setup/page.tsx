@@ -46,7 +46,6 @@ export default function Setup() {
         return;
       }
 
-      // 3. Check if it's in the reserved list first
       if (RESERVED_USERNAMES.includes(lowerUsername)) {
         setIsReserved(true);
         setIsTaken(false);
@@ -54,14 +53,11 @@ export default function Setup() {
       } else {
         setIsReserved(false);
       }
-      
-      const { data } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', lowerUsername)
-        .single();
 
-      setIsTaken(!!data);
+      const response = await fetch(`/api/username?username=${encodeURIComponent(lowerUsername)}`);
+      const result = await response.json();
+      setIsReserved(result.status === "reserved");
+      setIsTaken(result.status === "taken");
     };
 
     const timeoutId = setTimeout(checkUsername, 500);
@@ -77,12 +73,21 @@ export default function Setup() {
     }
 
     const { data: { user } } = await supabase.auth.getUser();
+    const lowerUsername = username.toLowerCase();
+    const response = await fetch(`/api/username?username=${encodeURIComponent(lowerUsername)}&currentId=${encodeURIComponent(user?.id || "")}`);
+    const result = await response.json();
+
+    if (!response.ok || result.status !== "available") {
+      alert(result.status === "reserved" ? "That username is reserved." : "That username is already taken.");
+      setLoading(false);
+      return;
+    }
 
     const { error } = await supabase
       .from('profiles')
       .upsert({ 
         id: user?.id, 
-        username: username.toLowerCase(),
+        username: lowerUsername,
         updated_at: new Date() 
       });
 

@@ -282,11 +282,24 @@ export default function PublicProfile({ params }: { params: { username: string }
     async function loadProfile() {
       if (!supabase) return;
 
+      const requestedUsername = params.username.trim().toLowerCase();
+
+      try {
+        const redirectResponse = await fetch(`/api/redirects?username=${encodeURIComponent(requestedUsername)}`, {
+          cache: "no-store",
+        });
+        const redirectResult = await redirectResponse.json();
+        if (redirectResponse.ok && redirectResult.target && redirectResult.target !== requestedUsername) {
+          window.location.replace(`/${redirectResult.target}`);
+          return;
+        }
+      } catch {}
+
       // 1. Fetch profile data
       const { data } = await supabase
         .from('profiles')
         .select('*')
-        .eq('username', params.username)
+        .eq('username', requestedUsername)
         .single()
       
       if (data) {

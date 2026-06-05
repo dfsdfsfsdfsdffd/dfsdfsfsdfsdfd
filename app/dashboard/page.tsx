@@ -568,8 +568,9 @@ export default function SoftcardDashboard() {
       }
 
       setUsernameStatus("checking");
-      const { data } = await supabase.from("profiles").select("id").eq("username", username).maybeSingle();
-      setUsernameStatus(data && data.id !== currentUserId ? "taken" : "available");
+      const response = await fetch(`/api/username?username=${encodeURIComponent(username)}&currentId=${encodeURIComponent(currentUserId)}`);
+      const result = await response.json();
+      setUsernameStatus(response.ok ? result.status || "available" : "taken");
     }
 
     const timeoutId = window.setTimeout(checkUsername, 450);
@@ -698,9 +699,12 @@ export default function SoftcardDashboard() {
       if (!USERNAME_REGEX.test(username)) throw new Error("Username must be 3-30 characters and may only include letters, numbers, underscores, or hyphens.");
       if (RESERVED_USERNAMES.has(username)) throw new Error("That username is reserved.");
       if (username !== originalUsername) {
-        const { data, error } = await supabase.from("profiles").select("id").eq("username", username).maybeSingle();
-        if (error) throw error;
-        if (data && data.id !== user.id) throw new Error("That username is already taken.");
+        const response = await fetch(`/api/username?username=${encodeURIComponent(username)}&currentId=${encodeURIComponent(user.id)}`);
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Unable to verify username availability.");
+        if (result.status !== "available") {
+          throw new Error(result.status === "reserved" ? "That username is reserved." : "That username is already taken.");
+        }
       }
 
       const { error } = await supabase
@@ -910,10 +914,24 @@ export default function SoftcardDashboard() {
             <Field label="Display Name">
               <input value={profile.name} onChange={(e) => updateProfile("name", e.target.value.slice(0, 60))} />
             </Field>
+            <Field label="Username Effect">
+              <select value={profileMeta.usernameEffect} onChange={(e) => setProfileMeta((current) => ({ ...current, usernameEffect: e.target.value as UsernameEffect }))}>
+                <option value="none">None</option>
+                <option value="typewriter">Typewriter</option>
+                <option value="rainbow">Rainbow</option>
+                <option value="fuzzy">Fuzzy</option>
+                <option value="glitch">Glitch</option>
+                <option value="static">Static</option>
+              </select>
+            </Field>
             <Field label="Short Bio">
               <textarea value={profile.bio} maxLength={150} onChange={(e) => updateProfile("bio", e.target.value)} placeholder="Tell the world about yourself..." />
               <small>{profile.bio.length}/150</small>
             </Field>
+            <label className="classic-check">
+              <input type="checkbox" checked={profileMeta.discordWidgetEnabled} onChange={(e) => setProfileMeta((current) => ({ ...current, discordWidgetEnabled: e.target.checked }))} />
+              Show Discord widget on profile
+            </label>
             <div className="classic-grid-2">
               <Field label="Age"><input type="number" value={profile.age} onChange={(e) => updateProfile("age", e.target.value.slice(0, 2))} /></Field>
               <Field label="Birthday"><input type="date" value={profile.birthday} onChange={(e) => updateProfile("birthday", e.target.value)} /></Field>

@@ -137,6 +137,20 @@ export async function POST(request: Request) {
     return json({ error: "That username is already taken." }, 409);
   }
 
+  const { data: existingRedirect, error: existingRedirectError } = await supabaseAdmin
+    .from("profile_redirects")
+    .select("source_username")
+    .eq("source_username", username)
+    .maybeSingle();
+
+  if (existingRedirectError) {
+    return json({ error: "Unable to verify username availability." }, 500);
+  }
+
+  if (existingRedirect) {
+    return json({ error: "That username is reserved." }, 409);
+  }
+
   const { data: createdUser, error: createUserError } = await supabaseAdmin.auth.admin.createUser({
     email,
     password,

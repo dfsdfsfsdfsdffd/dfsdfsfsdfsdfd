@@ -833,10 +833,10 @@ button:disabled {
 }
 
 .admin-search input {
-  width: 100%;
-  border: 0;
-  outline: 0;
-  background: transparent;
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
   color: var(--text);
 }
 
@@ -941,6 +941,121 @@ button:disabled {
   :root {
     --container: min(100vw - 28px, 1120px);
   }
+
+.admin-redirects {
+  margin: 22px 0 18px;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.04));
+  box-shadow: var(--shadow);
+}
+
+.admin-redirect-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.admin-redirect-head div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-redirect-head strong {
+  color: var(--text);
+  font-size: 18px;
+}
+
+.admin-redirect-head span,
+.admin-redirect-head small,
+.admin-redirect-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-redirect-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.admin-redirect-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-redirect-form input {
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.055);
+  color: var(--text);
+  outline: 0;
+}
+
+.admin-redirect-form button,
+.admin-redirect-row button,
+.admin-redirect-row a {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.07);
+  color: var(--text);
+  font-weight: 850;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.admin-redirect-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.admin-redirect-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-redirect-row {
+  min-height: 46px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.admin-redirect-row > span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.admin-redirect-row b {
+  color: var(--text);
+}
+
+.admin-redirect-row div {
+  display: flex;
+  gap: 8px;
+}
 
   .sx-nav,
   .lx-nav,
