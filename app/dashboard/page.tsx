@@ -272,6 +272,43 @@ function safeExternalUrl(value: unknown) {
   }
 }
 
+function safeText(value: unknown, fallback = "") {
+  return typeof value === "string" ? value : fallback;
+}
+
+function cleanMeta(raw: any): ProfileMeta {
+  const meta = { ...defaultMeta, ...(raw && typeof raw === "object" ? raw : {}) };
+  const profileEffect = ["none", "snow", "rain", "ctv"].includes(meta.profileEffect) ? meta.profileEffect : "none";
+  const usernameEffect = ["none", "typewriter", "rainbow", "fuzzy", "glitch", "static"].includes(meta.usernameEffect) ? meta.usernameEffect : "none";
+  return {
+    ...defaultMeta,
+    ...meta,
+    cursorUrl: safeText(meta.cursorUrl),
+    profileEffect,
+    usernameEffect,
+    bgBlur: Number.isFinite(Number(meta.bgBlur)) ? Math.max(0, Math.min(24, Number(meta.bgBlur))) : defaultMeta.bgBlur,
+    bgOpacity: Number.isFinite(Number(meta.bgOpacity)) ? Math.max(0, Math.min(1, Number(meta.bgOpacity))) : defaultMeta.bgOpacity,
+    customFontUrl: safeText(meta.customFontUrl),
+    customFontName: safeText(meta.customFontName),
+    customFontBio: Boolean(meta.customFontBio),
+    discordUrl: safeText(meta.discordUrl),
+    discordId: safeText(meta.discordId),
+    discordName: safeText(meta.discordName),
+    discordUsername: safeText(meta.discordUsername),
+    discordStatus: safeText(meta.discordStatus, defaultMeta.discordStatus),
+    discordAvatar: safeText(meta.discordAvatar),
+    discordBadges: Array.isArray(meta.discordBadges) ? meta.discordBadges.filter((badge: unknown) => typeof badge === "string") : [],
+    discordActivityName: safeText(meta.discordActivityName),
+    discordActivityDetails: safeText(meta.discordActivityDetails),
+    discordActivityState: safeText(meta.discordActivityState),
+    discordActivityType: safeText(meta.discordActivityType),
+    discordActivityImage: safeText(meta.discordActivityImage),
+    discordConnected: Boolean(meta.discordConnected),
+    discordConnectedAt: safeText(meta.discordConnectedAt),
+    elementGlow: Boolean(meta.elementGlow),
+  };
+}
+
 function safeFileName(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 90) || "softcard-media";
 }
@@ -342,7 +379,7 @@ function normalizeLinks(items: SocialLink[]) {
 
 function readMeta(items: SocialLink[]): ProfileMeta {
   const metaLink = items.find((link) => link.type === "__softcard_meta");
-  const meta = { ...defaultMeta, ...(metaLink?.meta || {}) };
+  const meta = cleanMeta(metaLink?.meta);
   if ((meta.usernameEffect as string) === "shuffle") meta.usernameEffect = "glitch";
   if ((meta.profileEffect as string) === "night") meta.profileEffect = "none";
   if ((meta.usernameEffect as string) === "sparkles") meta.usernameEffect = "none";
