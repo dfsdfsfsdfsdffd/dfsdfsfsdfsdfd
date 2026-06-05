@@ -44,6 +44,7 @@ type ProfileMeta = {
   bgOpacity: number;
   customFontUrl: string;
   customFontName: string;
+  customFontBio: boolean;
 };
 
 type SocialLink = {
@@ -172,6 +173,7 @@ const defaultMeta: ProfileMeta = {
   bgOpacity: 1,
   customFontUrl: "",
   customFontName: "",
+  customFontBio: false,
 };
 
 const badgeInfo = {
@@ -826,6 +828,15 @@ export default function SoftcardDashboard() {
             <Field label="Custom Font File">
               <MediaDrop kind="font" icon={<Upload size={20} />} title="Drop .ttf or .otf" hint="Font file only" onUpload={uploadMedia} />
               {profileMeta.customFontUrl && <small>{profileMeta.customFontName || "Custom font uploaded"}</small>}
+              <label className="classic-check">
+                <input
+                  type="checkbox"
+                  checked={profileMeta.customFontBio}
+                  disabled={!profileMeta.customFontUrl}
+                  onChange={(e) => setProfileMeta((current) => ({ ...current, customFontBio: e.target.checked }))}
+                />
+                Use custom font on bio
+              </label>
             </Field>
           </Panel>
         )}
@@ -1666,6 +1677,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       line-height: 1.35;
       white-space: pre-wrap;
       word-break: break-word;
+      font-family: ${meta.customFontUrl && meta.customFontBio ? '"SoftcardCustomFont"' : profile.font}, ${profile.font}, sans-serif;
     }
     .classic-socials {
       gap: 14px;

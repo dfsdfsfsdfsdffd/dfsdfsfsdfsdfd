@@ -13,6 +13,7 @@ type ProfileMeta = {
   bgOpacity: number;
   customFontUrl: string;
   customFontName: string;
+  customFontBio: boolean;
 };
 
 const iconMap: any = {
@@ -77,6 +78,7 @@ const defaultMeta: ProfileMeta = {
   bgOpacity: 1,
   customFontUrl: "",
   customFontName: "",
+  customFontBio: false,
 };
 
 function safeColor(value: unknown, fallback: string) {
@@ -247,7 +249,9 @@ export default function PublicProfile({ params }: { params: { username: string }
   const accent = safeColor(profile.accent_color, '#7000ff');
   const nameColor = safeColor(profile.name_color, '#ffffff');
   const bioColor = safeColor(profile.bio_color, '#d1d5db');
-  const fontFamily = profileMeta.customFontUrl ? "SoftcardCustomFont" : safeFont(profile.font_family);
+  const baseFontFamily = safeFont(profile.font_family);
+  const nameFontFamily = profileMeta.customFontUrl ? "SoftcardCustomFont" : baseFontFamily;
+  const bioFontFamily = profileMeta.customFontUrl && profileMeta.customFontBio ? "SoftcardCustomFont" : baseFontFamily;
   const background = safeGradient(profile.background_value);
   const hasMediaBg = (profile.background_type === "image" || profile.background_type === "video") && profile.background_value;
   const bgUrl = hasMediaBg ? safeMediaUrl(profile.background_value) : "";
@@ -269,7 +273,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           width: 100vw;
           background: ${profile.background_type === 'gradient' ? background : '#030712'};
           display: flex; align-items: center; justify-content: center;
-          color: white; font-family: ${fontFamily}, sans-serif;
+          color: white; font-family: ${baseFontFamily}, sans-serif;
           overflow: hidden; position: relative;
           isolation: isolate;
           cursor: ${profileMeta.cursorUrl ? `url("${profileMeta.cursorUrl}") 8 8, auto` : "auto"};
@@ -357,7 +361,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           color: ${nameColor};
           letter-spacing: -0.03em;
           position: relative;
-          font-family: ${fontFamily}, sans-serif;
+          font-family: ${nameFontFamily}, sans-serif;
         }
         .profile-card .view-count {
           position: absolute !important;
@@ -448,6 +452,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         .bio { 
           font-size: 14px; margin-bottom: 14px; line-height: 1.35;
           color: ${bioColor}; 
+          font-family: ${bioFontFamily}, sans-serif;
           max-width: 85%; white-space: pre-wrap; word-break: break-word;
         }
 
