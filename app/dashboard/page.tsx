@@ -523,7 +523,7 @@ export default function SoftcardDashboard() {
     if (!status) return;
 
     const messages: Record<string, { kind: "ok" | "error"; message: string }> = {
-      connected: { kind: "ok", message: "Discord connected. The widget will publish with your next save." },
+      connected: { kind: "ok", message: "Discord connected. If server auto-join is configured, the presence bot can now sync status/activity." },
       "not-configured": { kind: "error", message: "Discord is not configured. Add the Discord client ID, client secret, and redirect URL in Vercel." },
       invalid: { kind: "error", message: "Discord login expired or the state did not match. Try connecting again." },
       "token-failed": { kind: "error", message: "Discord token exchange failed. Check that the redirect URL matches the Discord Developer Portal exactly." },

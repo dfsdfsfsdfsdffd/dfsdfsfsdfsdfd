@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
   authorizeUrl.searchParams.set("client_id", clientId);
   authorizeUrl.searchParams.set("redirect_uri", discordRedirectUri(request));
   authorizeUrl.searchParams.set("response_type", "code");
-  authorizeUrl.searchParams.set("scope", "identify");
+  authorizeUrl.searchParams.set("scope", process.env.DISCORD_GUILD_ID && process.env.DISCORD_BOT_TOKEN ? "identify guilds.join" : "identify");
   authorizeUrl.searchParams.set("state", state);
 
   const redirect = NextResponse.redirect(authorizeUrl);

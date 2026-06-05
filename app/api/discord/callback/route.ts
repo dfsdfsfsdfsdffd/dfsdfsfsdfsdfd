@@ -44,6 +44,16 @@ function discordRedirectUri(request: NextRequest) {
   return new URL("/api/discord/callback", request.url).toString();
 }
 
+async function fetchWithTimeout(input: string, init: RequestInit, ms = 10_000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function avatarUrl(user: any) {
   if (user?.avatar && user?.id) {
     const ext = String(user.avatar).startsWith("a_") ? "gif" : "png";
@@ -64,6 +74,23 @@ function discordBadges(user: any) {
   const badges = DISCORD_PUBLIC_FLAGS.filter((badge) => (flags & (2 ** badge.bit)) !== 0).map((badge) => badge.id);
   if (Number(user?.premium_type || 0) > 0) badges.push("nitro");
   return [...new Set(badges)].slice(0, 8);
+}
+
+async function joinDiscordGuild(discordUserId: string, accessToken: string) {
+  const guildId = process.env.DISCORD_GUILD_ID?.trim();
+  const botToken = process.env.DISCORD_BOT_TOKEN?.trim();
+  if (!guildId || !botToken || !discordUserId || !accessToken) return "skipped";
+
+  const response = await fetchWithTimeout(`https://discord.com/api/v10/guilds/${guildId}/members/${discordUserId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bot ${botToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ access_token: accessToken }),
+  });
+
+  return response.ok || response.status === 201 || response.status === 204 ? "joined" : "failed";
 }
 
 function writeMeta(items: any[], patch: Record<string, unknown>) {
@@ -128,32 +155,43 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.redirect(new URL("/login", request.url));
 
-  const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: "authorization_code",
-      code,
-      redirect_uri: discordRedirectUri(request),
-    }),
-  });
+  let tokenResponse: Response;
+  try {
+    tokenResponse = await fetchWithTimeout("https://discord.com/api/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: discordRedirectUri(request),
+      }),
+    });
+  } catch {
+    return NextResponse.redirect(new URL("/dashboard?discord=token-failed", request.url));
+  }
 
   if (!tokenResponse.ok) {
     return NextResponse.redirect(new URL("/dashboard?discord=token-failed", request.url));
   }
 
   const token = await tokenResponse.json();
-  const userResponse = await fetch("https://discord.com/api/v10/users/@me", {
-    headers: { Authorization: `Bearer ${token.access_token}` },
-  });
+  let userResponse: Response;
+  try {
+    userResponse = await fetchWithTimeout("https://discord.com/api/v10/users/@me", {
+      headers: { Authorization: `Bearer ${token.access_token}` },
+    });
+  } catch {
+    return NextResponse.redirect(new URL("/dashboard?discord=user-failed", request.url));
+  }
 
   if (!userResponse.ok) {
     return NextResponse.redirect(new URL("/dashboard?discord=user-failed", request.url));
   }
 
   const discordUser = await userResponse.json();
+  const guildJoinStatus = await joinDiscordGuild(String(discordUser.id || ""), String(token.access_token || "")).catch(() => "failed");
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
@@ -177,6 +215,7 @@ export async function GET(request: NextRequest) {
         discordUrl: discordUser.id ? `https://discord.com/users/${discordUser.id}` : "",
         discordConnected: true,
         discordConnectedAt: new Date().toISOString(),
+        discordGuildJoinStatus: guildJoinStatus,
         discordStatus: "connected discord",
       }),
     })
