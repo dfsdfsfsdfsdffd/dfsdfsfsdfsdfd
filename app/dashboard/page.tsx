@@ -745,28 +745,66 @@ export default function SoftcardDashboard() {
             {links.map((link, index) => (
               <div className="classic-link-card" key={link.id}>
                 <button className="classic-remove" onClick={() => removeLink(link.id)}><Trash2 size={14} /></button>
+                <div className="classic-link-head">
+                  <span className="classic-icon-preview"><img src={iconMap[link.type] || iconMap.website} alt="" /></span>
+                  <div>
+                    <strong>{link.label || link.type.toUpperCase()}</strong>
+                    <small>{link.featured ? "Featured button" : "Icon link"}</small>
+                  </div>
+                </div>
+                <span className="classic-section-label">Destination</span>
                 <div className="classic-grid-2">
-                  <select value={link.type} onChange={(e) => updateLink(index, { type: e.target.value })}>
-                    {Object.keys(iconMap).map((key) => <option key={key} value={key}>{key.toUpperCase()}</option>)}
-                  </select>
-                  <select value={link.style || "glass"} onChange={(e) => updateLink(index, { style: e.target.value as LinkStyle })}>
-                    <option value="glass">Glass</option>
-                    <option value="filled">Filled</option>
-                    <option value="outline">Outline</option>
-                    <option value="soft">Soft</option>
-                  </select>
+                  <Field label="Icon">
+                    <select value={link.type} onChange={(e) => updateLink(index, { type: e.target.value })}>
+                      {Object.keys(iconMap).map((key) => <option key={key} value={key}>{key.toUpperCase()}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Visibility">
+                    <button
+                      className={`classic-toggle-button ${link.enabled !== false ? "is-on" : ""}`}
+                      onClick={() => updateLink(index, { enabled: link.enabled === false })}
+                    >
+                      {link.enabled !== false ? <Check size={15} /> : <X size={15} />}
+                      {link.enabled !== false ? "Shown" : "Hidden"}
+                    </button>
+                  </Field>
                 </div>
                 <input value={link.url} onChange={(e) => updateLink(index, { url: e.target.value })} placeholder="https://..." />
-                <input value={link.label || ""} maxLength={40} onChange={(e) => updateLink(index, { label: e.target.value })} placeholder="Display label" />
-                <input value={link.description || ""} maxLength={80} onChange={(e) => updateLink(index, { description: e.target.value })} placeholder="Featured button description" />
-                <div className="classic-grid-2">
-                  <input value={link.color || ""} maxLength={7} onChange={(e) => updateLink(index, { color: e.target.value })} placeholder="#a970ff" />
-                  <input type="color" value={link.color || profile.accent} onChange={(e) => updateLink(index, { color: e.target.value })} />
-                </div>
+
+                <button
+                  className={`classic-feature-toggle ${link.featured ? "is-on" : ""}`}
+                  onClick={() => updateLink(index, { featured: !link.featured })}
+                >
+                  <Star size={15} />
+                  <span>
+                    <strong>{link.featured ? "Featured button enabled" : "Make this a featured button"}</strong>
+                    <small>{link.featured ? "Shows as a full-width button under icons" : "Keep off for a simple social icon"}</small>
+                  </span>
+                </button>
+
+                {link.featured && (
+                  <div className="classic-link-feature-panel">
+                    <span className="classic-section-label">Button Content</span>
+                    <input value={link.label || ""} maxLength={40} onChange={(e) => updateLink(index, { label: e.target.value })} placeholder="Button label" />
+                    <input value={link.description || ""} maxLength={80} onChange={(e) => updateLink(index, { description: e.target.value })} placeholder="Small description" />
+                    <div className="classic-grid-2">
+                      <Field label="Button Style">
+                        <select value={link.style || "glass"} onChange={(e) => updateLink(index, { style: e.target.value as LinkStyle })}>
+                          <option value="glass">Glass</option>
+                          <option value="filled">Filled</option>
+                          <option value="outline">Outline</option>
+                          <option value="soft">Soft</option>
+                        </select>
+                      </Field>
+                      <Field label="Button Color">
+                        <input type="color" value={link.color || profile.accent} onChange={(e) => updateLink(index, { color: e.target.value })} />
+                      </Field>
+                    </div>
+                  </div>
+                )}
+
                 <div className="classic-tools">
-                  <button onClick={() => duplicateLink(index)}><CopyPlus size={14} /> Copy</button>
-                  <label><input type="checkbox" checked={link.enabled !== false} onChange={(e) => updateLink(index, { enabled: e.target.checked })} /> Show</label>
-                  <label><input type="checkbox" checked={Boolean(link.featured)} onChange={(e) => updateLink(index, { featured: e.target.checked })} /> Feature</label>
+                  <button onClick={() => duplicateLink(index)}><CopyPlus size={14} /> Duplicate</button>
                 </div>
               </div>
             ))}
@@ -776,6 +814,7 @@ export default function SoftcardDashboard() {
 
         {tab === "appearance" && (
           <Panel>
+            <span className="classic-section-label">Theme Presets</span>
             <div className="classic-theme-grid">
               {themes.map((theme) => (
                 <button key={theme.name} className="classic-theme" style={{ background: theme.gradient }} onClick={() => applyTheme(theme)}>
@@ -785,6 +824,7 @@ export default function SoftcardDashboard() {
               ))}
             </div>
             <button className="classic-secondary classic-add" onClick={saveTheme}><CopyPlus size={16} /> Save Current Theme</button>
+            <span className="classic-section-label">Text</span>
             <Field label="Font Style">
               <select value={profile.font} onChange={(e) => updateProfile("font", e.target.value)}>
                 <option value="Inter">Inter</option>
@@ -798,6 +838,7 @@ export default function SoftcardDashboard() {
               <Field label="Accent Color"><input type="color" value={profile.accent.slice(0, 7)} onChange={(e) => updateProfile("accent", e.target.value)} /></Field>
             </div>
             <Field label="Bio Color"><input type="color" value={profile.bioColor.slice(0, 7)} onChange={(e) => updateProfile("bioColor", e.target.value)} /></Field>
+            <span className="classic-section-label">Card & Effects</span>
             <label className="classic-check"><input type="checkbox" checked={profile.showGlass} onChange={(e) => updateProfile("showGlass", e.target.checked)} /> Transparent Glass Card</label>
             <Field label="Profile Effect">
               <select value={profileMeta.profileEffect} onChange={(e) => setProfileMeta((current) => ({ ...current, profileEffect: e.target.value as ProfileEffect }))}>
@@ -822,6 +863,7 @@ export default function SoftcardDashboard() {
             <Field label={`Background Opacity: ${Math.round(profileMeta.bgOpacity * 100)}%`}>
               <input type="range" min="0.2" max="1" step="0.05" value={profileMeta.bgOpacity} onChange={(e) => setProfileMeta((current) => ({ ...current, bgOpacity: Number(e.target.value) }))} />
             </Field>
+            <span className="classic-section-label">Uploads</span>
             <Field label="Custom Font File">
               <MediaDrop kind="font" icon={<Upload size={20} />} title="Drop .ttf or .otf" hint="Font file only" onUpload={uploadMedia} />
               {profileMeta.customFontUrl && <small>{profileMeta.customFontName || "Custom font uploaded"}</small>}
@@ -840,6 +882,7 @@ export default function SoftcardDashboard() {
 
         {tab === "media" && (
           <Panel>
+            <span className="classic-section-label">Background</span>
             <Field label="Background Type">
               <select value={profile.bgType} onChange={(e) => updateProfile("bgType", e.target.value as ProfileData["bgType"])}>
                 <option value="gradient">Gradient</option>
@@ -868,13 +911,8 @@ export default function SoftcardDashboard() {
                 )}
               </Field>
             )}
+            <span className="classic-section-label">Audio</span>
             <MediaDrop kind="audio" icon={<Music size={20} />} title="Drop audio" hint="MP3, WAV, OGG, WEBM up to 50MB" onUpload={uploadMedia} />
-            <Field label="Custom Cursor">
-              <MediaDrop kind="cursor" icon={<Upload size={20} />} title="Drop cursor image" hint="PNG, JPG, GIF, WEBP" onUpload={uploadMedia} />
-              {profileMeta.cursorUrl && (
-                <button className="classic-secondary" onClick={() => setProfileMeta((current) => ({ ...current, cursorUrl: "" }))}>Clear cursor</button>
-              )}
-            </Field>
             {profile.bgAudio ? (
               <>
                 <Field label="Audio Player Name"><input value={profile.bgAudioName} onChange={(e) => updateProfile("bgAudioName", e.target.value.slice(0, 60))} placeholder="Profile audio" /></Field>
@@ -885,6 +923,13 @@ export default function SoftcardDashboard() {
             ) : (
               <small className="classic-muted">Drop an audio file above to enable profile audio.</small>
             )}
+            <span className="classic-section-label">Cursor</span>
+            <Field label="Custom Cursor">
+              <MediaDrop kind="cursor" icon={<Upload size={20} />} title="Drop cursor image" hint="PNG, JPG, GIF, WEBP" onUpload={uploadMedia} />
+              {profileMeta.cursorUrl && (
+                <button className="classic-secondary" onClick={() => setProfileMeta((current) => ({ ...current, cursorUrl: "" }))}>Clear cursor</button>
+              )}
+            </Field>
           </Panel>
         )}
 
@@ -1282,6 +1327,23 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       text-transform: uppercase;
       letter-spacing: 0.08em;
     }
+    .classic-section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+      color: rgba(255,255,255,0.46);
+      font-size: 11px;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .classic-section-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
     .classic-field small,
     .classic-muted {
       color: rgba(255,255,255,0.48);
@@ -1399,6 +1461,108 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
+    .classic-link-head {
+      min-height: 42px;
+      padding-right: 34px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .classic-link-head div {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .classic-link-head strong,
+    .classic-link-head small {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .classic-link-head strong {
+      color: white;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .classic-link-head small {
+      color: rgba(255,255,255,0.48);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .classic-icon-preview {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .classic-icon-preview img {
+      width: 21px;
+      height: 21px;
+    }
+    .classic-toggle-button,
+    .classic-feature-toggle {
+      width: 100%;
+      min-height: 44px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.055);
+      color: rgba(255,255,255,0.72);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 850;
+    }
+    .classic-toggle-button.is-on {
+      color: #baf7d5;
+      border-color: rgba(70,211,154,0.3);
+      background: rgba(70,211,154,0.11);
+    }
+    .classic-feature-toggle {
+      justify-content: flex-start;
+      padding: 11px 12px;
+      text-align: left;
+    }
+    .classic-feature-toggle.is-on {
+      color: white;
+      border-color: ${profile.accent}66;
+      background: ${profile.accent}1f;
+      box-shadow: inset 0 0 0 1px ${profile.accent}22;
+    }
+    .classic-feature-toggle > svg {
+      flex: 0 0 auto;
+      color: ${profile.accent};
+    }
+    .classic-feature-toggle span {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .classic-feature-toggle strong {
+      font-size: 13px;
+      line-height: 1.2;
+    }
+    .classic-feature-toggle small {
+      color: rgba(255,255,255,0.48);
+      font-size: 11px;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+    .classic-link-feature-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 4px;
     }
     .classic-remove {
       position: absolute;
