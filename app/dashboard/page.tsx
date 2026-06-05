@@ -1273,7 +1273,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       overflow-y: auto;
       background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)), #0b0c13;
       border-right: 1px solid rgba(255,255,255,0.1);
-      padding: 22px;
+      padding: 22px 22px 30px;
     }
     .classic-editor-head {
       display: flex;
@@ -1288,8 +1288,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-tabs {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 6px;
-      margin-bottom: 18px;
+      gap: 7px;
+      margin-bottom: 22px;
       padding: 5px;
       border-radius: 14px;
       background: rgba(255,255,255,0.045);
@@ -1312,13 +1312,13 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-panel {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      padding-bottom: 34px;
+      gap: 18px;
+      padding-bottom: 42px;
     }
     .classic-field {
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 9px;
     }
     .classic-field > span {
       color: rgba(255,255,255,0.48);
@@ -1330,8 +1330,9 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-section-label {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-top: 4px;
+      gap: 10px;
+      margin-top: 8px;
+      margin-bottom: -2px;
       color: rgba(255,255,255,0.46);
       font-size: 11px;
       font-weight: 950;
@@ -1391,7 +1392,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-grid-2 {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
+      gap: 12px;
     }
     .classic-inline-input {
       display: grid;
@@ -1424,7 +1425,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-upload {
       position: relative;
-      min-height: 92px;
+      min-height: 104px;
       border: 1px dashed rgba(255,255,255,0.2);
       background: rgba(255,255,255,0.04);
       border-radius: 12px;
@@ -1432,10 +1433,10 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 7px;
+      gap: 9px;
       text-align: center;
       color: rgba(255,255,255,0.68);
-      padding: 12px;
+      padding: 14px;
     }
     .classic-upload input {
       position: absolute;
@@ -1454,13 +1455,13 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-link-card,
     .classic-stat {
       position: relative;
-      padding: 14px;
+      padding: 16px;
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.1);
       background: rgba(255,255,255,0.045);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 14px;
     }
     .classic-link-head {
       min-height: 42px;
@@ -1529,7 +1530,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-feature-toggle {
       justify-content: flex-start;
-      padding: 11px 12px;
+      padding: 13px 14px;
       text-align: left;
     }
     .classic-feature-toggle.is-on {
@@ -1561,8 +1562,11 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-link-feature-panel {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      padding-top: 4px;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.07);
     }
     .classic-remove {
       position: absolute;
@@ -1577,15 +1581,15 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-tools {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+      gap: 10px;
     }
     .classic-tools label,
     .classic-check {
-      min-height: 36px;
+      min-height: 40px;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       color: rgba(255,255,255,0.72);
       font-size: 13px;
       font-weight: 750;
@@ -1605,19 +1609,19 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-stat-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
+      gap: 12px;
     }
     .classic-theme {
-      min-height: 78px;
+      min-height: 84px;
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.14);
       color: white;
       text-align: left;
-      padding: 12px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      gap: 3px;
+      gap: 5px;
     }
     .classic-theme span,
     .classic-stat strong {
