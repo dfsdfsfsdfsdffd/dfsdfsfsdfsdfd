@@ -14,6 +14,10 @@ type ProfileMeta = {
   customFontUrl: string;
   customFontName: string;
   customFontBio: boolean;
+  discordUrl: string;
+  discordName: string;
+  discordStatus: string;
+  discordAvatar: string;
 };
 
 const iconMap: any = {
@@ -79,6 +83,10 @@ const defaultMeta: ProfileMeta = {
   customFontUrl: "",
   customFontName: "",
   customFontBio: false,
+  discordUrl: "",
+  discordName: "",
+  discordStatus: "last seen unknown",
+  discordAvatar: "",
 };
 
 function safeColor(value: unknown, fallback: string) {
@@ -256,6 +264,10 @@ export default function PublicProfile({ params }: { params: { username: string }
   const hasMediaBg = (profile.background_type === "image" || profile.background_type === "video") && profile.background_value;
   const bgUrl = hasMediaBg ? safeMediaUrl(profile.background_value) : "";
   const avatarUrl = safeMediaUrl(profile.avatar_url) || "https://i.imgur.com/1X6g1YH.jpeg";
+  const discordName = profileMeta.discordName.trim();
+  const discordUrl = safeExternalUrl(profileMeta.discordUrl);
+  const discordAvatar = safeMediaUrl(profileMeta.discordAvatar) || avatarUrl;
+  const discordStatus = profileMeta.discordStatus.trim() || "last seen unknown";
   const audioSettings = splitAudioMeta(safeMediaUrl(profile.audio_url));
   const audioUrl = audioSettings.url;
   const audioTitle = audioSettings.title || mediaName(audioUrl);
@@ -486,6 +498,82 @@ export default function PublicProfile({ params }: { params: { username: string }
           color: ${bioColor}; 
           font-family: ${bioFontFamily}, sans-serif;
           max-width: 85%; white-space: pre-wrap; word-break: break-word;
+        }
+        .discord-card {
+          width: 100%;
+          max-width: 270px;
+          min-height: 74px;
+          margin-bottom: 14px;
+          padding: 10px 12px;
+          display: flex;
+          align-items: center;
+          gap: 11px;
+          border-radius: 14px;
+          border: 1px solid rgba(255,255,255,0.1);
+          background:
+            radial-gradient(circle at 80% 20%, ${accent}24, transparent 36%),
+            rgba(255,255,255,0.075);
+          color: white;
+          text-decoration: none;
+          overflow: hidden;
+        }
+        .discord-avatar-wrap {
+          position: relative;
+          flex: 0 0 auto;
+        }
+        .discord-avatar {
+          width: 54px;
+          height: 54px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+        .discord-status-dot {
+          position: absolute;
+          right: 0;
+          bottom: 1px;
+          width: 15px;
+          height: 15px;
+          border-radius: 50%;
+          border: 3px solid rgba(20,20,24,0.92);
+          background: #8b8d98;
+          box-shadow: 0 0 0 1px rgba(255,255,255,0.2);
+        }
+        .discord-main {
+          min-width: 0;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          text-align: left;
+        }
+        .discord-name-row {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          min-width: 0;
+        }
+        .discord-name-row strong {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 18px;
+          font-weight: 900;
+          line-height: 1;
+        }
+        .discord-mini-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 999px;
+          background: #82aaff;
+          box-shadow: 0 0 0 3px rgba(130,170,255,0.18);
+        }
+        .discord-main small {
+          color: rgba(255,255,255,0.58);
+          font-size: 12px;
+          font-style: italic;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .social-row { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 2px; }
@@ -792,6 +880,20 @@ export default function PublicProfile({ params }: { params: { username: string }
         </div>
 
         <div className="bio">{profile.bio || "No bio yet."}</div>
+
+        {(discordName || discordUrl) && (
+          discordUrl ? (
+            <a className="discord-card" href={discordUrl} target="_blank" rel="noopener noreferrer">
+              <span className="discord-avatar-wrap"><img className="discord-avatar" src={discordAvatar} alt="" /><span className="discord-status-dot" /></span>
+              <span className="discord-main"><span className="discord-name-row"><strong>{discordName || "Discord"}</strong><span className="discord-mini-dot" /></span><small>{discordStatus}</small></span>
+            </a>
+          ) : (
+            <div className="discord-card">
+              <span className="discord-avatar-wrap"><img className="discord-avatar" src={discordAvatar} alt="" /><span className="discord-status-dot" /></span>
+              <span className="discord-main"><span className="discord-name-row"><strong>{discordName || "Discord"}</strong><span className="discord-mini-dot" /></span><small>{discordStatus}</small></span>
+            </div>
+          )
+        )}
 
         <div className="social-row">
           {socials.filter((l: any) => !l.featured).map((l: any) => (

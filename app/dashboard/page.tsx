@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 
 type LinkStyle = "glass" | "filled" | "outline" | "soft";
-type EditorTab = "profile" | "links" | "appearance" | "media" | "stats";
+type EditorTab = "profile" | "links" | "appearance" | "media";
 type ProfileEffect = "none" | "snow" | "rain" | "ctv";
 type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "glitch" | "static";
 
@@ -45,6 +45,10 @@ type ProfileMeta = {
   customFontUrl: string;
   customFontName: string;
   customFontBio: boolean;
+  discordUrl: string;
+  discordName: string;
+  discordStatus: string;
+  discordAvatar: string;
 };
 
 type SocialLink = {
@@ -174,6 +178,10 @@ const defaultMeta: ProfileMeta = {
   customFontUrl: "",
   customFontName: "",
   customFontBio: false,
+  discordUrl: "",
+  discordName: "",
+  discordStatus: "last seen unknown",
+  discordAvatar: "",
 };
 
 const badgeInfo = {
@@ -652,6 +660,50 @@ export default function SoftcardDashboard() {
               <span>{publicUrl}</span>
               <button onClick={copyUrl}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? "Copied" : "Copy"}</button>
             </div>
+
+            <div className="classic-dashboard-grid">
+              <section className="classic-dashboard-card">
+                <div className="classic-dashboard-card-head">
+                  <span>Stats</span>
+                  <BarChart3 size={16} />
+                </div>
+                <div className="classic-stat-grid">
+                  <div className="classic-stat"><strong>{Number(profile.views || 0).toLocaleString()}</strong><span>Profile views</span></div>
+                  <div className="classic-stat"><strong>{totalClicks.toLocaleString()}</strong><span>Link clicks</span></div>
+                </div>
+                <div className="classic-top-list">
+                  {topLinks.length ? topLinks.map((link) => (
+                    <div className="classic-top-link" key={`hub-top-${link.id}`}>
+                      <span>{link.label || link.type || link.url}</span>
+                      <strong>{Number(link.clicks || 0).toLocaleString()}</strong>
+                    </div>
+                  )) : <p className="classic-muted">Add links to start tracking clicks.</p>}
+                </div>
+              </section>
+
+              <section className="classic-dashboard-card">
+                <div className="classic-dashboard-card-head">
+                  <span>Settings</span>
+                  <DiscordIcon />
+                </div>
+                <Field label="Discord Username">
+                  <input value={profileMeta.discordName} onChange={(e) => setProfileMeta((current) => ({ ...current, discordName: e.target.value.slice(0, 40) }))} placeholder="pray4pris" />
+                </Field>
+                <Field label="Discord Link">
+                  <input value={profileMeta.discordUrl} onChange={(e) => setProfileMeta((current) => ({ ...current, discordUrl: e.target.value.slice(0, 160) }))} placeholder="https://discord.gg/..." />
+                </Field>
+                <Field label="Status Text">
+                  <input value={profileMeta.discordStatus} onChange={(e) => setProfileMeta((current) => ({ ...current, discordStatus: e.target.value.slice(0, 50) }))} placeholder="last seen unknown" />
+                </Field>
+                <Field label="Avatar Image URL">
+                  <input value={profileMeta.discordAvatar} onChange={(e) => setProfileMeta((current) => ({ ...current, discordAvatar: e.target.value.slice(0, 220) }))} placeholder="Optional image URL" />
+                </Field>
+                <div className="classic-discord-preview">
+                  <DiscordCard meta={profileMeta} fallbackAvatar={profile.avatar || defaultProfile.avatar} />
+                </div>
+                <button className="classic-primary" onClick={saveChanges} disabled={saving}><Save size={16} /> {saving ? "Saving..." : "Save Settings"}</button>
+              </section>
+            </div>
           </section>
         </div>
       </main>
@@ -672,7 +724,6 @@ export default function SoftcardDashboard() {
           <button className={tab === "links" ? "is-active" : ""} onClick={() => setTab("links")}><LinkIcon size={14} /> Links</button>
           <button className={tab === "appearance" ? "is-active" : ""} onClick={() => setTab("appearance")}><Palette size={14} /> Style</button>
           <button className={tab === "media" ? "is-active" : ""} onClick={() => setTab("media")}><Music size={14} /> Media</button>
-          <button className={tab === "stats" ? "is-active" : ""} onClick={() => setTab("stats")}><BarChart3 size={14} /> Stats</button>
         </div>
 
         {tab === "profile" && (
@@ -934,23 +985,6 @@ export default function SoftcardDashboard() {
           </Panel>
         )}
 
-        {tab === "stats" && (
-          <Panel>
-            <div className="classic-stat-grid">
-              <div className="classic-stat"><strong>{Number(profile.views || 0).toLocaleString()}</strong><span>Profile views</span></div>
-              <div className="classic-stat"><strong>{totalClicks.toLocaleString()}</strong><span>Link clicks</span></div>
-            </div>
-            <div className="classic-link-card">
-              <h3>Top Links</h3>
-              {topLinks.length ? topLinks.map((link) => (
-                <div className="classic-top-link" key={`top-${link.id}`}>
-                  <span>{link.label || link.type || link.url}</span>
-                  <strong>{Number(link.clicks || 0).toLocaleString()}</strong>
-                </div>
-              )) : <p className="classic-muted">Add links to start tracking clicks.</p>}
-            </div>
-          </Panel>
-        )}
       </aside>
 
       <section className="classic-preview">
@@ -975,6 +1009,37 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 function Panel({ children }: { children: ReactNode }) {
   return <div className="classic-panel">{children}</div>;
+}
+
+function DiscordIcon() {
+  return <img src={iconMap.discord} alt="" style={{ width: 16, height: 16 }} />;
+}
+
+function DiscordCard({ meta, fallbackAvatar }: { meta: ProfileMeta; fallbackAvatar: string }) {
+  const name = meta.discordName.trim();
+  const url = safeExternalUrl(meta.discordUrl);
+  const status = meta.discordStatus.trim() || "last seen unknown";
+  const avatar = meta.discordAvatar.trim() || fallbackAvatar;
+  if (!name && !url) return null;
+
+  const content = (
+    <>
+      <img className="classic-discord-avatar" src={avatar} alt="" />
+      <div className="classic-discord-main">
+        <div>
+          <strong>{name || "Discord"}</strong>
+          <span className="classic-discord-dot" />
+        </div>
+        <small>{status}</small>
+      </div>
+    </>
+  );
+
+  return url ? (
+    <a className="classic-discord-card" href={url} target="_blank" rel="noreferrer">{content}</a>
+  ) : (
+    <div className="classic-discord-card">{content}</div>
+  );
 }
 
 function MediaDrop({
@@ -1073,6 +1138,7 @@ function ProfilePreview({
         {profile.timezone && <span>{profile.timezone.split("/").pop()?.replace(/_/g, " ")}</span>}
       </div>
       <div className="classic-bio" style={{ color: profile.bioColor }}>{profile.bio || "No bio yet."}</div>
+      <DiscordCard meta={meta} fallbackAvatar={profile.avatar || defaultProfile.avatar} />
       <div className="classic-socials">
         {iconLinks.map((link) => (
           <a key={link.id} href={safeExternalUrl(link.url)} target="_blank" rel="noreferrer">
@@ -1183,7 +1249,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-hub-shell {
       min-height: 100vh;
-      width: min(980px, calc(100vw - 36px));
+      width: min(1120px, calc(100vw - 36px));
       margin: 0 auto;
       display: flex;
       flex-direction: column;
@@ -1309,6 +1375,39 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       background: rgba(255,255,255,0.085);
       box-shadow: 0 12px 28px rgba(0,0,0,0.18);
     }
+    .classic-dashboard-grid {
+      width: 100%;
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      text-align: left;
+    }
+    .classic-dashboard-card {
+      padding: 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.045);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .classic-dashboard-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: rgba(255,255,255,0.74);
+      font-size: 12px;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .classic-top-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
     .classic-primary:active:not(:disabled),
     .classic-secondary:active,
     .classic-ghost:active,
@@ -1351,7 +1450,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-tabs {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 7px;
       margin-bottom: 26px;
       padding: 5px;
@@ -2007,6 +2106,81 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       word-break: break-word;
       font-family: ${meta.customFontUrl && meta.customFontBio ? '"SoftcardCustomFont"' : profile.font}, ${profile.font}, sans-serif;
     }
+    .classic-discord-preview {
+      display: flex;
+      justify-content: center;
+    }
+    .classic-discord-card {
+      width: 100%;
+      max-width: 270px;
+      min-height: 74px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background:
+        radial-gradient(circle at 80% 20%, ${profile.accent}24, transparent 36%),
+        rgba(255,255,255,0.075);
+      color: white;
+      text-decoration: none;
+      overflow: hidden;
+    }
+    .classic-profile-card .classic-discord-card {
+      margin-bottom: 14px;
+    }
+    .classic-discord-card:hover {
+      transform: translateY(-1px);
+      border-color: ${profile.accent}66;
+      background:
+        radial-gradient(circle at 80% 20%, ${profile.accent}32, transparent 38%),
+        rgba(255,255,255,0.095);
+    }
+    .classic-discord-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex: 0 0 auto;
+    }
+    .classic-discord-main {
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .classic-discord-main div {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+    .classic-discord-main strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .classic-discord-main small {
+      color: rgba(255,255,255,0.58);
+      font-size: 12px;
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .classic-discord-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #82aaff;
+      box-shadow: 0 0 0 3px rgba(130,170,255,0.18);
+      flex: 0 0 auto;
+    }
     .classic-socials {
       gap: 14px;
       margin-top: 2px;
@@ -2295,7 +2469,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       }
       .classic-grid-2,
       .classic-theme-grid,
-      .classic-stat-grid {
+      .classic-stat-grid,
+      .classic-dashboard-grid {
         grid-template-columns: 1fr;
       }
       .classic-tabs {
