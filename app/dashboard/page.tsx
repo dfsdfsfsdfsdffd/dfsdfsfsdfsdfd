@@ -1266,7 +1266,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-editor {
       display: grid;
-      grid-template-columns: 840px minmax(0, 1fr);
+      grid-template-columns: 600px minmax(0, 1fr);
       overflow: hidden;
     }
     .classic-sidebar {
