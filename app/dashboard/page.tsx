@@ -57,6 +57,9 @@ type ProfileMeta = {
   discordActivityState: string;
   discordActivityType: string;
   discordActivityImage: string;
+  discordServerName: string;
+  discordServerStatus: string;
+  discordServerIcon: string;
   discordConnected: boolean;
   discordConnectedAt: string;
   elementGlow: boolean;
@@ -201,6 +204,9 @@ const defaultMeta: ProfileMeta = {
   discordActivityState: "",
   discordActivityType: "",
   discordActivityImage: "",
+  discordServerName: "",
+  discordServerStatus: "",
+  discordServerIcon: "",
   discordConnected: false,
   discordConnectedAt: "",
   elementGlow: false,
@@ -313,6 +319,9 @@ function cleanMeta(raw: any): ProfileMeta {
     discordActivityState: safeText(meta.discordActivityState),
     discordActivityType: safeText(meta.discordActivityType),
     discordActivityImage: safeText(meta.discordActivityImage),
+    discordServerName: safeText(meta.discordServerName),
+    discordServerStatus: safeText(meta.discordServerStatus),
+    discordServerIcon: safeText(meta.discordServerIcon),
     discordConnected: Boolean(meta.discordConnected),
     discordConnectedAt: safeText(meta.discordConnectedAt),
     elementGlow: Boolean(meta.elementGlow),
@@ -744,6 +753,9 @@ export default function SoftcardDashboard() {
       discordActivityState: "",
       discordActivityType: "",
       discordActivityImage: "",
+      discordServerName: "",
+      discordServerStatus: "",
+      discordServerIcon: "",
       discordUrl: "",
       discordConnected: false,
       discordConnectedAt: "",
@@ -1157,6 +1169,9 @@ function DiscordCard({ meta, fallbackAvatar }: { meta: ProfileMeta; fallbackAvat
   const activityState = meta.discordActivityState.trim();
   const activityType = meta.discordActivityType.trim() || "Playing";
   const activityImage = safeMediaUrl(meta.discordActivityImage);
+  const serverName = meta.discordServerName.trim();
+  const serverStatus = meta.discordServerStatus.trim();
+  const serverIcon = safeMediaUrl(meta.discordServerIcon);
   const badges = Array.isArray(meta.discordBadges) ? meta.discordBadges.filter((badge) => discordBadgeInfo[badge]).slice(0, 6) : [];
   if (!name && !url) return null;
 
@@ -1186,6 +1201,15 @@ function DiscordCard({ meta, fallbackAvatar }: { meta: ProfileMeta; fallbackAvat
               <b>{activityType} {activityName}</b>
               {activityDetails ? <em>{activityDetails}</em> : null}
               {activityState ? <em>{activityState}</em> : null}
+            </span>
+          </span>
+        ) : null}
+        {serverName || serverStatus ? (
+          <span className="classic-discord-server">
+            {serverIcon ? <img src={serverIcon} alt="" /> : <span className="classic-discord-server-dot" />}
+            <span>
+              {serverName ? <b>{serverName}</b> : null}
+              {serverStatus ? <em>{serverStatus}</em> : null}
             </span>
           </span>
         ) : null}
@@ -2502,6 +2526,49 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       font-weight: 900;
     }
     .classic-discord-activity em {
+      color: rgba(255,255,255,0.5);
+      font-size: 10px;
+    }
+    .classic-discord-server {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.045);
+    }
+    .classic-discord-server img,
+    .classic-discord-server-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      flex: 0 0 auto;
+      object-fit: cover;
+      background: linear-gradient(135deg, #5865f2, #9aa7ff);
+      box-shadow: 0 0 14px rgba(88,101,242,0.35);
+    }
+    .classic-discord-server > span:last-child {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .classic-discord-server b,
+    .classic-discord-server em {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-style: normal;
+      line-height: 1.1;
+    }
+    .classic-discord-server b {
+      color: rgba(255,255,255,0.86);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .classic-discord-server em {
       color: rgba(255,255,255,0.5);
       font-size: 10px;
     }

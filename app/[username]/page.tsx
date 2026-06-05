@@ -26,6 +26,9 @@ type ProfileMeta = {
   discordActivityState: string;
   discordActivityType: string;
   discordActivityImage: string;
+  discordServerName: string;
+  discordServerStatus: string;
+  discordServerIcon: string;
   discordConnected: boolean;
   discordConnectedAt: string;
   elementGlow: boolean;
@@ -106,6 +109,9 @@ const defaultMeta: ProfileMeta = {
   discordActivityState: "",
   discordActivityType: "",
   discordActivityImage: "",
+  discordServerName: "",
+  discordServerStatus: "",
+  discordServerIcon: "",
   discordConnected: false,
   discordConnectedAt: "",
   elementGlow: false,
@@ -192,6 +198,9 @@ function cleanMeta(raw: any): ProfileMeta {
     discordActivityState: safeText(meta.discordActivityState),
     discordActivityType: safeText(meta.discordActivityType),
     discordActivityImage: safeText(meta.discordActivityImage),
+    discordServerName: safeText(meta.discordServerName),
+    discordServerStatus: safeText(meta.discordServerStatus),
+    discordServerIcon: safeText(meta.discordServerIcon),
     discordConnected: Boolean(meta.discordConnected),
     discordConnectedAt: safeText(meta.discordConnectedAt),
     elementGlow: Boolean(meta.elementGlow),
@@ -348,6 +357,9 @@ export default function PublicProfile({ params }: { params: { username: string }
   const discordActivityState = profileMeta.discordActivityState.trim();
   const discordActivityType = profileMeta.discordActivityType.trim() || "Playing";
   const discordActivityImage = safeMediaUrl(profileMeta.discordActivityImage);
+  const discordServerName = profileMeta.discordServerName.trim();
+  const discordServerStatus = profileMeta.discordServerStatus.trim();
+  const discordServerIcon = safeMediaUrl(profileMeta.discordServerIcon);
   const audioSettings = splitAudioMeta(safeMediaUrl(profile.audio_url));
   const audioUrl = audioSettings.url;
   const audioTitle = audioSettings.title || mediaName(audioUrl);
@@ -754,6 +766,49 @@ export default function PublicProfile({ params }: { params: { username: string }
           color: rgba(255,255,255,0.5);
           font-size: 10px;
         }
+        .discord-server {
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          padding: 7px 8px;
+          border-radius: 10px;
+          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.045);
+        }
+        .discord-server img,
+        .discord-server-dot {
+          width: 24px;
+          height: 24px;
+          border-radius: 8px;
+          flex: 0 0 auto;
+          object-fit: cover;
+          background: linear-gradient(135deg, #5865f2, #9aa7ff);
+          box-shadow: 0 0 14px rgba(88,101,242,0.35);
+        }
+        .discord-server > span:last-child {
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .discord-server b,
+        .discord-server em {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-style: normal;
+          line-height: 1.1;
+        }
+        .discord-server b {
+          color: rgba(255,255,255,0.86);
+          font-size: 10px;
+          font-weight: 900;
+        }
+        .discord-server em {
+          color: rgba(255,255,255,0.5);
+          font-size: 10px;
+        }
 
         .social-row { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 2px; }
         .social-link { transition: 0.3s; opacity: 0.75; }
@@ -1130,6 +1185,15 @@ export default function PublicProfile({ params }: { params: { username: string }
                     </span>
                   </span>
                 )}
+                {(discordServerName || discordServerStatus) && (
+                  <span className="discord-server">
+                    {discordServerIcon ? <img src={discordServerIcon} alt="" /> : <span className="discord-server-dot" />}
+                    <span>
+                      {discordServerName && <b>{discordServerName}</b>}
+                      {discordServerStatus && <em>{discordServerStatus}</em>}
+                    </span>
+                  </span>
+                )}
               </span>
             </a>
           ) : (
@@ -1146,6 +1210,15 @@ export default function PublicProfile({ params }: { params: { username: string }
                       <b>{discordActivityType} {discordActivityName}</b>
                       {discordActivityDetails && <em>{discordActivityDetails}</em>}
                       {discordActivityState && <em>{discordActivityState}</em>}
+                    </span>
+                  </span>
+                )}
+                {(discordServerName || discordServerStatus) && (
+                  <span className="discord-server">
+                    {discordServerIcon ? <img src={discordServerIcon} alt="" /> : <span className="discord-server-dot" />}
+                    <span>
+                      {discordServerName && <b>{discordServerName}</b>}
+                      {discordServerStatus && <em>{discordServerStatus}</em>}
                     </span>
                   </span>
                 )}
