@@ -1156,6 +1156,31 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
         radial-gradient(circle at 50% -10%, rgba(169,112,255,0.16), transparent 34%),
         #05060a;
     }
+    .classic-hub *,
+    .classic-editor * {
+      scrollbar-width: thin;
+      scrollbar-color: ${profile.accent}66 rgba(255,255,255,0.055);
+    }
+    .classic-hub *::-webkit-scrollbar,
+    .classic-editor *::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    .classic-hub *::-webkit-scrollbar-track,
+    .classic-editor *::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.035);
+      border-radius: 999px;
+    }
+    .classic-hub *::-webkit-scrollbar-thumb,
+    .classic-editor *::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, ${profile.accent}cc, rgba(255,255,255,0.24));
+      border: 2px solid #101119;
+      border-radius: 999px;
+    }
+    .classic-hub *::-webkit-scrollbar-thumb:hover,
+    .classic-editor *::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, ${profile.accent}, rgba(255,255,255,0.4));
+    }
     .classic-hub-shell {
       min-height: 100vh;
       width: min(980px, calc(100vw - 36px));
@@ -1256,13 +1281,50 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       padding: 0 12px;
       font-weight: 850;
       text-decoration: none;
+      cursor: pointer;
+      transform: translate3d(0,0,0);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, opacity 0.18s ease, filter 0.18s ease;
     }
     .classic-primary {
       border: 0;
-      background: linear-gradient(135deg, #ffffff, #d8caff);
+      background: linear-gradient(135deg, #ffffff, #f1e8ff 45%, #d8caff);
       color: #07080d;
       min-height: 46px;
       padding: 0 16px;
+      box-shadow: 0 14px 34px rgba(169,112,255,0.18);
+    }
+    .classic-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 40px rgba(169,112,255,0.28);
+      filter: brightness(1.03);
+    }
+    .classic-secondary:hover,
+    .classic-ghost:hover,
+    .classic-back:hover,
+    .classic-tools button:hover,
+    .classic-inline-input button:hover,
+    .classic-url-card button:hover {
+      transform: translateY(-1px);
+      border-color: ${profile.accent}66;
+      background: rgba(255,255,255,0.085);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+    }
+    .classic-primary:active:not(:disabled),
+    .classic-secondary:active,
+    .classic-ghost:active,
+    .classic-back:active,
+    .classic-tabs button:active,
+    .classic-tools button:active,
+    .classic-inline-input button:active,
+    .classic-url-card button:active,
+    .classic-toggle-button:active,
+    .classic-feature-toggle:active,
+    .classic-theme:active {
+      transform: translateY(0) scale(0.985);
+    }
+    .classic-primary:disabled {
+      opacity: 0.66;
+      cursor: wait;
     }
     .classic-editor {
       display: grid;
@@ -1272,6 +1334,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-sidebar {
       height: 100vh;
       overflow-y: auto;
+      scrollbar-gutter: stable;
       background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)), #0b0c13;
       border-right: 1px solid rgba(255,255,255,0.1);
       padding: 28px 30px 42px;
@@ -1305,10 +1368,16 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       color: rgba(255,255,255,0.62);
       background: transparent;
     }
+    .classic-tabs button:hover {
+      color: white;
+      background: rgba(255,255,255,0.07);
+      transform: translateY(-1px);
+    }
     .classic-tabs button.is-active {
       background: ${profile.accent};
       color: white;
       border-color: transparent;
+      box-shadow: 0 10px 24px ${profile.accent}33;
     }
     .classic-panel {
       display: flex;
@@ -1364,6 +1433,15 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       color: white;
       outline: 0;
       padding: 11px 12px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+    .classic-field input:hover,
+    .classic-field select:hover,
+    .classic-field textarea:hover,
+    .classic-link-card input:hover,
+    .classic-link-card select:hover {
+      border-color: rgba(255,255,255,0.2);
+      background-color: #272933;
     }
     .classic-field select,
     .classic-link-card select {
@@ -1389,6 +1467,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-link-card select:focus {
       border-color: ${profile.accent};
       box-shadow: 0 0 0 4px ${profile.accent}22;
+      background-color: #272933;
     }
     .classic-grid-2 {
       display: grid;
@@ -1438,6 +1517,14 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       text-align: center;
       color: rgba(255,255,255,0.68);
       padding: 14px;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+    }
+    .classic-upload:hover {
+      transform: translateY(-2px);
+      border-color: ${profile.accent}88;
+      background: ${profile.accent}12;
+      color: white;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.2), inset 0 0 0 1px ${profile.accent}22;
     }
     .classic-upload input {
       position: absolute;
@@ -1463,6 +1550,13 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       display: flex;
       flex-direction: column;
       gap: 14px;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    }
+    .classic-link-card:hover,
+    .classic-stat:hover {
+      border-color: rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.058);
+      box-shadow: 0 16px 34px rgba(0,0,0,0.18);
     }
     .classic-link-head {
       min-height: 42px;
@@ -1523,6 +1617,15 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       justify-content: center;
       gap: 8px;
       font-weight: 850;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+    }
+    .classic-toggle-button:hover,
+    .classic-feature-toggle:hover {
+      transform: translateY(-1px);
+      border-color: ${profile.accent}66;
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.16);
     }
     .classic-toggle-button.is-on {
       color: #baf7d5;
@@ -1579,6 +1682,13 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       background: rgba(255,77,77,0.12);
       color: #ff9a9a;
       border-radius: 9px;
+      transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    }
+    .classic-remove:hover {
+      transform: translateY(-1px) scale(1.03);
+      background: rgba(255,77,77,0.2);
+      border-color: rgba(255,77,77,0.44);
+      color: white;
     }
     .classic-tools {
       display: grid;
@@ -1623,6 +1733,14 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       flex-direction: column;
       justify-content: flex-end;
       gap: 5px;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    }
+    .classic-theme:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.28);
+      box-shadow: 0 16px 34px rgba(0,0,0,0.24);
+      filter: brightness(1.08) saturate(1.08);
     }
     .classic-theme span,
     .classic-stat strong {
@@ -2182,6 +2300,15 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       }
       .classic-tabs {
         overflow-x: auto;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .classic-hub *,
+      .classic-editor * {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
       }
     }
   `;
