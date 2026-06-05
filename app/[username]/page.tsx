@@ -18,6 +18,7 @@ type ProfileMeta = {
   discordName: string;
   discordStatus: string;
   discordAvatar: string;
+  elementGlow: boolean;
 };
 
 const iconMap: any = {
@@ -87,6 +88,7 @@ const defaultMeta: ProfileMeta = {
   discordName: "",
   discordStatus: "last seen unknown",
   discordAvatar: "",
+  elementGlow: false,
 };
 
 function safeColor(value: unknown, fallback: string) {
@@ -342,7 +344,39 @@ export default function PublicProfile({ params }: { params: { username: string }
           box-shadow: ${profile.show_glass_card ? '0 25px 50px rgba(0,0,0,0.6)' : 'none'};
           overflow-x: hidden;
         }
+        .profile-card::before {
+          content: "";
+          position: absolute;
+          inset: -45%;
+          z-index: 0;
+          display: ${profile.show_glass_card ? "block" : "none"};
+          background:
+            linear-gradient(115deg, transparent 28%, rgba(255,255,255,0.11) 42%, ${accent}18 50%, transparent 64%),
+            radial-gradient(circle at 30% 20%, ${accent}22, transparent 30%);
+          transform: translate3d(-26%, -18%, 0) rotate(8deg);
+          animation: public-glass-sheen 8s ease-in-out infinite alternate;
+        }
+        .profile-card::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          display: ${profile.show_glass_card ? "block" : "none"};
+          border-radius: inherit;
+          border: 1px solid ${accent}33;
+          pointer-events: none;
+          animation: public-glass-border 5.5s ease-in-out infinite;
+        }
         .profile-card > :not(.profile-effect) { position: relative; z-index: 1; }
+        .profile-card.is-glow .pfp,
+        .profile-card.is-glow .social-icon,
+        .profile-card.is-glow .badges-pill,
+        .profile-card.is-glow .tag-pill,
+        .profile-card.is-glow .featured-link,
+        .profile-card.is-glow .discord-card,
+        .profile-card.is-glow .media-player {
+          filter: drop-shadow(0 0 10px ${accent}55);
+        }
 
         .view-count {
           position: absolute !important;
@@ -599,55 +633,99 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         .media-player {
           width: 100%;
-          max-width: 310px;
+          max-width: 360px;
           margin-top: 12px;
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 10px 12px;
-          border-radius: 14px;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          gap: 12px;
+          padding: 9px 11px;
+          border-radius: 12px;
+          background:
+            linear-gradient(90deg, rgba(0,0,0,0.34), rgba(255,255,255,0.08)),
+            radial-gradient(circle at 78% 40%, ${accent}22, transparent 36%);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          box-shadow: 0 18px 42px rgba(0,0,0,0.35);
+          backdrop-filter: blur(18px);
+        }
+        .media-cover {
+          width: 42px;
+          height: 42px;
+          border-radius: 9px;
+          object-fit: cover;
+          flex: 0 0 auto;
         }
         .media-main {
           min-width: 0;
           flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 7px;
           text-align: left;
+        }
+        .media-row {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 10px;
+          align-items: center;
         }
         .media-title {
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 900;
           color: rgba(255, 255, 255, 0.9);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
-        .media-sub {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.46);
+        .media-time {
+          font-size: 11px;
+          font-weight: 900;
+          color: rgba(255,255,255,0.68);
+        }
+        .media-progress {
+          height: 3px;
+          border-radius: 999px;
+          background: rgba(255,255,255,0.2);
+          overflow: hidden;
+        }
+        .media-progress span {
+          display: block;
+          width: 54%;
+          height: 100%;
+          border-radius: inherit;
+          background: linear-gradient(90deg, white, ${accent});
         }
         .media-btn {
           flex: 0 0 auto;
-          width: 34px;
-          height: 34px;
+          width: 30px;
+          height: 30px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: ${accent};
+          border: 0;
+          background: rgba(255,255,255,0.92);
+          color: #111;
+          cursor: pointer;
+        }
+        .media-actions {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .media-skip {
+          width: 18px;
+          height: 30px;
+          border: 0;
+          background: transparent;
           color: white;
           cursor: pointer;
-          box-shadow: 0 8px 20px ${accent}33;
+          opacity: 0.58;
+          font-size: 21px;
+          line-height: 1;
         }
         .media-volume {
-          width: 72px;
+          width: 46px;
           accent-color: ${accent};
         }
 
@@ -788,6 +866,14 @@ export default function PublicProfile({ params }: { params: { username: string }
           55% { opacity: 0.58; transform: translate(-2px,1px); clip-path: inset(34% 0 21% 0); }
           80% { opacity: 0.74; transform: translate(1px,0); clip-path: inset(62% 0 0 0); }
         }
+        @keyframes public-glass-sheen {
+          0% { transform: translate3d(-31%, -22%, 0) rotate(7deg); opacity: 0.55; }
+          100% { transform: translate3d(16%, 18%, 0) rotate(11deg); opacity: 0.9; }
+        }
+        @keyframes public-glass-border {
+          0%, 100% { opacity: 0.35; box-shadow: inset 0 0 0 1px ${accent}18; }
+          50% { opacity: 0.8; box-shadow: inset 0 0 0 1px ${accent}44, 0 0 30px ${accent}18; }
+        }
         @keyframes public-fall {
           0% { opacity: 0; transform: translate3d(0,-30px,0) rotate(0deg); }
           12%, 88% { opacity: 0.82; }
@@ -844,7 +930,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         </div>
       )}
 
-      <div className="profile-card">
+      <div className={`profile-card ${profileMeta.elementGlow ? "is-glow" : ""}`}>
         <div className="view-count">
           <Eye size={14} strokeWidth={2.5} />
           {/* We show current views + 1 so the user's visit is counted instantly on screen */}
@@ -920,27 +1006,35 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         {audioUrl && audioSettings.showPlayer && (
           <div className="media-player">
-            <button className="media-btn" onClick={toggleAudio} aria-label={isPlaying ? "Pause audio" : "Play audio"}>
-              {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
-            </button>
+            <img className="media-cover" src={avatarUrl} alt="" />
             <div className="media-main">
-              <span className="media-title">{audioTitle}</span>
-              <span className="media-sub">{isPlaying ? "Now playing" : "Profile audio"}</span>
+              <div className="media-row">
+                <span className="media-title">{audioTitle}</span>
+                <span className="media-time">{isPlaying ? "2:14" : "1:22"}</span>
+              </div>
+              <div className="media-progress"><span /></div>
             </div>
-            <input
-              className="media-volume"
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={isMuted ? 0 : volume}
-              onChange={(e) => {
-                const nextVolume = parseFloat(e.target.value)
-                setVolume(nextVolume)
-                setIsMuted(nextVolume === 0)
-              }}
-              aria-label="Audio volume"
-            />
+            <div className="media-actions">
+              <button className="media-skip" aria-label="Previous track" type="button"><span>‹</span></button>
+              <button className="media-btn" onClick={toggleAudio} aria-label={isPlaying ? "Pause audio" : "Play audio"}>
+                {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+              </button>
+              <button className="media-skip" aria-label="Next track" type="button"><span>›</span></button>
+              <input
+                className="media-volume"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={isMuted ? 0 : volume}
+                onChange={(e) => {
+                  const nextVolume = parseFloat(e.target.value)
+                  setVolume(nextVolume)
+                  setIsMuted(nextVolume === 0)
+                }}
+                aria-label="Audio volume"
+              />
+            </div>
           </div>
         )}
       </div>

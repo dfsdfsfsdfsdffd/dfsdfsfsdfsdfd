@@ -49,6 +49,7 @@ type ProfileMeta = {
   discordName: string;
   discordStatus: string;
   discordAvatar: string;
+  elementGlow: boolean;
 };
 
 type SocialLink = {
@@ -182,6 +183,7 @@ const defaultMeta: ProfileMeta = {
   discordName: "",
   discordStatus: "last seen unknown",
   discordAvatar: "",
+  elementGlow: false,
 };
 
 const badgeInfo = {
@@ -891,6 +893,7 @@ export default function SoftcardDashboard() {
             <Field label="Bio Color"><input type="color" value={profile.bioColor.slice(0, 7)} onChange={(e) => updateProfile("bioColor", e.target.value)} /></Field>
             <span className="classic-section-label">Card & Effects</span>
             <label className="classic-check"><input type="checkbox" checked={profile.showGlass} onChange={(e) => updateProfile("showGlass", e.target.checked)} /> Transparent Glass Card</label>
+            <label className="classic-check"><input type="checkbox" checked={profileMeta.elementGlow} onChange={(e) => setProfileMeta((current) => ({ ...current, elementGlow: e.target.checked }))} /> Glow page elements</label>
             <Field label="Profile Effect">
               <select value={profileMeta.profileEffect} onChange={(e) => setProfileMeta((current) => ({ ...current, profileEffect: e.target.value as ProfileEffect }))}>
                 <option value="none">None</option>
@@ -1108,7 +1111,7 @@ function ProfilePreview({
   const featureLinks = socials.filter((link) => link.featured && link.label).slice(0, 4);
 
   return (
-    <div className="classic-profile-card">
+    <div className={`classic-profile-card ${meta.elementGlow ? "is-glow" : ""}`}>
       <div className="classic-view-count">
         <Eye size={14} strokeWidth={2.5} />
         {Number(profile.views || 0).toLocaleString()}
@@ -1162,10 +1165,16 @@ function ProfilePreview({
       </div>
       {profile.bgAudio && profile.showAudioPlayer && (
         <div className="classic-player">
-          <span><Play size={15} fill="currentColor" /></span>
-          <div>
-            <strong>{profile.bgAudioName || fileTitle(profile.bgAudio.split("/").pop()?.split("?")[0] || "Profile audio")}</strong>
-            <small>Profile audio</small>
+          <img src={profile.avatar || defaultProfile.avatar} alt="" />
+          <div className="classic-player-main">
+            <div className="classic-player-row">
+              <strong>{profile.bgAudioName || fileTitle(profile.bgAudio.split("/").pop()?.split("?")[0] || "Profile audio")}</strong>
+              <small>1:22</small>
+            </div>
+            <div className="classic-player-progress"><span /></div>
+          </div>
+          <div className="classic-player-controls">
+            <span><Play size={16} fill="currentColor" /></span>
           </div>
         </div>
       )}
@@ -1920,9 +1929,41 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       border: ${profile.showGlass ? "1px solid rgba(255,255,255,0.1)" : "0"};
       box-shadow: ${profile.showGlass ? "0 25px 50px rgba(0,0,0,0.6)" : "none"};
     }
+    .classic-profile-card::before {
+      content: "";
+      position: absolute;
+      inset: -45%;
+      z-index: 0;
+      display: ${profile.showGlass ? "block" : "none"};
+      background:
+        linear-gradient(115deg, transparent 28%, rgba(255,255,255,0.11) 42%, ${profile.accent}18 50%, transparent 64%),
+        radial-gradient(circle at 30% 20%, ${profile.accent}22, transparent 30%);
+      transform: translate3d(-26%, -18%, 0) rotate(8deg);
+      animation: classic-glass-sheen 8s ease-in-out infinite alternate;
+    }
+    .classic-profile-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      display: ${profile.showGlass ? "block" : "none"};
+      border-radius: inherit;
+      border: 1px solid ${profile.accent}33;
+      pointer-events: none;
+      animation: classic-glass-border 5.5s ease-in-out infinite;
+    }
     .classic-profile-card > :not(.classic-effect) {
       position: relative;
       z-index: 1;
+    }
+    .classic-profile-card.is-glow .classic-pfp,
+    .classic-profile-card.is-glow .classic-socials img,
+    .classic-profile-card.is-glow .classic-badges,
+    .classic-profile-card.is-glow .classic-tags span,
+    .classic-profile-card.is-glow .sx-feature-link,
+    .classic-profile-card.is-glow .classic-discord-card,
+    .classic-profile-card.is-glow .classic-player {
+      filter: drop-shadow(0 0 10px ${profile.accent}55);
     }
     .classic-view-count {
       position: absolute !important;
@@ -2263,50 +2304,82 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .sx-feature-soft { background: ${profile.accent}24; border-color: ${profile.accent}66; }
     .classic-player {
       width: 100%;
-      max-width: 310px;
+      max-width: 360px;
       margin-top: 12px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
+      gap: 12px;
+      padding: 9px 11px;
+      border-radius: 12px;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.34), rgba(255,255,255,0.08)),
+        radial-gradient(circle at 78% 40%, ${profile.accent}22, transparent 36%);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.35);
+      backdrop-filter: blur(18px);
       text-align: left;
     }
-    .classic-player > span {
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: ${profile.accent};
-      color: white;
-      box-shadow: 0 8px 20px ${profile.accent}33;
+    .classic-player > img {
+      width: 42px;
+      height: 42px;
+      border-radius: 9px;
+      object-fit: cover;
       flex: 0 0 auto;
     }
-    .classic-player div {
+    .classic-player-main {
       min-width: 0;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 7px;
+    }
+    .classic-player-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
     }
     .classic-player strong {
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 900;
       color: rgba(255,255,255,0.9);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .classic-player small {
-      color: rgba(255,255,255,0.46);
-      font-size: 10px;
-      text-transform: uppercase;
-      font-weight: 800;
-      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.68);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .classic-player-progress {
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.2);
+      overflow: hidden;
+    }
+    .classic-player-progress span {
+      display: block;
+      width: 54%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, white, ${profile.accent});
+    }
+    .classic-player-controls {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .classic-player-controls span {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.92);
+      color: #111;
     }
     .classic-effect {
       position: absolute;
@@ -2436,6 +2509,14 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       24% { opacity: 0.84; transform: translate(2px,-1px); clip-path: inset(51% 0 12% 0); }
       55% { opacity: 0.58; transform: translate(-2px,1px); clip-path: inset(34% 0 21% 0); }
       80% { opacity: 0.74; transform: translate(1px,0); clip-path: inset(62% 0 0 0); }
+    }
+    @keyframes classic-glass-sheen {
+      0% { transform: translate3d(-31%, -22%, 0) rotate(7deg); opacity: 0.55; }
+      100% { transform: translate3d(16%, 18%, 0) rotate(11deg); opacity: 0.9; }
+    }
+    @keyframes classic-glass-border {
+      0%, 100% { opacity: 0.35; box-shadow: inset 0 0 0 1px ${profile.accent}18; }
+      50% { opacity: 0.8; box-shadow: inset 0 0 0 1px ${profile.accent}44, 0 0 30px ${profile.accent}18; }
     }
     @keyframes classic-fall {
       0% { opacity: 0; transform: translate3d(0,-30px,0) rotate(0deg); }
