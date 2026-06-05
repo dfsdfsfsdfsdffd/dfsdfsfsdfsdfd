@@ -60,6 +60,7 @@ type ProfileMeta = {
   discordServerName: string;
   discordServerStatus: string;
   discordServerIcon: string;
+  discordWidgetEnabled: boolean;
   discordConnected: boolean;
   discordConnectedAt: string;
   elementGlow: boolean;
@@ -207,6 +208,7 @@ const defaultMeta: ProfileMeta = {
   discordServerName: "",
   discordServerStatus: "",
   discordServerIcon: "",
+  discordWidgetEnabled: true,
   discordConnected: false,
   discordConnectedAt: "",
   elementGlow: false,
@@ -322,6 +324,7 @@ function cleanMeta(raw: any): ProfileMeta {
     discordServerName: safeText(meta.discordServerName),
     discordServerStatus: safeText(meta.discordServerStatus),
     discordServerIcon: safeText(meta.discordServerIcon),
+    discordWidgetEnabled: meta.discordWidgetEnabled !== false,
     discordConnected: Boolean(meta.discordConnected),
     discordConnectedAt: safeText(meta.discordConnectedAt),
     elementGlow: Boolean(meta.elementGlow),
@@ -844,6 +847,10 @@ export default function SoftcardDashboard() {
                 <Field label="Status Text">
                   <input value={profileMeta.discordStatus} onChange={(e) => setProfileMeta((current) => ({ ...current, discordStatus: e.target.value.slice(0, 50) }))} placeholder="last seen unknown" />
                 </Field>
+                <label className="classic-check">
+                  <input type="checkbox" checked={profileMeta.discordWidgetEnabled} onChange={(e) => setProfileMeta((current) => ({ ...current, discordWidgetEnabled: e.target.checked }))} />
+                  Show Discord widget on profile
+                </label>
                 <button className="classic-primary" onClick={saveChanges} disabled={saving}><Save size={16} /> {saving ? "Saving..." : "Save Settings"}</button>
               </section>
             </div>
@@ -1320,7 +1327,7 @@ function ProfilePreview({
         {profile.timezone && <span>{profile.timezone.split("/").pop()?.replace(/_/g, " ")}</span>}
       </div>
       <div className="classic-bio" style={{ color: profile.bioColor }}>{profile.bio || "No bio yet."}</div>
-      <DiscordCard meta={meta} fallbackAvatar={profile.avatar || defaultProfile.avatar} />
+      {meta.discordWidgetEnabled ? <DiscordCard meta={meta} fallbackAvatar={profile.avatar || defaultProfile.avatar} /> : null}
       <div className="classic-socials">
         {iconLinks.map((link) => (
           <a key={link.id} href={safeExternalUrl(link.url)} target="_blank" rel="noreferrer">

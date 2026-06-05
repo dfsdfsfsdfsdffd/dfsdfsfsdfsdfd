@@ -29,6 +29,7 @@ type ProfileMeta = {
   discordServerName: string;
   discordServerStatus: string;
   discordServerIcon: string;
+  discordWidgetEnabled: boolean;
   discordConnected: boolean;
   discordConnectedAt: string;
   elementGlow: boolean;
@@ -112,6 +113,7 @@ const defaultMeta: ProfileMeta = {
   discordServerName: "",
   discordServerStatus: "",
   discordServerIcon: "",
+  discordWidgetEnabled: true,
   discordConnected: false,
   discordConnectedAt: "",
   elementGlow: false,
@@ -201,6 +203,7 @@ function cleanMeta(raw: any): ProfileMeta {
     discordServerName: safeText(meta.discordServerName),
     discordServerStatus: safeText(meta.discordServerStatus),
     discordServerIcon: safeText(meta.discordServerIcon),
+    discordWidgetEnabled: meta.discordWidgetEnabled !== false,
     discordConnected: Boolean(meta.discordConnected),
     discordConnectedAt: safeText(meta.discordConnectedAt),
     elementGlow: Boolean(meta.elementGlow),
@@ -1167,7 +1170,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         <div className="bio">{profile.bio || "No bio yet."}</div>
 
-        {(discordName || discordUrl) && (
+        {profileMeta.discordWidgetEnabled && (discordName || discordUrl) && (
           discordUrl ? (
             <a className="discord-card" href={discordUrl} target="_blank" rel="noopener noreferrer">
               <span className="discord-avatar-wrap"><img className="discord-avatar" src={discordAvatar} alt="" /><span className="discord-status-dot" /></span>
