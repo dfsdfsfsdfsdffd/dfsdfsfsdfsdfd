@@ -272,6 +272,16 @@ function safeExternalUrl(value: unknown) {
   }
 }
 
+function safeMediaUrl(value: unknown) {
+  if (typeof value !== "string") return "";
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
 function safeText(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
