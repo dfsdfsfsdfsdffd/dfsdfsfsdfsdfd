@@ -34,7 +34,7 @@ import {
 type LinkStyle = "glass" | "filled" | "outline" | "soft";
 type EditorTab = "profile" | "links" | "appearance" | "media" | "stats";
 type ProfileEffect = "none" | "snow" | "rain" | "ctv";
-type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "glitch";
+type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "glitch" | "static";
 
 type ProfileMeta = {
   cursorUrl: string;
@@ -855,6 +855,7 @@ export default function SoftcardDashboard() {
                 <option value="rainbow">Rainbow</option>
                 <option value="fuzzy">Fuzzy</option>
                 <option value="glitch">Glitch</option>
+                <option value="static">Static</option>
               </select>
             </Field>
             <Field label={`Background Blur: ${profileMeta.bgBlur}px`}>
@@ -1265,7 +1266,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-editor {
       display: grid;
-      grid-template-columns: 420px minmax(0, 1fr);
+      grid-template-columns: 840px minmax(0, 1fr);
       overflow: hidden;
     }
     .classic-sidebar {
@@ -1273,14 +1274,14 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       overflow-y: auto;
       background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)), #0b0c13;
       border-right: 1px solid rgba(255,255,255,0.1);
-      padding: 22px 22px 30px;
+      padding: 28px 30px 42px;
     }
     .classic-editor-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 18px;
+      margin-bottom: 24px;
     }
     .classic-save {
       flex: 1;
@@ -1289,7 +1290,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 7px;
-      margin-bottom: 22px;
+      margin-bottom: 26px;
       padding: 5px;
       border-radius: 14px;
       background: rgba(255,255,255,0.045);
@@ -1312,7 +1313,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-panel {
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 20px;
       padding-bottom: 42px;
     }
     .classic-field {
@@ -1796,6 +1797,38 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       clip-path: inset(52% 0 0 0);
       animation: classic-glitch-slice 2.6s steps(1, end) infinite reverse;
     }
+    .name-effect-static {
+      color: #fff7ff !important;
+      -webkit-text-fill-color: #fff7ff;
+      text-shadow:
+        1px 0 0 #ff8bef,
+        -1px 0 0 #bda3ff,
+        0 1px 0 rgba(255,255,255,0.7),
+        0 0 7px rgba(255,180,248,0.72),
+        0 0 13px rgba(160,120,255,0.46);
+      filter: contrast(1.35) brightness(1.1);
+      animation: classic-static-jitter 0.42s steps(2, end) infinite;
+    }
+    .name-effect-static::before,
+    .name-effect-static::after {
+      content: attr(data-name);
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      color: #fff;
+      opacity: 0.72;
+      mix-blend-mode: screen;
+    }
+    .name-effect-static::before {
+      text-shadow: 2px 0 #ff7ce7, -1px 0 #ffffff;
+      clip-path: inset(0 0 45% 0);
+      animation: classic-static-slice-a 0.72s steps(1, end) infinite;
+    }
+    .name-effect-static::after {
+      text-shadow: -2px 0 #9d88ff, 1px 0 #ffffff;
+      clip-path: inset(48% 0 0 0);
+      animation: classic-static-slice-b 0.64s steps(1, end) infinite;
+    }
     .classic-badges,
     .classic-tags,
     .classic-socials {
@@ -2092,6 +2125,25 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       90% { opacity: 0.55; transform: translate(2px, 1px); }
       92% { opacity: 0.72; transform: translate(-1px, 0); }
       94% { opacity: 0; }
+    }
+    @keyframes classic-static-jitter {
+      0%, 100% { transform: translate3d(0,0,0); }
+      20% { transform: translate3d(-0.8px,0.4px,0); }
+      40% { transform: translate3d(0.7px,-0.5px,0); }
+      65% { transform: translate3d(-0.4px,-0.2px,0); }
+      82% { transform: translate3d(0.5px,0.3px,0); }
+    }
+    @keyframes classic-static-slice-a {
+      0%, 100% { opacity: 0.34; transform: translate(0,0); clip-path: inset(0 0 58% 0); }
+      18% { opacity: 0.9; transform: translate(-2px,1px); clip-path: inset(8% 0 46% 0); }
+      42% { opacity: 0.52; transform: translate(2px,-1px); clip-path: inset(22% 0 39% 0); }
+      70% { opacity: 0.78; transform: translate(-1px,0); clip-path: inset(0 0 70% 0); }
+    }
+    @keyframes classic-static-slice-b {
+      0%, 100% { opacity: 0.3; transform: translate(0,0); clip-path: inset(46% 0 0 0); }
+      24% { opacity: 0.84; transform: translate(2px,-1px); clip-path: inset(51% 0 12% 0); }
+      55% { opacity: 0.58; transform: translate(-2px,1px); clip-path: inset(34% 0 21% 0); }
+      80% { opacity: 0.74; transform: translate(1px,0); clip-path: inset(62% 0 0 0); }
     }
     @keyframes classic-fall {
       0% { opacity: 0; transform: translate3d(0,-30px,0) rotate(0deg); }
