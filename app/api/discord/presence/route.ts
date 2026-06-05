@@ -70,31 +70,16 @@ export async function POST(request: NextRequest) {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  const { data: matchedProfiles, error: readError } = await supabase
+  const { data: profiles, error: readError } = await supabase
     .from("profiles")
     .select("id, links")
-    .contains("links", [{ type: META_TYPE, meta: { discordId } }]);
+    .limit(1000);
 
   if (readError) {
-    return NextResponse.json({ error: "Could not read profiles." }, { status: 500 });
+    return NextResponse.json({ error: "Could not read profiles.", detail: readError.message }, { status: 500 });
   }
 
-  let profiles = matchedProfiles || [];
-  if (profiles.length === 0) {
-    const { data: fallbackProfiles, error: fallbackError } = await supabase
-      .from("profiles")
-      .select("id, links")
-      .not("links", "is", null)
-      .limit(1000);
-
-    if (fallbackError) {
-      return NextResponse.json({ error: "Could not search profiles." }, { status: 500 });
-    }
-
-    profiles = fallbackProfiles || [];
-  }
-
-  const profile = profiles.find((item: any) =>
+  const profile = (profiles || []).find((item: any) =>
     Array.isArray(item.links) && item.links.some((link: any) => link?.type === META_TYPE && link?.meta?.discordId === discordId)
   );
 
