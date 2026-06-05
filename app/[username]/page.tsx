@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect, useRef, useMemo } from "react"
 import { createBrowserClient } from '@supabase/ssr'
-import { ShieldCheck, Code, Star, Eye, ExternalLink, Play, Pause } from "lucide-react"
+import { ShieldCheck, Code, Star, Heart, Eye, ExternalLink, Play, Pause } from "lucide-react"
 
 type ProfileEffect = "none" | "snow" | "rain" | "ctv";
 type UsernameEffect = "none" | "typewriter" | "rainbow" | "fuzzy" | "glitch" | "static";
@@ -83,6 +83,7 @@ const iconMap: any = {
 
 const badgeInfo = {
   user: { label: "Verified User", description: "This profile belongs to a verified Softcard user." },
+  friend: { label: "Friend", description: "This user is marked as a Softcard friend." },
   dev: { label: "Developer", description: "This user is marked as a Softcard developer." },
   staff: { label: "Staff", description: "This user is marked as Softcard staff." },
 }
@@ -824,7 +825,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         .social-row { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 2px; }
         .social-link { transition: 0.3s; opacity: 0.75; }
         .social-link:hover { opacity: 1; transform: scale(1.1) translateY(-2px); }
-        .social-icon { width: 24px; height: 24px; }
+        .social-icon { width: 28px; height: 28px; }
         .featured-links { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 310px; margin-top: 12px; }
         .featured-link {
           display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -838,7 +839,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         .featured-outline { background: transparent; border-color: currentColor; }
         .featured-soft { background: ${accent}24; border-color: ${accent}66; }
         .featured-glass { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
-        .featured-link img { width: 18px; height: 18px; opacity: 0.84; }
+        .featured-link img { width: 21px; height: 21px; opacity: 0.84; }
         .featured-link-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
         .featured-link-text small { opacity: 0.6; font-size: 11px; line-height: 1.25; }
 
@@ -1152,9 +1153,10 @@ export default function PublicProfile({ params }: { params: { username: string }
         
         <div className={`display-name name-effect-${profileMeta.usernameEffect}`} data-name={profile.display_name}>{profile.display_name}</div>
 
-        {(profile.badges?.user || profile.badges?.dev || profile.badges?.staff) && (
+        {(profile.badges?.user || profile.badges?.friend || profile.badges?.dev || profile.badges?.staff) && (
           <div className="badges-pill">
               {profile.badges?.user && <span className="badge-tip" data-tip={badgeInfo.user.description} aria-label={badgeInfo.user.label}><ShieldCheck size={14} color="#3b82f6" /></span>}
+              {profile.badges?.friend && <span className="badge-tip" data-tip={badgeInfo.friend.description} aria-label={badgeInfo.friend.label}><Heart size={14} color="#ff5fc7" /></span>}
               {profile.badges?.dev && <span className="badge-tip" data-tip={badgeInfo.dev.description} aria-label={badgeInfo.dev.label}><Code size={14} color={accent} /></span>}
               {profile.badges?.staff && <span className="badge-tip" data-tip={badgeInfo.staff.description} aria-label={badgeInfo.staff.label}><Star size={14} color="#f59e0b" /></span>}
           </div>

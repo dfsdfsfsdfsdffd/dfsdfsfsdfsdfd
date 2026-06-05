@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, RefreshCw, ShieldCheck, Code, Star, Search, Trash2, ExternalLink } from "lucide-react";
+import { ArrowLeft, RefreshCw, ShieldCheck, Code, Star, Heart, Search, Trash2, ExternalLink } from "lucide-react";
 
 type Badges = {
   user?: boolean;
+  friend?: boolean;
   dev?: boolean;
   staff?: boolean;
 };
@@ -124,6 +125,7 @@ export default function AdminPanel() {
   function toggleBadge(user: AdminUser, key: keyof Badges) {
     updateBadges(user.id, {
       user: Boolean(user.badges?.user),
+      friend: Boolean(user.badges?.friend),
       dev: Boolean(user.badges?.dev),
       staff: Boolean(user.badges?.staff),
       [key]: !user.badges?.[key],
@@ -248,6 +250,13 @@ export default function AdminPanel() {
                   >
                     <Code size={15} />
                     Dev
+                  </button>
+                  <button
+                    className={user.badges?.friend ? "is-active" : ""}
+                    onClick={() => toggleBadge(user, "friend")}
+                  >
+                    <Heart size={15} />
+                    Friend
                   </button>
                   <button
                     className={user.badges?.staff ? "is-active" : ""}

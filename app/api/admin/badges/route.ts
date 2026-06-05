@@ -9,6 +9,7 @@ type BadgePayload = {
   id?: string;
   badges?: {
     user?: boolean;
+    friend?: boolean;
     dev?: boolean;
     staff?: boolean;
   };
@@ -107,6 +108,7 @@ export async function POST(request: Request) {
 
   const badges = {
     user: Boolean(body.badges.user),
+    friend: Boolean(body.badges.friend),
     dev: Boolean(body.badges.dev),
     staff: Boolean(body.badges.staff),
   };

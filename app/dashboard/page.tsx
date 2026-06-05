@@ -13,6 +13,7 @@ import {
   CopyPlus,
   Eye,
   ExternalLink,
+  Heart,
   Image as ImageIcon,
   Link as LinkIcon,
   LogOut,
@@ -82,6 +83,7 @@ type SocialLink = {
 
 type Badges = {
   user: boolean;
+  friend: boolean;
   dev: boolean;
   staff: boolean;
 };
@@ -239,6 +241,7 @@ const discordStatusColors: Record<string, string> = {
 
 const badgeInfo = {
   user: { label: "Verified User", description: "This profile belongs to a verified Softcard user.", color: "#3b82f6", icon: ShieldCheck },
+  friend: { label: "Friend", description: "This user is marked as a Softcard friend.", color: "#ff5fc7", icon: Heart },
   dev: { label: "Developer", description: "This user is marked as a Softcard developer.", color: "#a970ff", icon: Code },
   staff: { label: "Staff", description: "This user is marked as Softcard staff.", color: "#f59e0b", icon: Star },
 };
@@ -452,7 +455,7 @@ export default function SoftcardDashboard() {
   const [links, setLinks] = useState<SocialLink[]>([]);
   const [profileMeta, setProfileMeta] = useState<ProfileMeta>(defaultMeta);
   const [discordNotice, setDiscordNotice] = useState<{ kind: "ok" | "error"; message: string } | null>(null);
-  const [badges, setBadges] = useState<Badges>({ user: true, dev: false, staff: false });
+  const [badges, setBadges] = useState<Badges>({ user: true, friend: false, dev: false, staff: false });
   const [customThemes, setCustomThemes] = useState<ThemePreset[]>([]);
 
   const themes = [...baseThemes, ...customThemes];
@@ -509,7 +512,7 @@ export default function SoftcardDashboard() {
         const savedLinks = Array.isArray(data.links) ? data.links : [];
         setLinks(savedLinks.filter((link: SocialLink) => link.type !== "__softcard_meta"));
         setProfileMeta(readMeta(savedLinks));
-        setBadges(data.badges || { user: true, dev: false, staff: false });
+        setBadges({ user: true, friend: false, dev: false, staff: false, ...(data.badges || {}) });
         setOriginalUsername(data.username || "");
       }
 
@@ -1304,7 +1307,7 @@ function ProfilePreview({
       <div className={`classic-name name-effect-${meta.usernameEffect}`} style={{ color: profile.nameColor }} data-name={profile.name || "User"}>
         {profile.name || "User"}
       </div>
-      {(badges.user || badges.dev || badges.staff) && (
+      {(badges.user || badges.friend || badges.dev || badges.staff) && (
         <div className="classic-badges">
           {Object.entries(badgeInfo).map(([key, info]) => {
             if (!badges[key as keyof Badges]) return null;
@@ -2584,8 +2587,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       margin-top: 2px;
     }
     .classic-socials a {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -2597,8 +2600,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       transform: scale(1.1) translateY(-2px);
     }
     .classic-socials img {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
     }
     .classic-features {
       width: 100%;
@@ -2651,8 +2654,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       flex-shrink: 0;
     }
     .classic-feature-action img {
-      width: 18px;
-      height: 18px;
+      width: 21px;
+      height: 21px;
       opacity: 0.84;
     }
     .sx-feature-glass { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }

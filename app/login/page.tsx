@@ -18,6 +18,7 @@ export default function Login() {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [discordLoading, setDiscordLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
@@ -31,6 +32,18 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
+    const authStatus = new URLSearchParams(window.location.search).get("auth");
+    const authMessages: Record<string, string> = {
+      "missing-code": "Discord login did not return an auth code.",
+      "not-configured": "Discord login is not configured yet.",
+      "callback-failed": "Discord login failed. Try again.",
+      "no-user": "Discord login completed, but no user session was found.",
+    };
+    if (authStatus) {
+      setError(authMessages[authStatus] || "Discord login failed. Try again.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
     const checkUser = async () => {
       if (!supabase) return;
       const { data: { session } } = await supabase.auth.getSession();
@@ -40,6 +53,31 @@ export default function Login() {
     };
     checkUser();
   }, [supabase, router]);
+
+  const handleDiscordLogin = async () => {
+    setDiscordLoading(true);
+    setError(null);
+
+    if (!supabase) {
+      setError("Auth is not configured.");
+      setDiscordLoading(false);
+      return;
+    }
+
+    const origin = window.location.origin;
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "discord",
+      options: {
+        redirectTo: `${origin}/auth/callback?next=/dashboard`,
+        scopes: "identify email",
+      },
+    });
+
+    if (oauthError) {
+      setError(oauthError.message);
+      setDiscordLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,6 +260,13 @@ export default function Login() {
           </button>
         </form>
 
+        <div className="lx-divider"><span>or</span></div>
+
+        <button className="lx-discord" type="button" onClick={handleDiscordLogin} disabled={discordLoading || loading}>
+          <img src="https://cdn.simpleicons.org/discord/ffffff" alt="" />
+          {discordLoading ? "Opening Discord..." : mode === "signin" ? "Sign in with Discord" : "Sign up with Discord"}
+        </button>
+
         <div className="lx-switch">
           {mode === "signin" ? (
             <>Don't have an account? <button onClick={() => setMode("signup")}>Sign up</button></>
@@ -230,6 +275,57 @@ export default function Login() {
           )}
         </div>
       </section>
+      <style jsx>{`
+        .lx-divider {
+          width: min(420px, calc(100vw - 40px));
+          margin: 18px auto 14px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          color: rgba(255,255,255,0.42);
+          font-size: 12px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+        }
+        .lx-divider::before,
+        .lx-divider::after {
+          content: "";
+          height: 1px;
+          flex: 1;
+          background: rgba(255,255,255,0.1);
+        }
+        .lx-discord {
+          width: min(420px, calc(100vw - 40px));
+          min-height: 48px;
+          border: 1px solid rgba(255,255,255,0.14);
+          border-radius: 14px;
+          background: linear-gradient(135deg, rgba(88,101,242,0.92), rgba(129,140,248,0.72));
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          font: inherit;
+          font-weight: 900;
+          cursor: pointer;
+          box-shadow: 0 16px 34px rgba(88,101,242,0.22);
+          transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+        }
+        .lx-discord:hover:not(:disabled) {
+          transform: translateY(-1px);
+          filter: brightness(1.06);
+          box-shadow: 0 20px 42px rgba(88,101,242,0.3);
+        }
+        .lx-discord:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
+        .lx-discord img {
+          width: 19px;
+          height: 19px;
+        }
+      `}</style>
     </main>
   );
 }
