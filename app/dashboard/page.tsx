@@ -1328,7 +1328,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-editor {
       display: grid;
-      grid-template-columns: 600px minmax(0, 1fr);
+      grid-template-columns: 240px minmax(0, 1fr);
       overflow: hidden;
     }
     .classic-sidebar {
@@ -1337,7 +1337,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       scrollbar-gutter: stable;
       background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)), #0b0c13;
       border-right: 1px solid rgba(255,255,255,0.1);
-      padding: 28px 30px 42px;
+      padding: 18px 14px 34px;
     }
     .classic-editor-head {
       display: flex;
@@ -1378,6 +1378,20 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       color: white;
       border-color: transparent;
       box-shadow: 0 10px 24px ${profile.accent}33;
+    }
+    .classic-editor .classic-tabs {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      padding: 4px;
+    }
+    .classic-editor .classic-tabs button {
+      min-height: 38px;
+      font-size: 0;
+      gap: 0;
+    }
+    .classic-editor .classic-tabs button svg {
+      width: 15px;
+      height: 15px;
     }
     .classic-panel {
       display: flex;
@@ -1473,6 +1487,11 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
+    }
+    .classic-editor .classic-grid-2,
+    .classic-editor .classic-theme-grid,
+    .classic-editor .classic-stat-grid {
+      grid-template-columns: 1fr;
     }
     .classic-inline-input {
       display: grid;
