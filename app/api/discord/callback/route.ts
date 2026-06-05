@@ -216,7 +216,7 @@ export async function GET(request: NextRequest) {
         discordConnected: true,
         discordConnectedAt: new Date().toISOString(),
         discordGuildJoinStatus: guildJoinStatus,
-        discordStatus: "connected discord",
+        discordStatus: "waiting for presence",
       }),
     })
     .eq("id", user.id);
