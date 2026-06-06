@@ -63,6 +63,15 @@ function json(data: unknown, status = 200) {
   });
 }
 
+function isMissingRedirectsTable(error: { code?: string; message?: string } | null) {
+  return Boolean(
+    error &&
+      (error.code === "42P01" ||
+        error.code === "PGRST205" ||
+        error.message?.toLowerCase().includes("profile_redirects"))
+  );
+}
+
 function adminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -90,7 +99,10 @@ export async function GET(request: Request) {
     .select("id, source_username, target_username, target_user_id, created_at")
     .order("source_username", { ascending: true });
 
-  if (error) return json({ error: error.message }, 500);
+  if (error) {
+    if (isMissingRedirectsTable(error)) return json({ redirects: [], missingTable: true });
+    return json({ error: error.message }, 500);
+  }
 
   return json({ redirects: data || [] });
 }
@@ -122,6 +134,7 @@ export async function POST(request: Request) {
 
   if (body.action === "delete") {
     const { error } = await supabaseAdmin.from("profile_redirects").delete().eq("source_username", source);
+    if (error && isMissingRedirectsTable(error)) return json({ error: "Redirects table is not installed. Run supabase-profile-redirects.sql first." }, 503);
     if (error) return json({ error: error.message }, 500);
     return GET(request);
   }
@@ -158,7 +171,10 @@ export async function POST(request: Request) {
       { onConflict: "source_username" }
     );
 
-  if (error) return json({ error: error.message }, 500);
+  if (error) {
+    if (isMissingRedirectsTable(error)) return json({ error: "Redirects table is not installed. Run supabase-profile-redirects.sql first." }, 503);
+    return json({ error: error.message }, 500);
+  }
 
   return GET(request);
 }

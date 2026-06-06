@@ -285,12 +285,21 @@ function splitAudioMeta(value: string) {
   }
 }
 
+function formatTime(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return "0:00";
+  const minutes = Math.floor(seconds / 60);
+  const remaining = Math.floor(seconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${remaining}`;
+}
+
 export default function PublicProfile({ params }: { params: { username: string } }) {
   const [profile, setProfile] = useState<any>(null)
   const [hasEntered, setHasEntered] = useState(false)
   const [volume, setVolume] = useState(0.5)
   const [isMuted, setIsMuted] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
   
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -350,13 +359,24 @@ export default function PublicProfile({ params }: { params: { username: string }
 
     const onPlay = () => setIsPlaying(true)
     const onPause = () => setIsPlaying(false)
+    const onTimeUpdate = () => setCurrentTime(audio.currentTime || 0)
+    const onLoadedMetadata = () => setDuration(Number.isFinite(audio.duration) ? audio.duration : 0)
 
     audio.addEventListener("play", onPlay)
     audio.addEventListener("pause", onPause)
+    audio.addEventListener("timeupdate", onTimeUpdate)
+    audio.addEventListener("loadedmetadata", onLoadedMetadata)
+    audio.addEventListener("durationchange", onLoadedMetadata)
+
+    setCurrentTime(audio.currentTime || 0)
+    setDuration(Number.isFinite(audio.duration) ? audio.duration : 0)
 
     return () => {
       audio.removeEventListener("play", onPlay)
       audio.removeEventListener("pause", onPause)
+      audio.removeEventListener("timeupdate", onTimeUpdate)
+      audio.removeEventListener("loadedmetadata", onLoadedMetadata)
+      audio.removeEventListener("durationchange", onLoadedMetadata)
     }
   }, [profile?.audio_url])
 
@@ -380,6 +400,21 @@ export default function PublicProfile({ params }: { params: { username: string }
       audio.pause()
       setIsPlaying(false)
     }
+  }
+
+  const seekAudio = (seconds: number) => {
+    const audio = audioRef.current
+    if (!audio) return
+    const maxTime = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : seconds
+    const nextTime = Math.max(0, Math.min(seconds, maxTime))
+    audio.currentTime = nextTime
+    setCurrentTime(nextTime)
+  }
+
+  const jumpAudio = (offset: number) => {
+    const audio = audioRef.current
+    if (!audio) return
+    seekAudio((audio.currentTime || 0) + offset)
   }
 
   if (!profile) return null
@@ -423,7 +458,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           min-height: 100svh;
           height: 100svh;
           width: 100vw;
-          background: ${hasMediaBg ? '#030712' : background};
+          background: #030712;
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${baseFontFamily}, sans-serif;
           overflow: hidden; position: relative;
@@ -457,6 +492,7 @@ export default function PublicProfile({ params }: { params: { username: string }
 
         .bg-wrapper { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
         .bg-content { width: 100%; height: 100%; object-fit: cover; }
+        .bg-gradient { background: ${background}; }
         .bg-wrapper {
           opacity: ${profileMeta.bgOpacity};
           filter: blur(${profileMeta.bgBlur}px);
@@ -958,17 +994,29 @@ export default function PublicProfile({ params }: { params: { username: string }
           color: rgba(255,255,255,0.68);
         }
         .media-progress {
-          height: 3px;
+          width: 100%;
+          height: 4px;
+          appearance: none;
+          -webkit-appearance: none;
           border-radius: 999px;
-          background: rgba(255,255,255,0.2);
-          overflow: hidden;
+          background: linear-gradient(90deg, white 0%, ${accent} var(--progress, 0%), rgba(255,255,255,0.2) var(--progress, 0%), rgba(255,255,255,0.2) 100%);
+          cursor: pointer;
         }
-        .media-progress span {
-          display: block;
-          width: 54%;
-          height: 100%;
-          border-radius: inherit;
-          background: linear-gradient(90deg, white, ${accent});
+        .media-progress::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          width: 10px;
+          height: 10px;
+          border-radius: 999px;
+          background: white;
+          box-shadow: 0 0 12px ${accent}aa;
+        }
+        .media-progress::-moz-range-thumb {
+          width: 10px;
+          height: 10px;
+          border: 0;
+          border-radius: 999px;
+          background: white;
+          box-shadow: 0 0 12px ${accent}aa;
         }
         .media-btn {
           flex: 0 0 auto;
@@ -990,14 +1038,15 @@ export default function PublicProfile({ params }: { params: { username: string }
           gap: 8px;
         }
         .media-skip {
-          width: 18px;
+          min-width: 28px;
           height: 30px;
           border: 0;
           background: transparent;
           color: white;
           cursor: pointer;
           opacity: 0.58;
-          font-size: 21px;
+          font-size: 10px;
+          font-weight: 900;
           line-height: 1;
         }
         .media-volume {
@@ -1177,10 +1226,12 @@ export default function PublicProfile({ params }: { params: { username: string }
           <video key={bgUrl} ref={videoRef} src={bgUrl} className="bg-content" loop muted playsInline />
         ) : profile.background_type === "image" && bgUrl ? (
           <img key={bgUrl} src={bgUrl} className="bg-content" alt="bg" />
-        ) : null}
+        ) : (
+          <div className="bg-content bg-gradient" />
+        )}
       </div>
 
-      {audioUrl && <audio ref={audioRef} src={audioUrl} loop />}
+      {audioUrl && <audio ref={audioRef} src={audioUrl} loop preload="metadata" />}
 
       {profileMeta.profileEffect !== "none" && (
         <div className={`profile-effect profile-effect-${profileMeta.profileEffect} profile-effect-screen`} aria-hidden="true">
@@ -1316,16 +1367,26 @@ export default function PublicProfile({ params }: { params: { username: string }
             <div className="media-main">
               <div className="media-row">
                 <span className="media-title">{audioTitle}</span>
-                <span className="media-time">{isPlaying ? "2:14" : "1:22"}</span>
+                <span className="media-time">{formatTime(currentTime)} / {formatTime(duration)}</span>
               </div>
-              <div className="media-progress"><span /></div>
+              <input
+                className="media-progress"
+                type="range"
+                min="0"
+                max={duration || 0}
+                step="0.01"
+                value={Math.min(currentTime, duration || currentTime)}
+                onChange={(event) => seekAudio(Number(event.target.value))}
+                style={{ "--progress": `${duration ? Math.min(100, (currentTime / duration) * 100) : 0}%` } as React.CSSProperties}
+                aria-label="Audio progress"
+              />
             </div>
             <div className="media-actions">
-              <button className="media-skip" aria-label="Previous track" type="button"><span>‹</span></button>
+              <button className="media-skip" onClick={() => jumpAudio(-10)} aria-label="Rewind 10 seconds" type="button"><span>-10</span></button>
               <button className="media-btn" onClick={toggleAudio} aria-label={isPlaying ? "Pause audio" : "Play audio"}>
                 {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
               </button>
-              <button className="media-skip" aria-label="Next track" type="button"><span>›</span></button>
+              <button className="media-skip" onClick={() => jumpAudio(10)} aria-label="Forward 10 seconds" type="button"><span>+10</span></button>
               <input
                 className="media-volume"
                 type="range"

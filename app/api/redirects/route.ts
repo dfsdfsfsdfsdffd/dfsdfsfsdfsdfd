@@ -13,6 +13,15 @@ function json(data: unknown, status = 200) {
   });
 }
 
+function isMissingRedirectsTable(error: { code?: string; message?: string } | null) {
+  return Boolean(
+    error &&
+      (error.code === "42P01" ||
+        error.code === "PGRST205" ||
+        error.message?.toLowerCase().includes("profile_redirects"))
+  );
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const username = (searchParams.get("username") || "").trim().toLowerCase();
@@ -37,7 +46,11 @@ export async function GET(request: Request) {
     .eq("source_username", username)
     .maybeSingle();
 
-  if (error || !data?.target_username || data.target_username === username) {
+  if (error && !isMissingRedirectsTable(error)) {
+    return json({ target: null });
+  }
+
+  if (!data?.target_username || data.target_username === username) {
     return json({ target: null });
   }
 

@@ -29,6 +29,15 @@ function json(data: { error?: string; ok?: boolean }, status = 200) {
   });
 }
 
+function isMissingRedirectsTable(error: { code?: string; message?: string } | null) {
+  return Boolean(
+    error &&
+      (error.code === "42P01" ||
+        error.code === "PGRST205" ||
+        error.message?.toLowerCase().includes("profile_redirects"))
+  );
+}
+
 function hitLimit(key: string, max: number) {
   const now = Date.now();
   const existing = attempts.get(key);
@@ -143,7 +152,7 @@ export async function POST(request: Request) {
     .eq("source_username", username)
     .maybeSingle();
 
-  if (existingRedirectError) {
+  if (existingRedirectError && !isMissingRedirectsTable(existingRedirectError)) {
     return json({ error: "Unable to verify username availability." }, 500);
   }
 
