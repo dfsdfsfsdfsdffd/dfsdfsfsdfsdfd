@@ -885,16 +885,22 @@ export default function SoftcardDashboard() {
     <main className="classic-editor" style={{ fontFamily: `${profile.font}, Inter, system-ui, sans-serif` }}>
       <style>{classicStyles(profile, profileMeta)}</style>
       <aside className="classic-sidebar">
-        <div className="classic-editor-head">
-          <button className="classic-back" onClick={() => setView("hub")}><ArrowLeft size={16} /> Dashboard</button>
-          <button className="classic-primary classic-save" onClick={saveChanges} disabled={saving}><Save size={16} /> {saving ? "Saving..." : "Save & Publish"}</button>
-        </div>
-
         <div className="classic-tabs">
+          <button className="classic-back" onClick={() => setView("hub")}><ArrowLeft size={16} /> Dashboard</button>
           <button className={tab === "profile" ? "is-active" : ""} onClick={() => setTab("profile")}><UserIcon size={14} /> Profile</button>
           <button className={tab === "links" ? "is-active" : ""} onClick={() => setTab("links")}><LinkIcon size={14} /> Links</button>
           <button className={tab === "appearance" ? "is-active" : ""} onClick={() => setTab("appearance")}><Palette size={14} /> Style</button>
           <button className={tab === "media" ? "is-active" : ""} onClick={() => setTab("media")}><Music size={14} /> Media</button>
+        </div>
+      </aside>
+
+      <section className="classic-workspace">
+        <div className="classic-editor-head">
+          <div>
+            <p className="classic-kicker">Profile Editor</p>
+            <h2>{tab === "profile" ? "Profile" : tab === "links" ? "Links" : tab === "appearance" ? "Style" : "Media"}</h2>
+          </div>
+          <button className="classic-primary classic-save" onClick={saveChanges} disabled={saving}><Save size={16} /> {saving ? "Saving..." : "Save & Publish"}</button>
         </div>
 
         {tab === "profile" && (
@@ -1193,7 +1199,7 @@ export default function SoftcardDashboard() {
           </Panel>
         )}
 
-      </aside>
+      </section>
 
       <section className="classic-preview">
         {profile.bgType === "gradient" && <div className="classic-bg" style={{ background: profile.gradient }} />}
@@ -1673,45 +1679,61 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-editor {
       display: grid;
-      grid-template-columns: 480px minmax(0, 1fr);
+      grid-template-columns: 206px minmax(380px, 560px) minmax(0, 1fr);
       overflow: hidden;
+      background:
+        radial-gradient(circle at 30% -10%, ${profile.accent}24, transparent 30%),
+        linear-gradient(180deg, #141416, #0c0d10 42%, #08090b);
     }
     .classic-sidebar {
       height: 100vh;
       overflow-y: auto;
       scrollbar-gutter: stable;
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)), #0b0c13;
+      background: rgba(18,19,21,0.92);
       border-right: 1px solid rgba(255,255,255,0.1);
-      padding: 24px 24px 38px;
+      padding: 46px 10px 18px;
+    }
+    .classic-workspace {
+      height: 100vh;
+      overflow-y: auto;
+      scrollbar-gutter: stable;
+      padding: 46px 24px 46px;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.018)),
+        rgba(12,13,16,0.82);
     }
     .classic-editor-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 16px;
       margin-bottom: 24px;
     }
+    .classic-editor-head h2 {
+      margin: 4px 0 0;
+      font-size: 34px;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
     .classic-save {
-      flex: 1;
+      flex: 0 0 auto;
     }
     .classic-tabs {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 7px;
-      margin-bottom: 26px;
-      padding: 5px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.045);
-      border: 1px solid rgba(255,255,255,0.075);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
     .classic-tabs button {
       min-height: 42px;
-      flex-direction: column;
-      gap: 4px;
-      padding: 0;
-      font-size: 10px;
+      justify-content: flex-start;
+      gap: 10px;
+      padding: 0 12px;
+      border-radius: 9px;
+      font-size: 13px;
       color: rgba(255,255,255,0.62);
       background: transparent;
+      border-color: transparent;
     }
     .classic-tabs button:hover {
       color: white;
@@ -1719,16 +1741,23 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       transform: translateY(-1px);
     }
     .classic-tabs button.is-active {
-      background: ${profile.accent};
+      background: rgba(255,255,255,0.09);
       color: white;
-      border-color: transparent;
-      box-shadow: 0 10px 24px ${profile.accent}33;
+      border-color: ${profile.accent}99;
+      box-shadow: inset 3px 0 0 ${profile.accent}, 0 10px 24px rgba(0,0,0,0.18);
     }
     .classic-panel {
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      padding-bottom: 42px;
+      gap: 18px;
+      padding: 18px;
+      margin-bottom: 42px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.09);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.035)),
+        rgba(12,13,16,0.75);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.22);
     }
     .classic-field {
       display: flex;
@@ -2129,8 +2158,36 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       justify-content: center;
       overflow: hidden;
       isolation: isolate;
-      padding: 34px;
-      background: radial-gradient(circle at 50% 16%, rgba(169,112,255,0.13), transparent 31%), #05060a;
+      padding: 48px;
+      background:
+        radial-gradient(circle at 70% 14%, ${profile.accent}1f, transparent 28%),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255,255,255,0.025) 1px, transparent 1px),
+        #0a0b0e;
+      background-size: auto, 18px 18px, 18px 18px, auto;
+    }
+    .classic-preview::before {
+      content: "Live preview";
+      position: absolute;
+      top: 28px;
+      left: 32px;
+      z-index: 4;
+      color: rgba(255,255,255,0.62);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .classic-preview::after {
+      content: "";
+      position: absolute;
+      inset: 88px 36px 36px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.1);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.025), 0 30px 80px rgba(0,0,0,0.24);
+      pointer-events: none;
+      z-index: 0;
     }
     .classic-bg {
       position: absolute;
@@ -2958,9 +3015,30 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       .classic-sidebar {
         height: auto;
         min-height: auto;
+        padding: 12px;
+        border-right: 0;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        position: sticky;
+        top: 0;
+        z-index: 20;
+      }
+      .classic-workspace {
+        height: auto;
+        min-height: auto;
+        padding: 22px 16px;
+        border-right: 0;
+      }
+      .classic-tabs {
+        flex-direction: row;
+        overflow-x: auto;
+      }
+      .classic-tabs button {
+        flex: 0 0 auto;
+        min-width: 104px;
       }
       .classic-preview {
         min-height: 640px;
+        padding: 52px 18px 24px;
       }
       .classic-grid-2,
       .classic-theme-grid,
@@ -2968,9 +3046,6 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       .classic-dashboard-grid,
       .classic-discord-connect-panel {
         grid-template-columns: 1fr;
-      }
-      .classic-tabs {
-        overflow-x: auto;
       }
     }
     @media (prefers-reduced-motion: reduce) {
