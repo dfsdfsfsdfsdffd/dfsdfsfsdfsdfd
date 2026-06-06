@@ -298,6 +298,8 @@ const baseThemes: ThemePreset[] = [
   { name: "Forest", accent: "#46d39a", nameColor: "#f1fff8", bioColor: "#bff5db", gradient: "linear-gradient(135deg, #06251a 0%, #020806 100%)" },
 ];
 
+const profileDomains = ["softcard.cc", "esex.life", "esex4.life", "esex.store"];
+
 function safeExternalUrl(value: unknown) {
   if (typeof value !== "string") return "";
   try {
@@ -481,7 +483,7 @@ export default function SoftcardDashboard() {
   const [tab, setTab] = useState<EditorTab>("profile");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedDomain, setCopiedDomain] = useState("");
   const [currentUserId, setCurrentUserId] = useState("");
   const [originalUsername, setOriginalUsername] = useState("");
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "reserved" | "invalid">("idle");
@@ -497,7 +499,9 @@ export default function SoftcardDashboard() {
   const totalClicks = links.reduce((sum, link) => sum + Number(link.clicks || 0), 0);
   const topLinks = [...links].sort((a, b) => Number(b.clicks || 0) - Number(a.clicks || 0)).slice(0, 5);
   const gradientColors = profile.gradient.match(/#(?:[0-9a-fA-F]{3}){1,2}/g) || ["#170f2f", "#050106"];
-  const publicUrl = `softcard.cc/${profile.username || "username"}`;
+  const profileUsername = profile.username || "username";
+  const publicUrl = `softcard.cc/${profileUsername}`;
+  const profileUrls = profileDomains.map((domain) => ({ domain, url: `${domain}/${profileUsername}` }));
 
   useEffect(() => {
     async function loadData() {
@@ -800,10 +804,10 @@ export default function SoftcardDashboard() {
     router.push("/login");
   }
 
-  function copyUrl() {
-    navigator.clipboard.writeText(publicUrl);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
+  function copyUrl(url = publicUrl, domain = "softcard.cc") {
+    navigator.clipboard.writeText(url);
+    setCopiedDomain(domain);
+    window.setTimeout(() => setCopiedDomain((current) => (current === domain ? "" : current)), 1600);
   }
 
   async function disconnectDiscord() {
@@ -868,7 +872,7 @@ export default function SoftcardDashboard() {
 
             <div className="classic-url-card">
               <span>{publicUrl}</span>
-              <button onClick={copyUrl}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? "Copied" : "Copy"}</button>
+              <button onClick={() => copyUrl(publicUrl, "softcard.cc")}>{copiedDomain === "softcard.cc" ? <Check size={15} /> : <Copy size={15} />}{copiedDomain === "softcard.cc" ? "Copied" : "Copy"}</button>
             </div>
 
             <div className="classic-dashboard-grid">
@@ -880,6 +884,18 @@ export default function SoftcardDashboard() {
                 <div className="classic-stat-grid">
                   <div className="classic-stat"><strong>{Number(profile.views || 0).toLocaleString()}</strong><span>Profile views</span></div>
                   <div className="classic-stat"><strong>{totalClicks.toLocaleString()}</strong><span>Link clicks</span></div>
+                </div>
+                <div className="classic-domain-list">
+                  <span className="classic-section-label">Your domains</span>
+                  {profileUrls.map((item) => (
+                    <div className="classic-domain-row" key={item.domain}>
+                      <span>{item.url}</span>
+                      <button onClick={() => copyUrl(item.url, item.domain)}>
+                        {copiedDomain === item.domain ? <Check size={14} /> : <Copy size={14} />}
+                        {copiedDomain === item.domain ? "Copied" : "Copy"}
+                      </button>
+                    </div>
+                  ))}
                 </div>
                 <div className="classic-top-list">
                   {topLinks.length ? topLinks.map((link) => (
@@ -2218,6 +2234,46 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-stat strong {
       font-size: 28px;
       line-height: 1;
+    }
+    .classic-domain-list {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .classic-domain-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 11px;
+      border: 1px solid rgba(255,255,255,0.09);
+      background: rgba(255,255,255,0.04);
+    }
+    .classic-domain-row span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: rgba(255,255,255,0.78);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .classic-domain-row button {
+      min-height: 30px;
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.075);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
     }
     .classic-top-link {
       display: flex;
