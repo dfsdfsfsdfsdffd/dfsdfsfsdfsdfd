@@ -2380,8 +2380,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 124%;
-      height: 124%;
+      width: 108%;
+      height: 108%;
       transform: translate(-50%, -50%);
       object-fit: contain;
       border: 0 !important;
@@ -2392,8 +2392,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       z-index: 3;
     }
     .classic-avatar-deco-preview .classic-avatar-decoration {
-      width: 128%;
-      height: 128%;
+      width: 112%;
+      height: 112%;
     }
     .classic-name {
       font-size: 28px;

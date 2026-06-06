@@ -553,8 +553,8 @@ export default function PublicProfile({ params }: { params: { username: string }
           position: absolute;
           left: 50%;
           top: 50%;
-          width: 124%;
-          height: 124%;
+          width: 108%;
+          height: 108%;
           transform: translate(-50%, -50%);
           object-fit: contain;
           pointer-events: none;
