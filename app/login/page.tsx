@@ -13,6 +13,16 @@ const font = Space_Grotesk({
 
 const RESET_COOLDOWN_MS = 60 * 1000;
 
+function siteOrigin() {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configured) {
+    try {
+      return new URL(configured.startsWith("http") ? configured : `https://${configured}`).origin;
+    } catch {}
+  }
+  return window.location.origin;
+}
+
 export default function Login() {
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
@@ -117,7 +127,7 @@ export default function Login() {
           return;
         }
 
-        const origin = window.location.origin;
+        const origin = siteOrigin();
         const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
           redirectTo: `${origin}/auth/callback?next=/reset-password`,
         });
