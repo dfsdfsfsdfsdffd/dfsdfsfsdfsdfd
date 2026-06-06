@@ -876,47 +876,50 @@ export default function SoftcardDashboard() {
             </div>
 
             <div className="classic-dashboard-grid">
-              <section className="classic-dashboard-card">
+              <section className="classic-dashboard-card classic-stats-card">
                 <div className="classic-dashboard-card-head">
-                  <span>Stats</span>
+                  <span>Profile links</span>
                   <BarChart3 size={16} />
                 </div>
-                <div className="classic-stat-grid">
-                  <div className="classic-stat"><strong>{Number(profile.views || 0).toLocaleString()}</strong><span>Profile views</span></div>
-                  <div className="classic-stat"><strong>{totalClicks.toLocaleString()}</strong><span>Link clicks</span></div>
-                </div>
-                <div className="classic-domain-list">
-                  <span className="classic-section-label">Your domains</span>
-                  {profileUrls.map((item) => (
-                    <div className="classic-domain-row" key={item.domain}>
-                      <span>{item.url}</span>
-                      <button onClick={() => copyUrl(item.url, item.domain)}>
-                        {copiedDomain === item.domain ? <Check size={14} /> : <Copy size={14} />}
-                        {copiedDomain === item.domain ? "Copied" : "Copy"}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <div className="classic-top-list">
-                  {topLinks.length ? topLinks.map((link) => (
-                    <div className="classic-top-link" key={`hub-top-${link.id}`}>
-                      <span>{link.label || link.type || link.url}</span>
-                      <strong>{Number(link.clicks || 0).toLocaleString()}</strong>
-                    </div>
-                  )) : <p className="classic-muted">Add links to start tracking clicks.</p>}
+                <div className="classic-stats-layout">
+                  <div className="classic-stat-stack">
+                    <div className="classic-stat classic-stat-hero"><strong>{Number(profile.views || 0).toLocaleString()}</strong><span>Profile views</span></div>
+                    <div className="classic-stat"><strong>{totalClicks.toLocaleString()}</strong><span>Link clicks</span></div>
+                  </div>
+                  <div className="classic-domain-list">
+                    <span className="classic-section-label">Copy profile URLs</span>
+                    {profileUrls.map((item) => (
+                      <div className="classic-domain-row" key={item.domain}>
+                        <span>{item.url}</span>
+                        <button onClick={() => copyUrl(item.url, item.domain)}>
+                          {copiedDomain === item.domain ? <Check size={14} /> : <Copy size={14} />}
+                          {copiedDomain === item.domain ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="classic-top-list">
+                    <span className="classic-section-label">Top links</span>
+                    {topLinks.length ? topLinks.map((link) => (
+                      <div className="classic-top-link" key={`hub-top-${link.id}`}>
+                        <span>{link.label || link.type || link.url}</span>
+                        <strong>{Number(link.clicks || 0).toLocaleString()}</strong>
+                      </div>
+                    )) : <p className="classic-muted">Add links to start tracking clicks.</p>}
+                  </div>
                 </div>
               </section>
 
-              <section className="classic-dashboard-card">
+              <section className="classic-dashboard-card classic-discord-compact-card">
                 <div className="classic-dashboard-card-head">
-                  <span>Settings</span>
+                  <span>Discord</span>
                   <DiscordIcon />
                 </div>
-                <div className="classic-discord-connect-panel">
-                  <DiscordCard meta={profileMeta} fallbackAvatar={profile.avatar || defaultProfile.avatar} />
+                <div className="classic-discord-compact-main">
+                  <img src={profileMeta.discordAvatar || profile.avatar || defaultProfile.avatar} alt="" />
                   <div>
-                    <strong>{profileMeta.discordConnected ? "Discord connected" : "Connect Discord"}</strong>
-                    <small>{profileMeta.discordConnected ? `Signed in as ${profileMeta.discordUsername || profileMeta.discordName}` : "Authorize Discord to auto-fill the profile widget."}</small>
+                    <strong>{profileMeta.discordConnected ? (profileMeta.discordUsername || profileMeta.discordName || "Discord connected") : "Not connected"}</strong>
+                    <small>{profileMeta.discordConnected ? "Presence sync is ready." : "Connect once to auto-fill your widget."}</small>
                   </div>
                 </div>
                 {discordNotice ? <p className={`classic-discord-notice ${discordNotice.kind}`}>{discordNotice.message}</p> : null}
@@ -931,7 +934,7 @@ export default function SoftcardDashboard() {
                 <Field label="Status Text">
                   <input value={profileMeta.discordStatus} onChange={(e) => setProfileMeta((current) => ({ ...current, discordStatus: e.target.value.slice(0, 50) }))} placeholder="last seen unknown" />
                 </Field>
-                <button className="classic-primary" onClick={saveChanges} disabled={saving}><Save size={16} /> {saving ? "Saving..." : "Save Settings"}</button>
+                <button className="classic-secondary" onClick={saveChanges} disabled={saving}><Save size={16} /> {saving ? "Saving..." : "Save Discord"}</button>
               </section>
             </div>
           </section>
@@ -1726,9 +1729,10 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       width: 100%;
       margin-top: 28px;
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
       gap: 18px;
       text-align: left;
+      align-items: start;
     }
     .classic-dashboard-card {
       padding: 18px;
@@ -1740,6 +1744,67 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       flex-direction: column;
       gap: 14px;
     }
+    .classic-stats-card {
+      background:
+        radial-gradient(circle at 12% 0%, ${profile.accent}18, transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,0.062), rgba(255,255,255,0.035)),
+        rgba(255,255,255,0.045);
+    }
+    .classic-stats-layout {
+      display: grid;
+      grid-template-columns: minmax(150px, 0.42fr) minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+    .classic-stat-stack {
+      display: grid;
+      gap: 12px;
+    }
+    .classic-top-list {
+      grid-column: 1 / -1;
+    }
+    .classic-discord-compact-card {
+      gap: 12px;
+      background:
+        radial-gradient(circle at 95% 0%, rgba(88,101,242,0.2), transparent 36%),
+        rgba(255,255,255,0.04);
+    }
+    .classic-discord-compact-main {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.045);
+    }
+    .classic-discord-compact-main img {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .classic-discord-compact-main div {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .classic-discord-compact-main strong {
+      color: white;
+      font-size: 14px;
+      font-weight: 950;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .classic-discord-compact-main small {
+      color: rgba(255,255,255,0.52);
+      font-size: 12px;
+      line-height: 1.35;
+    }
     .classic-dashboard-card-head {
       display: flex;
       align-items: center;
@@ -1749,11 +1814,6 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       font-weight: 950;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-    }
-    .classic-top-list {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
     }
     .classic-primary:active:not(:disabled),
     .classic-secondary:active,
@@ -2036,6 +2096,14 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       background: rgba(255,255,255,0.058);
       box-shadow: 0 16px 34px rgba(0,0,0,0.18);
     }
+    .classic-stat-hero {
+      min-height: 118px;
+      justify-content: flex-end;
+      border-color: ${profile.accent}33;
+      background:
+        radial-gradient(circle at 20% 10%, ${profile.accent}2e, transparent 42%),
+        rgba(255,255,255,0.055);
+    }
     .classic-link-head {
       min-height: 42px;
       padding-right: 34px;
@@ -2236,7 +2304,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       line-height: 1;
     }
     .classic-domain-list {
-      margin-top: 14px;
+      margin-top: 0;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -2246,10 +2314,16 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 10px;
-      padding: 9px 10px;
+      padding: 10px 11px;
       border-radius: 11px;
       border: 1px solid rgba(255,255,255,0.09);
       background: rgba(255,255,255,0.04);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+    .classic-domain-row:hover {
+      transform: translateY(-1px);
+      border-color: ${profile.accent}55;
+      background: rgba(255,255,255,0.06);
     }
     .classic-domain-row span {
       min-width: 0;
@@ -2280,11 +2354,13 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 9px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 11px;
+      border-radius: 11px;
+      border: 1px solid rgba(255,255,255,0.075);
+      background: rgba(255,255,255,0.032);
     }
     .classic-top-link:last-child {
-      border-bottom: 0;
+      border-bottom-color: rgba(255,255,255,0.075);
     }
     .classic-top-link span {
       min-width: 0;
@@ -3221,6 +3297,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       .classic-grid-2,
       .classic-theme-grid,
       .classic-stat-grid,
+      .classic-stats-layout,
       .classic-dashboard-grid,
       .classic-discord-connect-panel {
         grid-template-columns: 1fr;
