@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Space_Grotesk } from "next/font/google";
 import { ArrowRight, BadgeCheck, Heart, Link as LinkIcon, Palette, ShieldCheck, Sparkles } from "lucide-react";
 
@@ -11,6 +13,17 @@ const font = Space_Grotesk({
 
 export default function Home() {
   const navItems = ["Home", "Features", "Dashboard", "Support", "Credits"];
+  const router = useRouter();
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get("code");
+    const type = url.searchParams.get("type");
+
+    if (code && (!type || type === "recovery")) {
+      router.replace(`/reset-password?code=${encodeURIComponent(code)}`);
+    }
+  }, [router]);
 
   return (
     <main className={`sx-main ${font.className}`}>
