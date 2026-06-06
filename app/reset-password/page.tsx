@@ -37,6 +37,33 @@ export default function ResetPassword() {
         return;
       }
 
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get("code");
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+
+      if (code) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) {
+          setError("This reset link is invalid or expired. Request a new one from the login page.");
+          setChecking(false);
+          return;
+        }
+        window.history.replaceState({}, "", "/reset-password");
+      } else if (accessToken && refreshToken) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (sessionError) {
+          setError("This reset link is invalid or expired. Request a new one from the login page.");
+          setChecking(false);
+          return;
+        }
+        window.history.replaceState({}, "", "/reset-password");
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       setHasSession(Boolean(session));
       setChecking(false);
@@ -90,7 +117,10 @@ export default function ResetPassword() {
         {checking ? (
           <p className="rp-muted">Checking recovery session...</p>
         ) : !hasSession ? (
-          <p className="rp-error">This reset link is invalid or expired. Request a new one from the login page.</p>
+          <div className="rp-stack">
+            <p className="rp-error">{error || "This reset link is invalid or expired. Request a new one from the login page."}</p>
+            <Link className="rp-action" href="/login">Request a new reset link</Link>
+          </div>
         ) : (
           <form onSubmit={handleSubmit}>
             {error && <p className="rp-error">{error}</p>}
@@ -154,6 +184,12 @@ export default function ResetPassword() {
           gap: 12px;
           margin-top: 18px;
         }
+        .rp-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-top: 18px;
+        }
         input {
           min-height: 48px;
           border-radius: 14px;
@@ -202,6 +238,18 @@ export default function ResetPassword() {
           color: rgba(255,255,255,0.68);
           font-size: 13px;
           font-weight: 800;
+        }
+        .rp-action {
+          min-height: 44px;
+          border-radius: 14px;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.12);
+          color: white;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          text-decoration: none;
+          font-weight: 900;
         }
       `}</style>
     </main>
