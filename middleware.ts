@@ -1,17 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-function withSecurityHeaders(response: NextResponse) {
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
-  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
-  response.headers.set('X-DNS-Prefetch-Control', 'off')
-
-  return response
-}
-
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next()
 
@@ -19,7 +8,7 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return withSecurityHeaders(response)
+    return response
   }
 
   const supabase = createServerClient(
@@ -43,11 +32,10 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
-    const redirect = NextResponse.redirect(new URL('/login', request.url))
-    return withSecurityHeaders(redirect)
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  return withSecurityHeaders(response)
+  return response
 }
 
 export const config = {
