@@ -11,6 +11,7 @@ type ProfileMeta = {
   profileEffect: ProfileEffect;
   usernameEffect: UsernameEffect;
   bioEffect: TextEffect;
+  iconSize: number;
   bgBlur: number;
   bgOpacity: number;
   customFontUrl: string;
@@ -97,6 +98,7 @@ const defaultMeta: ProfileMeta = {
   profileEffect: "none",
   usernameEffect: "none",
   bioEffect: "none",
+  iconSize: 28,
   bgBlur: 0,
   bgOpacity: 1,
   customFontUrl: "",
@@ -197,6 +199,7 @@ function cleanMeta(raw: any): ProfileMeta {
     profileEffect,
     usernameEffect,
     bioEffect,
+    iconSize: Number.isFinite(Number(meta.iconSize)) ? Math.max(18, Math.min(64, Number(meta.iconSize))) : defaultMeta.iconSize,
     bgBlur: Number.isFinite(Number(meta.bgBlur)) ? Math.max(0, Math.min(24, Number(meta.bgBlur))) : defaultMeta.bgBlur,
     bgOpacity: Number.isFinite(Number(meta.bgOpacity)) ? Math.max(0, Math.min(1, Number(meta.bgOpacity))) : defaultMeta.bgOpacity,
     customFontUrl: safeText(meta.customFontUrl),
@@ -225,6 +228,8 @@ function cleanMeta(raw: any): ProfileMeta {
 }
 
 function getIcon(linkObj: any) {
+  const customImage = safeMediaUrl(linkObj?.image);
+  if (customImage) return customImage;
   if (linkObj.type && iconMap[linkObj.type]) return iconMap[linkObj.type]
   return iconMap.website
 }
@@ -841,9 +846,9 @@ export default function PublicProfile({ params }: { params: { username: string }
         }
 
         .social-row { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 2px; }
-        .social-link { transition: 0.3s; opacity: 0.75; }
+        .social-link { width: ${profileMeta.iconSize}px; height: ${profileMeta.iconSize}px; display: inline-flex; align-items: center; justify-content: center; transition: 0.3s; opacity: 0.75; }
         .social-link:hover { opacity: 1; transform: scale(1.1) translateY(-2px); }
-        .social-icon { width: 28px; height: 28px; }
+        .social-icon { width: ${profileMeta.iconSize}px; height: ${profileMeta.iconSize}px; object-fit: cover; border-radius: 8px; }
         .featured-links { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 310px; margin-top: 12px; }
         .featured-link {
           display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -857,7 +862,7 @@ export default function PublicProfile({ params }: { params: { username: string }
         .featured-outline { background: transparent; border-color: currentColor; }
         .featured-soft { background: ${accent}24; border-color: ${accent}66; }
         .featured-glass { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
-        .featured-link img { width: 21px; height: 21px; opacity: 0.84; }
+        .featured-link img { width: ${Math.max(18, Math.round(profileMeta.iconSize * 0.75))}px; height: ${Math.max(18, Math.round(profileMeta.iconSize * 0.75))}px; object-fit: cover; border-radius: 7px; opacity: 0.84; }
         .featured-link-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
         .featured-link-text small { opacity: 0.6; font-size: 11px; line-height: 1.25; }
 

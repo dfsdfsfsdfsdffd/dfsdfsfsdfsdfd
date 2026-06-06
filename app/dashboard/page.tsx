@@ -43,6 +43,7 @@ type ProfileMeta = {
   profileEffect: ProfileEffect;
   usernameEffect: UsernameEffect;
   bioEffect: TextEffect;
+  iconSize: number;
   bgBlur: number;
   bgOpacity: number;
   customFontUrl: string;
@@ -75,6 +76,7 @@ type SocialLink = {
   url: string;
   label?: string;
   description?: string;
+  image?: string;
   color?: string;
   style?: LinkStyle;
   featured?: boolean;
@@ -193,6 +195,7 @@ const defaultMeta: ProfileMeta = {
   profileEffect: "none",
   usernameEffect: "none",
   bioEffect: "none",
+  iconSize: 28,
   bgBlur: 0,
   bgOpacity: 1,
   customFontUrl: "",
@@ -320,6 +323,7 @@ function cleanMeta(raw: any): ProfileMeta {
     profileEffect,
     usernameEffect,
     bioEffect,
+    iconSize: Number.isFinite(Number(meta.iconSize)) ? Math.max(18, Math.min(64, Number(meta.iconSize))) : defaultMeta.iconSize,
     bgBlur: Number.isFinite(Number(meta.bgBlur)) ? Math.max(0, Math.min(24, Number(meta.bgBlur))) : defaultMeta.bgBlur,
     bgOpacity: Number.isFinite(Number(meta.bgOpacity)) ? Math.max(0, Math.min(1, Number(meta.bgOpacity))) : defaultMeta.bgOpacity,
     customFontUrl: safeText(meta.customFontUrl),
@@ -639,9 +643,9 @@ export default function SoftcardDashboard() {
     updateProfile("gradient", `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`);
   }
 
-  async function uploadMedia(kind: "avatar" | "image" | "video" | "audio" | "cursor" | "font", file: File) {
+  async function uploadMedia(kind: "avatar" | "image" | "video" | "audio" | "cursor" | "font" | "linkImage", file: File) {
     if (!supabase) throw new Error("Uploads are not configured.");
-    if ((kind === "avatar" || kind === "image") && !file.type.startsWith("image/")) throw new Error("Use an image file.");
+    if ((kind === "avatar" || kind === "image" || kind === "linkImage") && !file.type.startsWith("image/")) throw new Error("Use an image file.");
     if (kind === "video" && !file.type.startsWith("video/")) throw new Error("Use a video file.");
     if (kind === "audio" && !file.type.startsWith("audio/")) throw new Error("Use an audio file.");
     if (kind === "cursor" && !file.type.startsWith("image/")) throw new Error("Use an image file for the cursor.");
@@ -691,6 +695,7 @@ export default function SoftcardDashboard() {
         customFontName: fileTitle(file.name) || "SoftcardCustomFont",
       }));
     }
+    return publicUrl;
   }
 
   async function saveChanges() {
@@ -977,7 +982,7 @@ export default function SoftcardDashboard() {
               <div className="classic-link-card" key={link.id}>
                 <button className="classic-remove" onClick={() => removeLink(link.id)}><Trash2 size={14} /></button>
                 <div className="classic-link-head">
-                  <span className="classic-icon-preview"><img src={iconMap[link.type] || iconMap.website} alt="" /></span>
+                  <span className="classic-icon-preview"><img src={linkIcon(link)} alt="" /></span>
                   <div>
                     <strong>{link.label || link.type.toUpperCase()}</strong>
                     <small>{link.featured ? "Featured button" : "Icon link"}</small>
@@ -988,6 +993,7 @@ export default function SoftcardDashboard() {
                   <Field label="Icon">
                     <select value={link.type} onChange={(e) => updateLink(index, { type: e.target.value })}>
                       {Object.keys(iconMap).map((key) => <option key={key} value={key}>{key.toUpperCase()}</option>)}
+                      <option value="custom">CUSTOM IMAGE</option>
                     </select>
                   </Field>
                   <Field label="Visibility">
@@ -1001,6 +1007,24 @@ export default function SoftcardDashboard() {
                   </Field>
                 </div>
                 <input value={link.url} onChange={(e) => updateLink(index, { url: e.target.value })} placeholder="https://..." />
+                <Field label="Custom Link Image">
+                  <MediaDrop
+                    kind="linkImage"
+                    icon={<ImageIcon size={20} />}
+                    title="Drop custom icon/button image"
+                    hint="PNG, JPG, WEBP, GIF up to 50MB"
+                    onUpload={async (kind, file) => {
+                      const publicUrl = await uploadMedia(kind, file);
+                      if (publicUrl) updateLink(index, { image: publicUrl, type: "custom" });
+                    }}
+                  />
+                  {link.image && (
+                    <button className="classic-secondary" onClick={() => updateLink(index, { image: "", type: link.type === "custom" ? "website" : link.type })}>
+                      <X size={16} />
+                      Clear custom image
+                    </button>
+                  )}
+                </Field>
 
                 <button
                   className={`classic-feature-toggle ${link.featured ? "is-on" : ""}`}
@@ -1069,6 +1093,9 @@ export default function SoftcardDashboard() {
               <Field label="Accent Color"><input type="color" value={profile.accent.slice(0, 7)} onChange={(e) => updateProfile("accent", e.target.value)} /></Field>
             </div>
             <Field label="Bio Color"><input type="color" value={profile.bioColor.slice(0, 7)} onChange={(e) => updateProfile("bioColor", e.target.value)} /></Field>
+            <Field label={`Icon Size: ${profileMeta.iconSize}px`}>
+              <input type="range" min="18" max="64" value={profileMeta.iconSize} onChange={(e) => setProfileMeta((current) => ({ ...current, iconSize: Number(e.target.value) }))} />
+            </Field>
             <span className="classic-section-label">Card & Effects</span>
             <label className="classic-check"><input type="checkbox" checked={profile.showGlass} onChange={(e) => updateProfile("showGlass", e.target.checked)} /> Transparent Glass Card</label>
             <label className="classic-check"><input type="checkbox" checked={profileMeta.elementGlow} onChange={(e) => setProfileMeta((current) => ({ ...current, elementGlow: e.target.checked }))} /> Glow page elements</label>
@@ -1196,6 +1223,10 @@ function DiscordIcon() {
   return <img src={iconMap.discord} alt="" style={{ width: 16, height: 16 }} />;
 }
 
+function linkIcon(link: Pick<SocialLink, "type" | "image">) {
+  return safeMediaUrl(link.image) || iconMap[link.type] || iconMap.website;
+}
+
 function DiscordCard({ meta, fallbackAvatar }: { meta: ProfileMeta; fallbackAvatar: string }) {
   const name = meta.discordName.trim();
   const url = safeExternalUrl(meta.discordUrl);
@@ -1258,11 +1289,11 @@ function MediaDrop({
   hint,
   onUpload,
 }: {
-  kind: "avatar" | "image" | "video" | "audio" | "cursor" | "font";
+  kind: "avatar" | "image" | "video" | "audio" | "cursor" | "font" | "linkImage";
   icon: ReactNode;
   title: string;
   hint: string;
-  onUpload: (kind: "avatar" | "image" | "video" | "audio" | "cursor" | "font", file: File) => Promise<void>;
+  onUpload: (kind: "avatar" | "image" | "video" | "audio" | "cursor" | "font" | "linkImage", file: File) => Promise<void | string>;
 }) {
   const [uploading, setUploading] = useState(false);
 
@@ -1351,7 +1382,7 @@ function ProfilePreview({
       <div className="classic-socials">
         {iconLinks.map((link) => (
           <a key={link.id} href={safeExternalUrl(link.url)} target="_blank" rel="noreferrer">
-            <img src={iconMap[link.type] || iconMap.website} alt={link.type} />
+            <img src={linkIcon(link)} alt={link.type} />
           </a>
         ))}
       </div>
@@ -1363,7 +1394,7 @@ function ProfilePreview({
               {link.description && <small>{link.description}</small>}
             </span>
             <span className="classic-feature-action">
-              <img src={iconMap[link.type] || iconMap.website} alt="" />
+              <img src={linkIcon(link)} alt="" />
               <ArrowUpRight size={15} />
             </span>
           </a>
@@ -2606,8 +2637,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       margin-top: 2px;
     }
     .classic-socials a {
-      width: 28px;
-      height: 28px;
+      width: ${meta.iconSize}px;
+      height: ${meta.iconSize}px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -2619,8 +2650,10 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       transform: scale(1.1) translateY(-2px);
     }
     .classic-socials img {
-      width: 28px;
-      height: 28px;
+      width: ${meta.iconSize}px;
+      height: ${meta.iconSize}px;
+      object-fit: cover;
+      border-radius: 8px;
     }
     .classic-features {
       width: 100%;
@@ -2673,8 +2706,10 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       flex-shrink: 0;
     }
     .classic-feature-action img {
-      width: 21px;
-      height: 21px;
+      width: ${Math.max(18, Math.round(meta.iconSize * 0.75))}px;
+      height: ${Math.max(18, Math.round(meta.iconSize * 0.75))}px;
+      object-fit: cover;
+      border-radius: 7px;
       opacity: 0.84;
     }
     .sx-feature-glass { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
