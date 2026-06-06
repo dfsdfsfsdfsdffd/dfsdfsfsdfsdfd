@@ -14,6 +14,7 @@ type ProfileMeta = {
   iconSize: number;
   avatarDecoration: string;
   avatarDecorationName: string;
+  avatarDecorationSize: number;
   bgBlur: number;
   bgOpacity: number;
   customFontUrl: string;
@@ -103,6 +104,7 @@ const defaultMeta: ProfileMeta = {
   iconSize: 28,
   avatarDecoration: "",
   avatarDecorationName: "",
+  avatarDecorationSize: 108,
   bgBlur: 0,
   bgOpacity: 1,
   customFontUrl: "",
@@ -212,6 +214,7 @@ function cleanMeta(raw: any): ProfileMeta {
     iconSize: Number.isFinite(Number(meta.iconSize)) ? Math.max(18, Math.min(64, Number(meta.iconSize))) : defaultMeta.iconSize,
     avatarDecoration: safeDecorationUrl(meta.avatarDecoration),
     avatarDecorationName: safeText(meta.avatarDecorationName),
+    avatarDecorationSize: Number.isFinite(Number(meta.avatarDecorationSize)) ? Math.max(80, Math.min(160, Number(meta.avatarDecorationSize))) : defaultMeta.avatarDecorationSize,
     bgBlur: Number.isFinite(Number(meta.bgBlur)) ? Math.max(0, Math.min(24, Number(meta.bgBlur))) : defaultMeta.bgBlur,
     bgOpacity: Number.isFinite(Number(meta.bgOpacity)) ? Math.max(0, Math.min(1, Number(meta.bgOpacity))) : defaultMeta.bgOpacity,
     customFontUrl: safeText(meta.customFontUrl),
@@ -390,9 +393,9 @@ export default function PublicProfile({ params }: { params: { username: string }
   const baseFontFamily = safeFont(profile.font_family);
   const nameFontFamily = profileMeta.customFontUrl ? "SoftcardCustomFont" : baseFontFamily;
   const bioFontFamily = profileMeta.customFontUrl && profileMeta.customFontBio ? "SoftcardCustomFont" : baseFontFamily;
-  const background = safeGradient(profile.background_value);
-  const hasMediaBg = (profile.background_type === "image" || profile.background_type === "video") && profile.background_value;
-  const bgUrl = hasMediaBg ? safeMediaUrl(profile.background_value) : "";
+  const bgUrl = profile.background_type === "image" || profile.background_type === "video" ? safeMediaUrl(profile.background_value) : "";
+  const hasMediaBg = Boolean(bgUrl);
+  const background = safeGradient(hasMediaBg ? "" : profile.background_value);
   const avatarUrl = safeMediaUrl(profile.avatar_url) || "https://i.imgur.com/1X6g1YH.jpeg";
   const discordName = profileMeta.discordName.trim();
   const discordUrl = safeExternalUrl(profileMeta.discordUrl);
@@ -420,7 +423,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           min-height: 100svh;
           height: 100svh;
           width: 100vw;
-          background: ${profile.background_type === 'gradient' ? background : '#030712'};
+          background: ${hasMediaBg ? '#030712' : background};
           display: flex; align-items: center; justify-content: center;
           color: white; font-family: ${baseFontFamily}, sans-serif;
           overflow: hidden; position: relative;
@@ -553,8 +556,8 @@ export default function PublicProfile({ params }: { params: { username: string }
           position: absolute;
           left: 50%;
           top: 50%;
-          width: 108%;
-          height: 108%;
+          width: var(--avatar-deco-size, 108%);
+          height: var(--avatar-deco-size, 108%);
           transform: translate(-50%, -50%);
           object-fit: contain;
           pointer-events: none;
@@ -1210,7 +1213,7 @@ export default function PublicProfile({ params }: { params: { username: string }
           {((profile.views || 0) + 1).toLocaleString()}
         </div>
 
-        <span className="pfp-wrap">
+        <span className="pfp-wrap" style={{ "--avatar-deco-size": `${profileMeta.avatarDecorationSize}%` } as React.CSSProperties}>
           <img src={avatarUrl} className="pfp" alt="profile" />
           {profileMeta.avatarDecoration && <img src={profileMeta.avatarDecoration} className="avatar-decoration" alt="" />}
         </span>

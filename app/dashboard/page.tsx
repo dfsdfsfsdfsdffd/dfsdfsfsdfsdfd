@@ -46,6 +46,7 @@ type ProfileMeta = {
   iconSize: number;
   avatarDecoration: string;
   avatarDecorationName: string;
+  avatarDecorationSize: number;
   bgBlur: number;
   bgOpacity: number;
   customFontUrl: string;
@@ -205,6 +206,7 @@ const defaultMeta: ProfileMeta = {
   iconSize: 28,
   avatarDecoration: "",
   avatarDecorationName: "",
+  avatarDecorationSize: 108,
   bgBlur: 0,
   bgOpacity: 1,
   customFontUrl: "",
@@ -346,6 +348,7 @@ function cleanMeta(raw: any): ProfileMeta {
     iconSize: Number.isFinite(Number(meta.iconSize)) ? Math.max(18, Math.min(64, Number(meta.iconSize))) : defaultMeta.iconSize,
     avatarDecoration: safeDecorationUrl(meta.avatarDecoration),
     avatarDecorationName: safeText(meta.avatarDecorationName),
+    avatarDecorationSize: Number.isFinite(Number(meta.avatarDecorationSize)) ? Math.max(80, Math.min(160, Number(meta.avatarDecorationSize))) : defaultMeta.avatarDecorationSize,
     bgBlur: Number.isFinite(Number(meta.bgBlur)) ? Math.max(0, Math.min(24, Number(meta.bgBlur))) : defaultMeta.bgBlur,
     bgOpacity: Number.isFinite(Number(meta.bgOpacity)) ? Math.max(0, Math.min(1, Number(meta.bgOpacity))) : defaultMeta.bgOpacity,
     customFontUrl: safeText(meta.customFontUrl),
@@ -661,6 +664,8 @@ export default function SoftcardDashboard() {
       bioColor: theme.bioColor,
       bgType: "gradient",
       gradient: theme.gradient,
+      bgImage: "",
+      bgVideo: "",
     }));
   }
 
@@ -944,7 +949,7 @@ export default function SoftcardDashboard() {
         {tab === "profile" && (
           <Panel>
             <div className="classic-avatar-edit">
-              <span className="classic-avatar-deco-preview">
+              <span className="classic-avatar-deco-preview" style={{ "--avatar-deco-size": `${Math.min(160, profileMeta.avatarDecorationSize + 4)}%` } as React.CSSProperties}>
                 <img src={profile.avatar || defaultProfile.avatar} alt="Profile" />
                 {profileMeta.avatarDecoration && <img className="classic-avatar-decoration" src={profileMeta.avatarDecoration} alt="" />}
               </span>
@@ -972,6 +977,17 @@ export default function SoftcardDashboard() {
               </select>
               <small>{decorations.length ? `${decorations.length} decorations loaded` : "No decorations loaded"}</small>
             </Field>
+            {profileMeta.avatarDecoration && (
+              <Field label={`Decoration Size: ${profileMeta.avatarDecorationSize}%`}>
+                <input
+                  type="range"
+                  min="80"
+                  max="160"
+                  value={profileMeta.avatarDecorationSize}
+                  onChange={(event) => setProfileMeta((current) => ({ ...current, avatarDecorationSize: Number(event.target.value) }))}
+                />
+              </Field>
+            )}
             <Field label="Username">
               <input value={profile.username} onChange={(e) => updateProfile("username", e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30))} placeholder="username" />
               <div className={`classic-status ${usernameStatus}`}>
@@ -1419,7 +1435,7 @@ function ProfilePreview({
         <Eye size={14} strokeWidth={2.5} />
         {Number(profile.views || 0).toLocaleString()}
       </div>
-      <span className="classic-pfp-wrap">
+      <span className="classic-pfp-wrap" style={{ "--avatar-deco-size": `${meta.avatarDecorationSize}%` } as React.CSSProperties}>
         <img className="classic-pfp" src={profile.avatar || defaultProfile.avatar} alt="Profile" />
         {meta.avatarDecoration && <img className="classic-avatar-decoration" src={meta.avatarDecoration} alt="" />}
       </span>
@@ -2380,8 +2396,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 108%;
-      height: 108%;
+      width: var(--avatar-deco-size, 108%);
+      height: var(--avatar-deco-size, 108%);
       transform: translate(-50%, -50%);
       object-fit: contain;
       border: 0 !important;
@@ -2392,8 +2408,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       z-index: 3;
     }
     .classic-avatar-deco-preview .classic-avatar-decoration {
-      width: 112%;
-      height: 112%;
+      width: var(--avatar-deco-size, 112%);
+      height: var(--avatar-deco-size, 112%);
     }
     .classic-name {
       font-size: 28px;
