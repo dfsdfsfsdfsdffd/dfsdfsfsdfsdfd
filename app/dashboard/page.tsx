@@ -44,6 +44,8 @@ type ProfileMeta = {
   usernameEffect: UsernameEffect;
   bioEffect: TextEffect;
   iconSize: number;
+  avatarDecoration: string;
+  avatarDecorationName: string;
   bgBlur: number;
   bgOpacity: number;
   customFontUrl: string;
@@ -83,6 +85,11 @@ type SocialLink = {
   enabled?: boolean;
   clicks?: number;
   meta?: ProfileMeta;
+};
+
+type ProfileDecoration = {
+  name: string;
+  url: string;
 };
 
 type Badges = {
@@ -196,6 +203,8 @@ const defaultMeta: ProfileMeta = {
   usernameEffect: "none",
   bioEffect: "none",
   iconSize: 28,
+  avatarDecoration: "",
+  avatarDecorationName: "",
   bgBlur: 0,
   bgOpacity: 1,
   customFontUrl: "",
@@ -307,6 +316,12 @@ function safeMediaUrl(value: unknown) {
   }
 }
 
+function safeDecorationUrl(value: unknown) {
+  if (typeof value !== "string") return "";
+  if (value.startsWith("/profile-decorations/") && value.endsWith(".png")) return value;
+  return safeMediaUrl(value);
+}
+
 function safeText(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
@@ -324,6 +339,8 @@ function cleanMeta(raw: any): ProfileMeta {
     usernameEffect,
     bioEffect,
     iconSize: Number.isFinite(Number(meta.iconSize)) ? Math.max(18, Math.min(64, Number(meta.iconSize))) : defaultMeta.iconSize,
+    avatarDecoration: safeDecorationUrl(meta.avatarDecoration),
+    avatarDecorationName: safeText(meta.avatarDecorationName),
     bgBlur: Number.isFinite(Number(meta.bgBlur)) ? Math.max(0, Math.min(24, Number(meta.bgBlur))) : defaultMeta.bgBlur,
     bgOpacity: Number.isFinite(Number(meta.bgOpacity)) ? Math.max(0, Math.min(1, Number(meta.bgOpacity))) : defaultMeta.bgOpacity,
     customFontUrl: safeText(meta.customFontUrl),
@@ -466,6 +483,7 @@ export default function SoftcardDashboard() {
   const [discordNotice, setDiscordNotice] = useState<{ kind: "ok" | "error"; message: string } | null>(null);
   const [badges, setBadges] = useState<Badges>({ user: true, friend: false, dev: false, staff: false });
   const [customThemes, setCustomThemes] = useState<ThemePreset[]>([]);
+  const [decorations, setDecorations] = useState<ProfileDecoration[]>([]);
 
   const themes = [...baseThemes, ...customThemes];
   const totalClicks = links.reduce((sum, link) => sum + Number(link.clicks || 0), 0);
@@ -536,6 +554,21 @@ export default function SoftcardDashboard() {
       const saved = JSON.parse(window.localStorage.getItem("softcard_custom_themes") || "[]");
       if (Array.isArray(saved)) setCustomThemes(saved.slice(0, 8));
     } catch {}
+  }, []);
+
+  useEffect(() => {
+    fetch("/profile-decorations/manifest.json")
+      .then((response) => (response.ok ? response.json() : []))
+      .then((items) => {
+        if (Array.isArray(items)) {
+          setDecorations(
+            items
+              .filter((item) => typeof item?.name === "string" && typeof item?.url === "string")
+              .slice(0, 700)
+          );
+        }
+      })
+      .catch(() => setDecorations([]));
   }, []);
 
   useEffect(() => {
@@ -906,12 +939,34 @@ export default function SoftcardDashboard() {
         {tab === "profile" && (
           <Panel>
             <div className="classic-avatar-edit">
-              <img src={profile.avatar || defaultProfile.avatar} alt="Profile" />
+              <span className="classic-avatar-deco-preview">
+                <img src={profile.avatar || defaultProfile.avatar} alt="Profile" />
+                {profileMeta.avatarDecoration && <img className="classic-avatar-decoration" src={profileMeta.avatarDecoration} alt="" />}
+              </span>
               <MediaDrop kind="avatar" icon={<ImageIcon size={20} />} title="Drop profile picture" hint="PNG, JPG, WEBP, GIF up to 50MB" onUpload={uploadMedia} />
             </div>
             {profile.avatar && profile.avatar !== defaultProfile.avatar && (
               <button className="classic-secondary" onClick={() => updateProfile("avatar", "")}><X size={16} /> Clear profile picture</button>
             )}
+            <Field label="Profile Picture Decoration">
+              <select
+                value={profileMeta.avatarDecoration}
+                onChange={(event) => {
+                  const decoration = decorations.find((item) => item.url === event.target.value);
+                  setProfileMeta((current) => ({
+                    ...current,
+                    avatarDecoration: decoration?.url || "",
+                    avatarDecorationName: decoration?.name || "",
+                  }));
+                }}
+              >
+                <option value="">None</option>
+                {decorations.map((decoration) => (
+                  <option key={decoration.url} value={decoration.url}>{decoration.name}</option>
+                ))}
+              </select>
+              <small>{decorations.length ? `${decorations.length} decorations loaded` : "No decorations loaded"}</small>
+            </Field>
             <Field label="Username">
               <input value={profile.username} onChange={(e) => updateProfile("username", e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30))} placeholder="username" />
               <div className={`classic-status ${usernameStatus}`}>
@@ -1359,7 +1414,10 @@ function ProfilePreview({
         <Eye size={14} strokeWidth={2.5} />
         {Number(profile.views || 0).toLocaleString()}
       </div>
-      <img className="classic-pfp" src={profile.avatar || defaultProfile.avatar} alt="Profile" />
+      <span className="classic-pfp-wrap">
+        <img className="classic-pfp" src={profile.avatar || defaultProfile.avatar} alt="Profile" />
+        {meta.avatarDecoration && <img className="classic-avatar-decoration" src={meta.avatarDecoration} alt="" />}
+      </span>
       <div className={`classic-name name-effect-${meta.usernameEffect}`} style={{ color: profile.nameColor }} data-name={profile.name || "User"}>
         {profile.name || "User"}
       </div>
@@ -1868,7 +1926,16 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       gap: 14px;
       align-items: stretch;
     }
-    .classic-avatar-edit img {
+    .classic-avatar-deco-preview {
+      position: relative;
+      width: 86px;
+      height: 86px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+    .classic-avatar-deco-preview > img:first-child {
       width: 86px;
       height: 86px;
       border-radius: 50%;
@@ -2288,6 +2355,40 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       box-shadow: 0 0 30px ${profile.accent}44;
       padding: 3px;
       margin-bottom: 10px;
+    }
+    .classic-pfp-wrap {
+      position: relative;
+      width: 118px;
+      height: 118px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+      margin-bottom: -2px;
+    }
+    .classic-pfp-wrap .classic-pfp {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 0;
+    }
+    .classic-avatar-decoration {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 150%;
+      height: 150%;
+      transform: translate(-50%, -50%);
+      object-fit: contain;
+      border: 0 !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .classic-avatar-deco-preview .classic-avatar-decoration {
+      width: 154%;
+      height: 154%;
     }
     .classic-name {
       font-size: 28px;

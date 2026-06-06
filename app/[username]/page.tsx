@@ -12,6 +12,8 @@ type ProfileMeta = {
   usernameEffect: UsernameEffect;
   bioEffect: TextEffect;
   iconSize: number;
+  avatarDecoration: string;
+  avatarDecorationName: string;
   bgBlur: number;
   bgOpacity: number;
   customFontUrl: string;
@@ -99,6 +101,8 @@ const defaultMeta: ProfileMeta = {
   usernameEffect: "none",
   bioEffect: "none",
   iconSize: 28,
+  avatarDecoration: "",
+  avatarDecorationName: "",
   bgBlur: 0,
   bgOpacity: 1,
   customFontUrl: "",
@@ -173,6 +177,12 @@ function safeMediaUrl(value: unknown) {
   }
 }
 
+function safeDecorationUrl(value: unknown) {
+  if (typeof value !== "string") return "";
+  if (value.startsWith("/profile-decorations/") && value.endsWith(".png")) return value;
+  return safeMediaUrl(value);
+}
+
 function safeExternalUrl(value: unknown) {
   if (typeof value !== "string") return "";
   try {
@@ -200,6 +210,8 @@ function cleanMeta(raw: any): ProfileMeta {
     usernameEffect,
     bioEffect,
     iconSize: Number.isFinite(Number(meta.iconSize)) ? Math.max(18, Math.min(64, Number(meta.iconSize))) : defaultMeta.iconSize,
+    avatarDecoration: safeDecorationUrl(meta.avatarDecoration),
+    avatarDecorationName: safeText(meta.avatarDecorationName),
     bgBlur: Number.isFinite(Number(meta.bgBlur)) ? Math.max(0, Math.min(24, Number(meta.bgBlur))) : defaultMeta.bgBlur,
     bgOpacity: Number.isFinite(Number(meta.bgOpacity)) ? Math.max(0, Math.min(1, Number(meta.bgOpacity))) : defaultMeta.bgOpacity,
     customFontUrl: safeText(meta.customFontUrl),
@@ -521,6 +533,32 @@ export default function PublicProfile({ params }: { params: { username: string }
           border-radius: 50%; border: 2px solid ${accent};
           box-shadow: 0 0 30px ${accent}44;
           padding: 3px;
+        }
+        .pfp-wrap {
+          position: relative;
+          width: 118px;
+          height: 118px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          overflow: visible;
+          margin-bottom: -2px;
+        }
+        .pfp-wrap .pfp {
+          position: relative;
+          z-index: 1;
+          margin-bottom: 0;
+        }
+        .avatar-decoration {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 150%;
+          height: 150%;
+          transform: translate(-50%, -50%);
+          object-fit: contain;
+          pointer-events: none;
+          z-index: 3;
         }
 
         .display-name { 
@@ -1172,7 +1210,10 @@ export default function PublicProfile({ params }: { params: { username: string }
           {((profile.views || 0) + 1).toLocaleString()}
         </div>
 
-        <img src={avatarUrl} className="pfp" alt="profile" />
+        <span className="pfp-wrap">
+          <img src={avatarUrl} className="pfp" alt="profile" />
+          {profileMeta.avatarDecoration && <img src={profileMeta.avatarDecoration} className="avatar-decoration" alt="" />}
+        </span>
         
         <div className={`display-name name-effect-${profileMeta.usernameEffect}`} data-name={profile.display_name}>{profile.display_name}</div>
 
