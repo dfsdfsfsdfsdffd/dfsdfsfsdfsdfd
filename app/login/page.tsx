@@ -12,7 +12,7 @@ const font = Space_Grotesk({
 });
 
 export default function Login() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -20,6 +20,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [discordLoading, setDiscordLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -38,6 +39,7 @@ export default function Login() {
       "not-configured": "Discord login is not configured yet.",
       "callback-failed": "Discord login failed. Try again.",
       "no-user": "Discord login completed, but no user session was found.",
+      "reset-complete": "Password updated. Sign in with your new password.",
     };
     if (authStatus) {
       setError(authMessages[authStatus] || "Discord login failed. Try again.");
@@ -47,7 +49,7 @@ export default function Login() {
     const checkUser = async () => {
       if (!supabase) return;
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      if (session && mode !== "forgot") {
         router.push("/dashboard");
       }
     };
@@ -83,10 +85,27 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setNotice(null);
 
     try {
       if (!supabase) {
         setError("Auth is not configured.");
+        setLoading(false);
+        return;
+      }
+
+      if (mode === "forgot") {
+        const origin = window.location.origin;
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+          redirectTo: `${origin}/auth/callback?next=/reset-password`,
+        });
+
+        if (resetError) {
+          setError(resetError.message);
+        } else {
+          setNotice("Password reset link sent. Check your email.");
+        }
+
         setLoading(false);
         return;
       }
@@ -192,16 +211,19 @@ export default function Login() {
 
       <section className="lx-wrap">
         <h1 className="lx-title">
-          {mode === "signin" ? "Welcome Back" : "Create Account"}
+          {mode === "signin" ? "Welcome Back" : mode === "forgot" ? "Reset Password" : "Create Account"}
         </h1>
         <p className="lx-sub">
           {mode === "signin"
             ? "Sign in to edit and publish your Softcard."
-            : "Pick your username, then sign in instantly after signup."}
+            : mode === "forgot"
+              ? "Enter your email and we will send a password reset link."
+              : "Pick your username, then sign in instantly after signup."}
         </p>
 
         <form className="lx-form" onSubmit={handleSubmit}>
           {error && <p className="lx-error">{error}</p>}
+          {notice && <p className="lx-notice">{notice}</p>}
 
           {mode === "signup" && (
             <div className="lx-field">
@@ -239,9 +261,10 @@ export default function Login() {
             className="lx-input"
             type="password"
             placeholder="Password"
-            required
+            required={mode !== "forgot"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            style={{ display: mode === "forgot" ? "none" : undefined }}
           />
 
           {mode === "signup" && (
@@ -256,22 +279,32 @@ export default function Login() {
           )}
 
           <button className="lx-primary" disabled={loading}>
-            {loading ? "Processing..." : (mode === "signin" ? "Sign In" : "Sign Up")}
+            {loading ? "Processing..." : mode === "forgot" ? "Send Reset Link" : mode === "signin" ? "Sign In" : "Sign Up"}
           </button>
         </form>
 
-        <div className="lx-divider"><span>or</span></div>
+        {mode === "signin" && (
+          <button className="lx-forgot" type="button" onClick={() => { setError(null); setNotice(null); setMode("forgot"); }}>
+            Forgot password?
+          </button>
+        )}
 
-        <button className="lx-discord" type="button" onClick={handleDiscordLogin} disabled={discordLoading || loading}>
-          <img src="https://cdn.simpleicons.org/discord/ffffff" alt="" />
-          {discordLoading ? "Opening Discord..." : mode === "signin" ? "Sign in with Discord" : "Sign up with Discord"}
-        </button>
+        {mode !== "forgot" && <div className="lx-divider"><span>or</span></div>}
+
+        {mode !== "forgot" && (
+          <button className="lx-discord" type="button" onClick={handleDiscordLogin} disabled={discordLoading || loading}>
+            <img src="https://cdn.simpleicons.org/discord/ffffff" alt="" />
+            {discordLoading ? "Opening Discord..." : mode === "signin" ? "Sign in with Discord" : "Sign up with Discord"}
+          </button>
+        )}
 
         <div className="lx-switch">
           {mode === "signin" ? (
-            <>Don't have an account? <button onClick={() => setMode("signup")}>Sign up</button></>
+            <>Don't have an account? <button onClick={() => { setError(null); setNotice(null); setMode("signup"); }}>Sign up</button></>
+          ) : mode === "forgot" ? (
+            <>Remembered it? <button onClick={() => { setError(null); setNotice(null); setMode("signin"); }}>Sign in</button></>
           ) : (
-            <>Already have an account? <button onClick={() => setMode("signin")}>Sign in</button></>
+            <>Already have an account? <button onClick={() => { setError(null); setNotice(null); setMode("signin"); }}>Sign in</button></>
           )}
         </div>
       </section>
@@ -324,6 +357,31 @@ export default function Login() {
         .lx-discord img {
           width: 19px;
           height: 19px;
+        }
+        .lx-notice {
+          width: 100%;
+          padding: 12px 14px;
+          border-radius: 12px;
+          border: 1px solid rgba(89,255,174,0.24);
+          background: rgba(89,255,174,0.08);
+          color: rgba(210,255,231,0.94);
+          font-size: 13px;
+          font-weight: 800;
+        }
+        .lx-forgot {
+          margin: 10px auto 0;
+          display: block;
+          border: 0;
+          background: transparent;
+          color: rgba(255,255,255,0.66);
+          font: inherit;
+          font-size: 13px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .lx-forgot:hover {
+          color: white;
+          text-decoration: underline;
         }
       `}</style>
     </main>

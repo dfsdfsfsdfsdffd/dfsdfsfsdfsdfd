@@ -53,6 +53,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/login?auth=no-user", origin));
   }
 
+  if (next.startsWith("/reset-password")) {
+    return response;
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("username")
