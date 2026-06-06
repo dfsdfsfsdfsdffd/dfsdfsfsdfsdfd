@@ -12,6 +12,7 @@ const font = Space_Grotesk({
 });
 
 const RESET_COOLDOWN_MS = 60 * 1000;
+const DEFAULT_SITE_ORIGIN = "https://softcard.cc";
 
 function siteOrigin() {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
@@ -20,7 +21,7 @@ function siteOrigin() {
       return new URL(configured.startsWith("http") ? configured : `https://${configured}`).origin;
     } catch {}
   }
-  return window.location.origin;
+  return DEFAULT_SITE_ORIGIN;
 }
 
 export default function Login() {

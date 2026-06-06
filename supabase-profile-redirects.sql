@@ -13,3 +13,6 @@ create index if not exists profile_redirects_target_user_id_idx
   on public.profile_redirects(target_user_id);
 
 alter table public.profile_redirects enable row level security;
+
+-- Refresh PostgREST's schema cache so API routes can see the table immediately.
+notify pgrst, 'reload schema';
