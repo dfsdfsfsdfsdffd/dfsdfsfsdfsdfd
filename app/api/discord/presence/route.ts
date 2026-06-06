@@ -91,11 +91,22 @@ export async function POST(request: NextRequest) {
   const status = text(body.status, 40);
   const activity = body.activity && typeof body.activity === "object" ? body.activity : {};
   const server = body.server && typeof body.server === "object" ? body.server : {};
+  const identityPatch: Record<string, string> = {};
+  const discordName = text(body.discordName, 40);
+  const discordUsername = text(body.discordUsername, 40);
+  const discordAvatar = mediaUrl(body.discordAvatar);
+  const discordUrl = mediaUrl(body.discordUrl);
+
+  if (discordName) identityPatch.discordName = discordName;
+  if (discordUsername) identityPatch.discordUsername = discordUsername;
+  if (discordAvatar) identityPatch.discordAvatar = discordAvatar;
+  if (discordUrl) identityPatch.discordUrl = discordUrl;
 
   const { error: updateError } = await supabase
     .from("profiles")
     .update({
       links: writeMeta(links, {
+        ...identityPatch,
         discordStatus: status || "offline",
         discordActivityName: text(activity.name, 80),
         discordActivityDetails: text(activity.details, 100),

@@ -887,10 +887,13 @@ export default function SoftcardDashboard() {
                     <div className="classic-stat"><strong>{totalClicks.toLocaleString()}</strong><span>Link clicks</span></div>
                   </div>
                   <div className="classic-domain-list">
-                    <span className="classic-section-label">Copy profile URLs</span>
-                    {profileUrls.map((item) => (
+                    <span className="classic-section-label">Other usable links</span>
+                    {profileUrls.slice(1).map((item) => (
                       <div className="classic-domain-row" key={item.domain}>
-                        <span>{item.url}</span>
+                        <div>
+                          <strong>{item.domain}</strong>
+                          <span>{item.url}</span>
+                        </div>
                         <button onClick={() => copyUrl(item.url, item.domain)}>
                           {copiedDomain === item.domain ? <Check size={14} /> : <Copy size={14} />}
                           {copiedDomain === item.domain ? "Copied" : "Copy"}
@@ -916,25 +919,26 @@ export default function SoftcardDashboard() {
                   <DiscordIcon />
                 </div>
                 <div className="classic-discord-compact-main">
+                  <span className={`classic-discord-status-pill ${profileMeta.discordConnected ? "is-connected" : ""}`}>{profileMeta.discordConnected ? "Live" : "Off"}</span>
                   <img src={profileMeta.discordAvatar || profile.avatar || defaultProfile.avatar} alt="" />
                   <div>
                     <strong>{profileMeta.discordConnected ? (profileMeta.discordUsername || profileMeta.discordName || "Discord connected") : "Not connected"}</strong>
-                    <small>{profileMeta.discordConnected ? "Presence sync is ready." : "Connect once to auto-fill your widget."}</small>
+                    <small>{profileMeta.discordConnected ? (profileMeta.discordStatus || "Presence sync is ready.") : "Connect to fill the widget."}</small>
                   </div>
                 </div>
                 {discordNotice ? <p className={`classic-discord-notice ${discordNotice.kind}`}>{discordNotice.message}</p> : null}
-                <div className="classic-grid-2">
-                  <a className="classic-primary" href="/api/discord/connect"><DiscordIcon /> {profileMeta.discordConnected ? "Reconnect" : "Connect Discord"}</a>
+                <div className="classic-discord-actions">
+                  <a className="classic-primary" href="/api/discord/connect"><DiscordIcon /> {profileMeta.discordConnected ? "Reconnect" : "Connect"}</a>
                   {profileMeta.discordConnected ? (
                     <button className="classic-secondary" onClick={disconnectDiscord}><X size={16} /> Disconnect</button>
                   ) : (
                     <button className="classic-secondary" disabled><X size={16} /> Not connected</button>
                   )}
+                  <button className="classic-secondary" onClick={saveChanges} disabled={saving}><Save size={16} /> {saving ? "Saving..." : "Save"}</button>
                 </div>
-                <Field label="Status Text">
+                <Field label="Custom status text">
                   <input value={profileMeta.discordStatus} onChange={(e) => setProfileMeta((current) => ({ ...current, discordStatus: e.target.value.slice(0, 50) }))} placeholder="last seen unknown" />
                 </Field>
-                <button className="classic-secondary" onClick={saveChanges} disabled={saving}><Save size={16} /> {saving ? "Saving..." : "Save Discord"}</button>
               </section>
             </div>
           </section>
@@ -1764,25 +1768,28 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       grid-column: 1 / -1;
     }
     .classic-discord-compact-card {
-      gap: 12px;
+      gap: 10px;
       background:
         radial-gradient(circle at 95% 0%, rgba(88,101,242,0.2), transparent 36%),
         rgba(255,255,255,0.04);
     }
     .classic-discord-compact-main {
+      position: relative;
       display: grid;
-      grid-template-columns: 48px minmax(0, 1fr);
+      grid-template-columns: 42px minmax(0, 1fr);
       gap: 12px;
       align-items: center;
-      padding: 12px;
-      border-radius: 14px;
+      padding: 10px 12px;
+      border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.045);
+      background:
+        linear-gradient(135deg, rgba(88,101,242,0.14), rgba(255,255,255,0.035)),
+        rgba(255,255,255,0.045);
     }
     .classic-discord-compact-main img {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
       object-fit: cover;
       border: 1px solid rgba(255,255,255,0.18);
     }
@@ -1794,7 +1801,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-discord-compact-main strong {
       color: white;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 950;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -1802,8 +1809,43 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-discord-compact-main small {
       color: rgba(255,255,255,0.52);
-      font-size: 12px;
+      font-size: 11px;
       line-height: 1.35;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .classic-discord-status-pill {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      height: 20px;
+      padding: 0 8px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.58);
+      font-size: 10px;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .classic-discord-status-pill.is-connected {
+      border-color: rgba(89,255,174,0.28);
+      background: rgba(89,255,174,0.1);
+      color: #baffd8;
+    }
+    .classic-discord-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .classic-discord-actions .classic-primary,
+    .classic-discord-actions .classic-secondary {
+      min-height: 38px;
+      width: 100%;
     }
     .classic-dashboard-card-head {
       display: flex;
@@ -2308,16 +2350,22 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       display: flex;
       flex-direction: column;
       gap: 8px;
+      padding: 12px;
+      border-radius: 15px;
+      border: 1px solid rgba(255,255,255,0.075);
+      background:
+        radial-gradient(circle at 100% 0%, ${profile.accent}14, transparent 32%),
+        rgba(255,255,255,0.028);
     }
     .classic-domain-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 10px;
-      padding: 10px 11px;
-      border-radius: 11px;
-      border: 1px solid rgba(255,255,255,0.09);
-      background: rgba(255,255,255,0.04);
+      padding: 9px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.035);
       transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
     }
     .classic-domain-row:hover {
@@ -2325,14 +2373,28 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       border-color: ${profile.accent}55;
       background: rgba(255,255,255,0.06);
     }
+    .classic-domain-row div {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .classic-domain-row strong,
     .classic-domain-row span {
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      color: rgba(255,255,255,0.78);
+    }
+    .classic-domain-row strong {
+      color: rgba(255,255,255,0.92);
       font-size: 12px;
-      font-weight: 850;
+      font-weight: 950;
+    }
+    .classic-domain-row span {
+      color: rgba(255,255,255,0.78);
+      font-size: 11px;
+      font-weight: 750;
     }
     .classic-domain-row button {
       min-height: 30px;
