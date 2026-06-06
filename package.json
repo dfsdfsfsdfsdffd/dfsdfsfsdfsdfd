@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "decorations:manifest": "node scripts/build-decoration-manifest.mjs",
     "start": "next start",
     "lint": "next lint"
   },

@@ -322,6 +322,11 @@ function safeDecorationUrl(value: unknown) {
   return safeMediaUrl(value);
 }
 
+function decorationManifestUrl() {
+  const configured = process.env.NEXT_PUBLIC_PROFILE_DECORATIONS_MANIFEST_URL;
+  return configured && safeMediaUrl(configured) ? configured : "/profile-decorations/manifest.json";
+}
+
 function safeText(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
@@ -557,7 +562,7 @@ export default function SoftcardDashboard() {
   }, []);
 
   useEffect(() => {
-    fetch("/profile-decorations/manifest.json")
+    fetch(decorationManifestUrl())
       .then((response) => (response.ok ? response.json() : []))
       .then((items) => {
         if (Array.isArray(items)) {
