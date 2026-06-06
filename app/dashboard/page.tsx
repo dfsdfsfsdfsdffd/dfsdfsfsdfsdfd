@@ -500,8 +500,8 @@ export default function SoftcardDashboard() {
   const topLinks = [...links].sort((a, b) => Number(b.clicks || 0) - Number(a.clicks || 0)).slice(0, 5);
   const gradientColors = profile.gradient.match(/#(?:[0-9a-fA-F]{3}){1,2}/g) || ["#170f2f", "#050106"];
   const profileUsername = profile.username || "username";
-  const publicUrl = `softcard.cc/${profileUsername}`;
-  const profileUrls = profileDomains.map((domain) => ({ domain, url: `${domain}/${profileUsername}` }));
+  const publicUrl = `https://softcard.cc/${profileUsername}`;
+  const profileUrls = profileDomains.map((domain) => ({ domain, url: `https://${domain}/${profileUsername}` }));
 
   useEffect(() => {
     async function loadData() {
