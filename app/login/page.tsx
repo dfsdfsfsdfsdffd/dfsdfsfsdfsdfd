@@ -11,6 +11,8 @@ const font = Space_Grotesk({
   weight: ["400", "500", "600", "700"]
 });
 
+const RESET_COOLDOWN_MS = 60 * 1000;
+
 export default function Login() {
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
@@ -21,6 +23,7 @@ export default function Login() {
   const [discordLoading, setDiscordLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [resetCooldown, setResetCooldown] = useState(0);
 
   const router = useRouter();
 
@@ -55,6 +58,19 @@ export default function Login() {
     };
     checkUser();
   }, [supabase, router]);
+
+  useEffect(() => {
+    if (mode !== "forgot") return;
+
+    const updateCooldown = () => {
+      const resetAt = Number(window.localStorage.getItem("softcard_password_reset_at") || 0);
+      setResetCooldown(Math.max(0, Math.ceil((resetAt - Date.now()) / 1000)));
+    };
+
+    updateCooldown();
+    const timer = window.setInterval(updateCooldown, 1000);
+    return () => window.clearInterval(timer);
+  }, [mode]);
 
   const handleDiscordLogin = async () => {
     setDiscordLoading(true);
@@ -95,14 +111,27 @@ export default function Login() {
       }
 
       if (mode === "forgot") {
+        if (resetCooldown > 0) {
+          setError(`Wait ${resetCooldown}s before requesting another reset email.`);
+          setLoading(false);
+          return;
+        }
+
         const origin = window.location.origin;
         const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
           redirectTo: `${origin}/auth/callback?next=/reset-password`,
         });
 
         if (resetError) {
-          setError(resetError.message);
+          const message = resetError.message.toLowerCase();
+          setError(
+            message.includes("rate limit")
+              ? "Email rate limit exceeded. Wait a bit, or configure a custom SMTP provider in Supabase Auth to raise the sending limit."
+              : resetError.message
+          );
         } else {
+          window.localStorage.setItem("softcard_password_reset_at", String(Date.now() + RESET_COOLDOWN_MS));
+          setResetCooldown(Math.ceil(RESET_COOLDOWN_MS / 1000));
           setNotice("Password reset link sent. Check your email.");
         }
 
@@ -279,7 +308,7 @@ export default function Login() {
           )}
 
           <button className="lx-primary" disabled={loading}>
-            {loading ? "Processing..." : mode === "forgot" ? "Send Reset Link" : mode === "signin" ? "Sign In" : "Sign Up"}
+            {loading ? "Processing..." : mode === "forgot" ? resetCooldown > 0 ? `Wait ${resetCooldown}s` : "Send Reset Link" : mode === "signin" ? "Sign In" : "Sign Up"}
           </button>
         </form>
 
