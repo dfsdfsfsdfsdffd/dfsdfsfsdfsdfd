@@ -859,20 +859,28 @@ export default function SoftcardDashboard() {
           </nav>
 
           <section className="classic-hub-center">
-            <p className="classic-kicker">Dashboard</p>
-            <h1>Welcome back, <span>{profile.username || "User"}</span></h1>
-            <div className="classic-avatar-ring">
-              <img src={profile.avatar || defaultProfile.avatar} alt="Profile" />
-            </div>
+            <div className="classic-dashboard-hero">
+              <div className="classic-dashboard-identity">
+                <div className="classic-avatar-ring">
+                  <img src={profile.avatar || defaultProfile.avatar} alt="Profile" />
+                </div>
+                <div>
+                  <p className="classic-kicker">Softcard dashboard</p>
+                  <h1>{profile.username || "User"}</h1>
+                  <span>Your live profile, links, and presence in one place.</span>
+                </div>
+              </div>
 
-            <div className="classic-hub-actions">
-              <button className="classic-primary" onClick={() => setView("editor")}><Pencil size={18} /> Edit page</button>
-              <a className="classic-secondary" href={`/${profile.username}`} target="_blank" rel="noreferrer"><ExternalLink size={18} /> View page</a>
-            </div>
-
-            <div className="classic-url-card">
-              <span>{publicUrl}</span>
-              <button onClick={() => copyUrl(publicUrl, "softcard.cc")}>{copiedDomain === "softcard.cc" ? <Check size={15} /> : <Copy size={15} />}{copiedDomain === "softcard.cc" ? "Copied" : "Copy"}</button>
+              <div className="classic-dashboard-hero-actions">
+                <div className="classic-url-card">
+                  <span>{publicUrl}</span>
+                  <button onClick={() => copyUrl(publicUrl, "softcard.cc")}>{copiedDomain === "softcard.cc" ? <Check size={15} /> : <Copy size={15} />}{copiedDomain === "softcard.cc" ? "Copied" : "Copy"}</button>
+                </div>
+                <div className="classic-hub-actions">
+                  <button className="classic-primary" onClick={() => setView("editor")}><Pencil size={18} /> Edit page</button>
+                  <a className="classic-secondary" href={`/${profile.username}`} target="_blank" rel="noreferrer"><ExternalLink size={18} /> View page</a>
+                </div>
+              </div>
             </div>
 
             <div className="classic-dashboard-grid">
@@ -1603,13 +1611,13 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-hub-shell {
       min-height: 100vh;
-      width: min(1120px, calc(100vw - 36px));
+      width: min(1180px, calc(100vw - 40px));
       margin: 0 auto;
       display: flex;
       flex-direction: column;
     }
     .classic-hub-nav {
-      min-height: 76px;
+      min-height: 68px;
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -1618,56 +1626,91 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       flex: 1;
       display: flex;
       flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      text-align: left;
+      padding: 18px 0 70px;
+    }
+    .classic-dashboard-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 0.62fr);
       align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding-bottom: 80px;
+      gap: 20px;
+      padding: 20px;
+      border-radius: 26px;
+      border: 1px solid rgba(255,255,255,0.095);
+      background:
+        radial-gradient(circle at 7% 0%, ${profile.accent}22, transparent 34%),
+        linear-gradient(135deg, rgba(255,255,255,0.078), rgba(255,255,255,0.028)),
+        rgba(7,8,12,0.62);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.24);
+      backdrop-filter: blur(18px);
+    }
+    .classic-dashboard-identity {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 18px;
     }
     .classic-kicker {
       color: ${profile.accent};
-      font-size: 12px;
+      margin: 0;
+      font-size: 11px;
       text-transform: uppercase;
       font-weight: 900;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.16em;
     }
     .classic-hub h1 {
-      margin-top: 12px;
-      font-size: clamp(38px, 7vw, 72px);
-      line-height: 0.98;
+      margin: 8px 0 8px;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 0.94;
       letter-spacing: -0.04em;
     }
-    .classic-hub h1 span {
-      color: ${profile.accent};
+    .classic-dashboard-identity > div:last-child > span {
+      display: block;
+      max-width: 520px;
+      color: rgba(255,255,255,0.56);
+      font-size: 14px;
+      line-height: 1.45;
+      font-weight: 650;
     }
     .classic-avatar-ring {
-      width: 250px;
-      height: 250px;
-      margin: 34px 0;
-      border-radius: 50%;
+      width: 92px;
+      height: 92px;
+      margin: 0;
+      border-radius: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,0.045);
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: 0 30px 90px rgba(0,0,0,0.34);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.035));
+      border: 1px solid rgba(255,255,255,0.13);
+      box-shadow: 0 18px 44px rgba(0,0,0,0.22);
+      flex: 0 0 auto;
     }
     .classic-avatar-ring img {
-      width: 138px;
-      height: 138px;
-      border-radius: 50%;
+      width: 74px;
+      height: 74px;
+      border-radius: 20px;
       object-fit: cover;
-      border: 3px solid ${profile.accent};
-      padding: 4px;
+      border: 2px solid ${profile.accent};
+      padding: 3px;
+    }
+    .classic-dashboard-hero-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
     }
     .classic-hub-actions {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
-      justify-content: center;
+      justify-content: flex-end;
     }
     .classic-url-card {
-      margin-top: 26px;
-      min-width: min(460px, 100%);
+      margin-top: 0;
+      min-width: 0;
       padding: 10px 10px 10px 14px;
       border-radius: 16px;
       background:
@@ -1736,34 +1779,36 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-dashboard-grid {
       width: 100%;
-      margin-top: 24px;
+      margin-top: 18px;
       display: grid;
-      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
+      grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.55fr);
       gap: 16px;
       text-align: left;
       align-items: start;
     }
     .classic-dashboard-card {
-      padding: 16px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.095);
-      background: rgba(255,255,255,0.045);
-      box-shadow: 0 18px 46px rgba(0,0,0,0.16);
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.085);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.024)),
+        rgba(8,9,13,0.58);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      backdrop-filter: blur(16px);
+      gap: 14px;
+      backdrop-filter: blur(18px);
     }
     .classic-stats-card {
       background:
-        radial-gradient(circle at 12% 0%, ${profile.accent}18, transparent 34%),
-        linear-gradient(180deg, rgba(255,255,255,0.062), rgba(255,255,255,0.035)),
-        rgba(255,255,255,0.045);
+        radial-gradient(circle at 8% 0%, ${profile.accent}16, transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.024)),
+        rgba(8,9,13,0.58);
     }
     .classic-stats-layout {
       display: grid;
-      grid-template-columns: minmax(150px, 0.42fr) minmax(0, 1fr);
-      gap: 12px;
+      grid-template-columns: minmax(160px, 0.38fr) minmax(0, 1fr);
+      gap: 14px;
       align-items: start;
     }
     .classic-stat-stack {
@@ -1774,10 +1819,11 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       grid-column: 1 / -1;
     }
     .classic-discord-compact-card {
-      gap: 10px;
+      gap: 12px;
       background:
-        radial-gradient(circle at 95% 0%, rgba(88,101,242,0.2), transparent 36%),
-        rgba(255,255,255,0.04);
+        radial-gradient(circle at 100% 0%, rgba(88,101,242,0.14), transparent 35%),
+        linear-gradient(180deg, rgba(255,255,255,0.052), rgba(255,255,255,0.024)),
+        rgba(8,9,13,0.58);
     }
     .classic-discord-compact-main {
       position: relative;
@@ -1857,11 +1903,12 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      color: rgba(255,255,255,0.68);
+      color: rgba(255,255,255,0.7);
       font-size: 11px;
       font-weight: 950;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.13em;
+      padding-bottom: 2px;
     }
     .classic-primary:active:not(:disabled),
     .classic-secondary:active,
@@ -2136,11 +2183,11 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-stat {
       position: relative;
       padding: 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.048), rgba(255,255,255,0.025)),
-        rgba(255,255,255,0.035);
+        linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02)),
+        rgba(255,255,255,0.028);
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -2153,12 +2200,12 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       box-shadow: 0 16px 34px rgba(0,0,0,0.18);
     }
     .classic-stat-hero {
-      min-height: 118px;
+      min-height: 122px;
       justify-content: flex-end;
-      border-color: ${profile.accent}33;
+      border-color: ${profile.accent}2b;
       background:
-        radial-gradient(circle at 20% 10%, ${profile.accent}2e, transparent 42%),
-        rgba(255,255,255,0.055);
+        radial-gradient(circle at 18% 8%, ${profile.accent}24, transparent 44%),
+        linear-gradient(180deg, rgba(255,255,255,0.048), rgba(255,255,255,0.022));
     }
     .classic-link-head {
       min-height: 42px;
@@ -2356,30 +2403,31 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       text-transform: uppercase;
     }
     .classic-stat strong {
-      font-size: 28px;
+      font-size: 30px;
       line-height: 1;
+      letter-spacing: -0.03em;
     }
     .classic-domain-list {
       margin-top: 0;
       display: flex;
       flex-direction: column;
-      gap: 7px;
-      padding: 11px;
-      border-radius: 16px;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 18px;
       border: 1px solid rgba(255,255,255,0.075);
       background:
-        radial-gradient(circle at 100% 0%, ${profile.accent}14, transparent 32%),
-        rgba(255,255,255,0.028);
+        radial-gradient(circle at 100% 0%, ${profile.accent}10, transparent 32%),
+        rgba(255,255,255,0.024);
     }
     .classic-domain-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 10px;
-      padding: 9px 9px 9px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.035);
+      padding: 10px 10px 10px 11px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.028);
       transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
     }
     .classic-domain-row:hover {
@@ -2430,10 +2478,10 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 9px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.075);
-      background: rgba(255,255,255,0.032);
+      padding: 11px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.065);
+      background: rgba(255,255,255,0.026);
     }
     .classic-top-link:last-child {
       border-bottom-color: rgba(255,255,255,0.075);
@@ -3371,12 +3419,28 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
         padding: 52px 18px 24px;
       }
       .classic-grid-2,
+      .classic-dashboard-hero,
       .classic-theme-grid,
       .classic-stat-grid,
       .classic-stats-layout,
       .classic-dashboard-grid,
       .classic-discord-connect-panel {
         grid-template-columns: 1fr;
+      }
+      .classic-dashboard-hero {
+        padding: 16px;
+      }
+      .classic-dashboard-identity {
+        align-items: flex-start;
+      }
+      .classic-dashboard-hero-actions,
+      .classic-hub-actions {
+        align-items: stretch;
+        justify-content: flex-start;
+      }
+      .classic-hub-actions .classic-primary,
+      .classic-hub-actions .classic-secondary {
+        flex: 1 1 150px;
       }
     }
     @media (prefers-reduced-motion: reduce) {
