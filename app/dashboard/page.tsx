@@ -1668,18 +1668,23 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-url-card {
       margin-top: 26px;
       min-width: min(460px, 100%);
-      padding: 12px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.055);
-      border: 1px solid rgba(255,255,255,0.12);
+      padding: 10px 10px 10px 14px;
+      border-radius: 16px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.035)),
+        rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.11);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+      box-shadow: 0 14px 38px rgba(0,0,0,0.16);
     }
     .classic-url-card span {
-      color: rgba(255,255,255,0.62);
-      font-size: 14px;
+      color: rgba(255,255,255,0.76);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
     }
     .classic-url-card button,
     .classic-ghost,
@@ -1709,9 +1714,9 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       border: 0;
       background: linear-gradient(135deg, #ffffff, #f1e8ff 45%, #d8caff);
       color: #07080d;
-      min-height: 46px;
+      min-height: 42px;
       padding: 0 16px;
-      box-shadow: 0 14px 34px rgba(169,112,255,0.18);
+      box-shadow: 0 12px 28px rgba(169,112,255,0.16);
     }
     .classic-primary:hover:not(:disabled) {
       transform: translateY(-2px);
@@ -1731,22 +1736,23 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-dashboard-grid {
       width: 100%;
-      margin-top: 28px;
+      margin-top: 24px;
       display: grid;
       grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
-      gap: 18px;
+      gap: 16px;
       text-align: left;
       align-items: start;
     }
     .classic-dashboard-card {
-      padding: 18px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.1);
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.095);
       background: rgba(255,255,255,0.045);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+      box-shadow: 0 18px 46px rgba(0,0,0,0.16);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
+      backdrop-filter: blur(16px);
     }
     .classic-stats-card {
       background:
@@ -1757,7 +1763,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-stats-layout {
       display: grid;
       grid-template-columns: minmax(150px, 0.42fr) minmax(0, 1fr);
-      gap: 14px;
+      gap: 12px;
       align-items: start;
     }
     .classic-stat-stack {
@@ -1851,11 +1857,11 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      color: rgba(255,255,255,0.74);
-      font-size: 12px;
+      color: rgba(255,255,255,0.68);
+      font-size: 11px;
       font-weight: 950;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.12em;
     }
     .classic-primary:active:not(:disabled),
     .classic-secondary:active,
@@ -1876,40 +1882,43 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-editor {
       display: grid;
-      grid-template-columns: 206px minmax(380px, 560px) minmax(0, 1fr);
+      grid-template-columns: 198px minmax(380px, 548px) minmax(0, 1fr);
       overflow: hidden;
       background:
-        radial-gradient(circle at 30% -10%, ${profile.accent}24, transparent 30%),
-        linear-gradient(180deg, #141416, #0c0d10 42%, #08090b);
+        radial-gradient(circle at 26% -10%, ${profile.accent}20, transparent 30%),
+        radial-gradient(circle at 90% 18%, rgba(255,255,255,0.045), transparent 28%),
+        linear-gradient(180deg, #111216, #0b0c10 42%, #07080b);
     }
     .classic-sidebar {
       height: 100vh;
       overflow-y: auto;
       scrollbar-gutter: stable;
-      background: rgba(18,19,21,0.92);
-      border-right: 1px solid rgba(255,255,255,0.1);
-      padding: 46px 10px 18px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018)),
+        rgba(12,13,16,0.94);
+      border-right: 1px solid rgba(255,255,255,0.085);
+      padding: 38px 10px 18px;
     }
     .classic-workspace {
       height: 100vh;
       overflow-y: auto;
       scrollbar-gutter: stable;
-      padding: 46px 24px 46px;
+      padding: 38px 22px 46px;
       border-right: 1px solid rgba(255,255,255,0.08);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.018)),
-        rgba(12,13,16,0.82);
+        linear-gradient(180deg, rgba(255,255,255,0.032), rgba(255,255,255,0.012)),
+        rgba(10,11,15,0.84);
     }
     .classic-editor-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     .classic-editor-head h2 {
       margin: 4px 0 0;
-      font-size: 34px;
+      font-size: 31px;
       line-height: 1;
       letter-spacing: -0.04em;
     }
@@ -1919,14 +1928,14 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-tabs {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
     .classic-tabs button {
-      min-height: 42px;
+      min-height: 39px;
       justify-content: flex-start;
       gap: 10px;
       padding: 0 12px;
-      border-radius: 9px;
+      border-radius: 10px;
       font-size: 13px;
       color: rgba(255,255,255,0.62);
       background: transparent;
@@ -1938,35 +1947,37 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       transform: translateY(-1px);
     }
     .classic-tabs button.is-active {
-      background: rgba(255,255,255,0.09);
+      background:
+        linear-gradient(90deg, ${profile.accent}1f, rgba(255,255,255,0.055));
       color: white;
-      border-color: ${profile.accent}99;
-      box-shadow: inset 3px 0 0 ${profile.accent}, 0 10px 24px rgba(0,0,0,0.18);
+      border-color: ${profile.accent}66;
+      box-shadow: inset 3px 0 0 ${profile.accent}, 0 10px 24px rgba(0,0,0,0.14);
     }
     .classic-panel {
       display: flex;
       flex-direction: column;
-      gap: 18px;
-      padding: 18px;
+      gap: 16px;
+      padding: 16px;
       margin-bottom: 42px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.085);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.035)),
-        rgba(12,13,16,0.75);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+        linear-gradient(180deg, rgba(255,255,255,0.058), rgba(255,255,255,0.026)),
+        rgba(12,13,16,0.72);
+      box-shadow: 0 18px 52px rgba(0,0,0,0.18);
+      backdrop-filter: blur(16px);
     }
     .classic-field {
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      gap: 8px;
     }
     .classic-field > span {
-      color: rgba(255,255,255,0.48);
-      font-size: 11px;
+      color: rgba(255,255,255,0.52);
+      font-size: 10px;
       font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.095em;
     }
     .classic-section-label {
       display: flex;
@@ -1997,13 +2008,13 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-link-card input,
     .classic-link-card select {
       width: 100%;
-      min-height: 44px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background-color: #22232b;
+      min-height: 42px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.105);
+      background-color: #1d1f27;
       color: white;
       outline: 0;
-      padding: 11px 12px;
+      padding: 10px 12px;
       transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
     }
     .classic-field input:hover,
@@ -2012,13 +2023,13 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-link-card input:hover,
     .classic-link-card select:hover {
       border-color: rgba(255,255,255,0.2);
-      background-color: #272933;
+      background-color: #232631;
     }
     .classic-field select,
     .classic-link-card select {
       color-scheme: dark;
       appearance: auto;
-      background: #22232b !important;
+      background: #1d1f27 !important;
       color: #ffffff !important;
     }
     .classic-field option,
@@ -2037,8 +2048,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-link-card input:focus,
     .classic-link-card select:focus {
       border-color: ${profile.accent};
-      box-shadow: 0 0 0 4px ${profile.accent}22;
-      background-color: #272933;
+      box-shadow: 0 0 0 3px ${profile.accent}20;
+      background-color: #242733;
     }
     .classic-grid-2 {
       display: grid;
@@ -2085,10 +2096,11 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-upload {
       position: relative;
-      min-height: 104px;
-      border: 1px dashed rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.04);
-      border-radius: 12px;
+      min-height: 100px;
+      border: 1px dashed rgba(255,255,255,0.18);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.042), rgba(255,255,255,0.022));
+      border-radius: 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -2123,13 +2135,15 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-link-card,
     .classic-stat {
       position: relative;
-      padding: 16px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.045);
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.09);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.048), rgba(255,255,255,0.025)),
+        rgba(255,255,255,0.035);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
     }
     .classic-link-card:hover,
@@ -2349,9 +2363,9 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       margin-top: 0;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      padding: 12px;
-      border-radius: 15px;
+      gap: 7px;
+      padding: 11px;
+      border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.075);
       background:
         radial-gradient(circle at 100% 0%, ${profile.accent}14, transparent 32%),
@@ -2362,7 +2376,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 10px;
-      padding: 9px 10px;
+      padding: 9px 9px 9px 10px;
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.08);
       background: rgba(255,255,255,0.035);
@@ -2397,7 +2411,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       font-weight: 750;
     }
     .classic-domain-row button {
-      min-height: 30px;
+      min-height: 28px;
       border-radius: 9px;
       border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.075);
@@ -2405,7 +2419,7 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 0 10px;
+      padding: 0 9px;
       font: inherit;
       font-size: 11px;
       font-weight: 900;
@@ -2416,8 +2430,8 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 10px 11px;
-      border-radius: 11px;
+      padding: 9px 10px;
+      border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.075);
       background: rgba(255,255,255,0.032);
     }
