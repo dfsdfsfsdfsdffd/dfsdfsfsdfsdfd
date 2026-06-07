@@ -949,6 +949,13 @@ export default function SoftcardDashboard() {
     <main className="classic-editor" style={{ fontFamily: `${profile.font}, Inter, system-ui, sans-serif` }}>
       <style>{classicStyles(profile, profileMeta)}</style>
       <aside className="classic-sidebar">
+        <div className="classic-editor-brand">
+          <span>SC</span>
+          <div>
+            <strong>Softcard</strong>
+            <small>Profile editor</small>
+          </div>
+        </div>
         <div className="classic-tabs">
           <button className="classic-back" onClick={() => setView("hub")}><ArrowLeft size={16} /> Dashboard</button>
           <button className={tab === "profile" ? "is-active" : ""} onClick={() => setTab("profile")}><UserIcon size={14} /> Profile</button>
@@ -1916,43 +1923,92 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-editor {
       display: grid;
-      grid-template-columns: 198px minmax(380px, 548px) minmax(0, 1fr);
+      grid-template-columns: 220px minmax(390px, 560px) minmax(0, 1fr);
       overflow: hidden;
       background:
-        radial-gradient(circle at 26% -10%, ${profile.accent}20, transparent 30%),
-        radial-gradient(circle at 90% 18%, rgba(255,255,255,0.045), transparent 28%),
-        linear-gradient(180deg, #111216, #0b0c10 42%, #07080b);
+        radial-gradient(circle at 24% -12%, ${profile.accent}22, transparent 32%),
+        radial-gradient(circle at 88% 16%, rgba(255,255,255,0.055), transparent 28%),
+        linear-gradient(180deg, #101116, #090a0f 45%, #06070a);
     }
     .classic-sidebar {
       height: 100vh;
       overflow-y: auto;
       scrollbar-gutter: stable;
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018)),
-        rgba(12,13,16,0.94);
-      border-right: 1px solid rgba(255,255,255,0.085);
-      padding: 38px 10px 18px;
+        radial-gradient(circle at 20% 0%, ${profile.accent}12, transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,0.054), rgba(255,255,255,0.018)),
+        rgba(8,9,13,0.94);
+      border-right: 1px solid rgba(255,255,255,0.075);
+      padding: 22px 12px 18px;
+    }
+    .classic-editor-brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px;
+      margin-bottom: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025)),
+        rgba(255,255,255,0.028);
+      box-shadow: 0 16px 44px rgba(0,0,0,0.16);
+    }
+    .classic-editor-brand > span {
+      width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #fff, #e8ddff);
+      color: #090a0f;
+      font-size: 13px;
+      font-weight: 950;
+      letter-spacing: -0.04em;
+    }
+    .classic-editor-brand div {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .classic-editor-brand strong {
+      color: white;
+      font-size: 13px;
+      font-weight: 950;
+    }
+    .classic-editor-brand small {
+      color: rgba(255,255,255,0.52);
+      font-size: 11px;
+      font-weight: 700;
     }
     .classic-workspace {
       height: 100vh;
       overflow-y: auto;
       scrollbar-gutter: stable;
-      padding: 38px 22px 46px;
-      border-right: 1px solid rgba(255,255,255,0.08);
+      padding: 32px 24px 48px;
+      border-right: 1px solid rgba(255,255,255,0.065);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.032), rgba(255,255,255,0.012)),
-        rgba(10,11,15,0.84);
+        linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0.01)),
+        rgba(9,10,14,0.78);
     }
     .classic-editor-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.075);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02)),
+        rgba(255,255,255,0.022);
     }
     .classic-editor-head h2 {
       margin: 4px 0 0;
-      font-size: 31px;
+      font-size: 30px;
       line-height: 1;
       letter-spacing: -0.04em;
     }
@@ -1962,18 +2018,18 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-tabs {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 7px;
     }
     .classic-tabs button {
-      min-height: 39px;
+      min-height: 42px;
       justify-content: flex-start;
       gap: 10px;
       padding: 0 12px;
-      border-radius: 10px;
+      border-radius: 13px;
       font-size: 13px;
       color: rgba(255,255,255,0.62);
-      background: transparent;
-      border-color: transparent;
+      background: rgba(255,255,255,0.018);
+      border-color: rgba(255,255,255,0.035);
     }
     .classic-tabs button:hover {
       color: white;
@@ -1982,24 +2038,24 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-tabs button.is-active {
       background:
-        linear-gradient(90deg, ${profile.accent}1f, rgba(255,255,255,0.055));
+        linear-gradient(90deg, ${profile.accent}26, rgba(255,255,255,0.07));
       color: white;
       border-color: ${profile.accent}66;
-      box-shadow: inset 3px 0 0 ${profile.accent}, 0 10px 24px rgba(0,0,0,0.14);
+      box-shadow: inset 3px 0 0 ${profile.accent}, 0 14px 30px rgba(0,0,0,0.16);
     }
     .classic-panel {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      padding: 16px;
+      gap: 15px;
+      padding: 18px;
       margin-bottom: 42px;
-      border-radius: 20px;
+      border-radius: 24px;
       border: 1px solid rgba(255,255,255,0.085);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.058), rgba(255,255,255,0.026)),
-        rgba(12,13,16,0.72);
-      box-shadow: 0 18px 52px rgba(0,0,0,0.18);
-      backdrop-filter: blur(16px);
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.022)),
+        rgba(8,9,13,0.62);
+      box-shadow: 0 22px 70px rgba(0,0,0,0.2);
+      backdrop-filter: blur(18px);
     }
     .classic-field {
       display: flex;
@@ -2043,9 +2099,9 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-link-card select {
       width: 100%;
       min-height: 42px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.105);
-      background-color: #1d1f27;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.095);
+      background-color: #191b23;
       color: white;
       outline: 0;
       padding: 10px 12px;
@@ -2133,8 +2189,9 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       min-height: 100px;
       border: 1px dashed rgba(255,255,255,0.18);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.042), rgba(255,255,255,0.022));
-      border-radius: 14px;
+        radial-gradient(circle at 50% 0%, ${profile.accent}10, transparent 38%),
+        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.018));
+      border-radius: 18px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -2169,12 +2226,12 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     .classic-link-card,
     .classic-stat {
       position: relative;
-      padding: 14px;
-      border-radius: 18px;
+      padding: 16px;
+      border-radius: 20px;
       border: 1px solid rgba(255,255,255,0.08);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02)),
-        rgba(255,255,255,0.028);
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+        rgba(255,255,255,0.026);
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -2182,9 +2239,9 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
     }
     .classic-link-card:hover,
     .classic-stat:hover {
-      border-color: rgba(255,255,255,0.16);
-      background: rgba(255,255,255,0.058);
-      box-shadow: 0 16px 34px rgba(0,0,0,0.18);
+      border-color: rgba(255,255,255,0.145);
+      background: rgba(255,255,255,0.05);
+      box-shadow: 0 18px 44px rgba(0,0,0,0.16);
     }
     .classic-stat-hero {
       min-height: 122px;
@@ -2468,34 +2525,41 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       justify-content: center;
       overflow: hidden;
       isolation: isolate;
-      padding: 48px;
+      padding: 58px;
       background:
-        radial-gradient(circle at 70% 14%, ${profile.accent}1f, transparent 28%),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(180deg, rgba(255,255,255,0.025) 1px, transparent 1px),
-        #0a0b0e;
-      background-size: auto, 18px 18px, 18px 18px, auto;
+        radial-gradient(circle at 72% 14%, ${profile.accent}18, transparent 28%),
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.04), transparent 30%),
+        #07080d;
     }
     .classic-preview::before {
       content: "Live preview";
       position: absolute;
-      top: 28px;
-      left: 32px;
+      top: 24px;
+      left: 28px;
       z-index: 4;
-      color: rgba(255,255,255,0.62);
+      height: 28px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.095);
+      background: rgba(255,255,255,0.045);
+      color: rgba(255,255,255,0.64);
       font-size: 11px;
       font-weight: 950;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
     .classic-preview::after {
       content: "";
       position: absolute;
-      inset: 88px 36px 36px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.1);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.025), 0 30px 80px rgba(0,0,0,0.24);
+      inset: 72px 34px 34px;
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,0.085);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.032), rgba(255,255,255,0.012)),
+        rgba(0,0,0,0.12);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.022), 0 30px 90px rgba(0,0,0,0.28);
       pointer-events: none;
       z-index: 0;
     }
