@@ -497,7 +497,6 @@ export default function SoftcardDashboard() {
 
   const themes = [...baseThemes, ...customThemes];
   const totalClicks = links.reduce((sum, link) => sum + Number(link.clicks || 0), 0);
-  const topLinks = [...links].sort((a, b) => Number(b.clicks || 0) - Number(a.clicks || 0)).slice(0, 5);
   const gradientColors = profile.gradient.match(/#(?:[0-9a-fA-F]{3}){1,2}/g) || ["#170f2f", "#050106"];
   const profileUsername = profile.username || "username";
   const publicUrl = `https://softcard.cc/${profileUsername}`;
@@ -908,15 +907,6 @@ export default function SoftcardDashboard() {
                         </button>
                       </div>
                     ))}
-                  </div>
-                  <div className="classic-top-list">
-                    <span className="classic-section-label">Top links</span>
-                    {topLinks.length ? topLinks.map((link) => (
-                      <div className="classic-top-link" key={`hub-top-${link.id}`}>
-                        <span>{link.label || link.type || link.url}</span>
-                        <strong>{Number(link.clicks || 0).toLocaleString()}</strong>
-                      </div>
-                    )) : <p className="classic-muted">Add links to start tracking clicks.</p>}
                   </div>
                 </div>
               </section>
@@ -1815,9 +1805,6 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       display: grid;
       gap: 12px;
     }
-    .classic-top-list {
-      grid-column: 1 / -1;
-    }
     .classic-discord-compact-card {
       gap: 12px;
       background:
@@ -2472,27 +2459,6 @@ function classicStyles(profile: ProfileData, meta: ProfileMeta) {
       font-size: 11px;
       font-weight: 900;
       cursor: pointer;
-    }
-    .classic-top-link {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 11px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.065);
-      background: rgba(255,255,255,0.026);
-    }
-    .classic-top-link:last-child {
-      border-bottom-color: rgba(255,255,255,0.075);
-    }
-    .classic-top-link span {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: rgba(255,255,255,0.72);
-      font-size: 13px;
     }
     .classic-preview {
       position: relative;
