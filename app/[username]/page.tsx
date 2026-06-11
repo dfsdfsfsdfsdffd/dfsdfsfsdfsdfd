@@ -1,4 +1,6 @@
 "use client"
+
+export const runtime = "edge";
 import { useState, useEffect, useRef, useMemo } from "react"
 import { createBrowserClient } from '@supabase/ssr'
 import { ShieldCheck, Code, Star, Heart, Eye, ExternalLink, Play, Pause } from "lucide-react"

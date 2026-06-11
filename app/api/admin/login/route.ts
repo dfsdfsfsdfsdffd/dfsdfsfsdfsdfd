@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import { NextResponse } from "next/server";
 
 const WINDOW_MS = 10 * 60 * 1000;

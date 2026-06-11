@@ -1,6 +1,13 @@
+export const runtime = "edge";
+
 import { createServerClient } from "@supabase/ssr";
-import { randomBytes } from "crypto";
 import { NextResponse, type NextRequest } from "next/server";
+
+function randomHex(bytes: number) {
+  const values = new Uint8Array(bytes);
+  crypto.getRandomValues(values);
+  return Array.from(values, (value) => value.toString(16).padStart(2, "0")).join("");
+}
 
 function absoluteUrl(value?: string) {
   if (!value) return "";
@@ -55,7 +62,7 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.redirect(new URL("/login", request.url));
 
-  const state = randomBytes(24).toString("hex");
+  const state = randomHex(24);
   const authorizeUrl = new URL("https://discord.com/api/oauth2/authorize");
   authorizeUrl.searchParams.set("client_id", clientId);
   authorizeUrl.searchParams.set("redirect_uri", discordRedirectUri(request));

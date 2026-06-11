@@ -1,4 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
+export const runtime = "edge";
+
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
