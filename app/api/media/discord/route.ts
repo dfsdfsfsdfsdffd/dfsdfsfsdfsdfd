@@ -1,7 +1,7 @@
+export const runtime = "edge";
+
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
-
-export const runtime = "nodejs";
 
 const MAX_UPLOAD_SIZE = 15 * 1024 * 1024;
 
