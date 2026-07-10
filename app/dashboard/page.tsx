@@ -328,7 +328,7 @@ function safeDecorationUrl(value: unknown) {
 
 function decorationManifestUrl() {
   const configured = process.env.NEXT_PUBLIC_PROFILE_DECORATIONS_MANIFEST_URL;
-  return configured && safeMediaUrl(configured) ? configured : "/profile-decorations/profile-decorations.manifest.json";
+  return configured && safeMediaUrl(configured) ? configured : "/profile-decorations/manifest.json";
 }
 
 function safeText(value: unknown, fallback = "") {

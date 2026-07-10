@@ -19,5 +19,15 @@ const manifest = files.map((file) => ({
   url: `${cleanBaseUrl}/${encodeURIComponent(file)}`,
 }));
 
-await writeFile(outputFile, `${JSON.stringify(manifest, null, 2)}\n`);
+const outputDir = path.dirname(outputFile);
+const aliasFile = path.join(outputDir, "manifest.json");
+const contents = `${JSON.stringify(manifest, null, 2)}\n`;
+
+await writeFile(outputFile, contents);
+if (path.basename(outputFile) !== "manifest.json") {
+  await writeFile(aliasFile, contents);
+}
 console.log(`Wrote ${manifest.length} decorations to ${outputFile}`);
+if (aliasFile !== outputFile) {
+  console.log(`Wrote ${manifest.length} decorations to ${aliasFile}`);
+}
